@@ -1,4 +1,4 @@
-package com.MisMascotas.backend.Controller;
+package com.MisMascotas.backend.DTO;
 
 import java.time.Instant;
 import java.util.UUID;
