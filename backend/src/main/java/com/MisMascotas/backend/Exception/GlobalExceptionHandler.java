@@ -20,6 +20,16 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", ex.getMessage());
     }
 
+    @ExceptionHandler(CodigoExpiradoException.class)
+    public ResponseEntity<ErrorResponse> handleCodigoExpiradoException(CodigoExpiradoException ex) {
+        return buildResponse(HttpStatus.GONE, "CODIGO_EXPIRADO", ex.getMessage());
+    }
+
+    @ExceptionHandler(CodigoInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleCodigoInvalidoException(CodigoInvalidoException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "CODIGO_INVALIDO", ex.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         HttpStatus status = ex.getMessage() != null && ex.getMessage().contains("ya esta registrado")

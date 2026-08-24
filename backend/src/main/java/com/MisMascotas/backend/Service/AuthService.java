@@ -14,6 +14,8 @@ import com.MisMascotas.backend.DTO.LoginRequestDTO;
 import com.MisMascotas.backend.DTO.RegistroRequestDTO;
 import com.MisMascotas.backend.DTO.VerificarCodigoRequestDTO;
 import com.MisMascotas.backend.Entity.CodigoVerificacion;
+import com.MisMascotas.backend.Exception.CodigoExpiradoException;
+import com.MisMascotas.backend.Exception.CodigoInvalidoException;
 import com.MisMascotas.backend.Entity.Usuario;
 import com.MisMascotas.backend.Repository.CodigoVerificacionRepository;
 import com.MisMascotas.backend.Repository.UsuarioRepository;
@@ -44,8 +46,6 @@ public class AuthService {
     }
 
     public AuthResponseDTO registrar(RegistroRequestDTO request) {
-        validarDatosRegistro(request.nombre(), request.email(), request.password());
-
         String emailNormalizado = request.email().trim().toLowerCase();
         if (usuarioRepository.existsByEmail(emailNormalizado)) {
             throw new IllegalArgumentException("El email ya esta registrado");
@@ -97,15 +97,15 @@ public class AuthService {
     public AuthResponseDTO validarCodigoYCrearSesion(VerificarCodigoRequestDTO request) {
         CodigoVerificacion codigoVerificacion = codigoVerificacionRepository
                 .findFirstByUsuario_IdUsuarioAndUsadoFalseOrderByCreadoEnDesc(request.usuarioId())
-                .orElseThrow(() -> new IllegalArgumentException("El codigo no es valido"));
+                .orElseThrow(() -> new CodigoInvalidoException("El codigo no es valido"));
 
         if (codigoVerificacion.getExpiraEn().isBefore(Instant.now())) {
             generarYEnviarCodigoVerificacion(request.usuarioId());
-            throw new IllegalArgumentException("El codigo expiro. Te enviamos uno nuevo");
+            throw new CodigoExpiradoException("El codigo expiro. Te enviamos uno nuevo");
         }
 
         if (!codigoVerificacion.getCodigo().equals(request.codigo())) {
-            throw new IllegalArgumentException("El codigo no es valido");
+            throw new CodigoInvalidoException("El codigo no es valido");
         }
 
         codigoVerificacion.setUsado(true);
@@ -123,29 +123,4 @@ public class AuthService {
         // Pendiente: integrar JavaMailSender cuando este configurado el SMTP.
     }
 
-    private void validarDatosRegistro(String nombre, String email, String password) {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
-        }
-
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("El email es obligatorio");
-        }
-
-        if (!email.contains("@")) {
-            throw new IllegalArgumentException("El email no es valido");
-        }
-
-        if (password == null || password.length() < 8) {
-            throw new IllegalArgumentException("La contrasenia debe tener al menos 8 caracteres");
-        }
-
-        if (!password.matches(".*[A-Z].*")) {
-            throw new IllegalArgumentException("La contrasenia debe tener al menos una mayuscula");
-        }
-
-        if (!password.matches(".*\\d.*")) {
-            throw new IllegalArgumentException("La contrasenia debe tener al menos un numero");
-        }
-    }
 }
