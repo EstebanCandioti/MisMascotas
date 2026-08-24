@@ -1,8 +1,6 @@
 package com.MisMascotas.backend.Entity;
-
 import java.time.Instant;
 import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
