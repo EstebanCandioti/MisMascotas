@@ -2,6 +2,7 @@ package com.MisMascotas.backend.Security;
 
 import java.io.IOException;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,6 +42,17 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = authorizationHeader.substring(7);
+
+        if (jwtService.esTokenPreAuth(token)) {
+            if (esEndpointPublicoDeAuth(request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
         String email = jwtService.extraerEmail(token);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -58,5 +70,16 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean esEndpointPublicoDeAuth(HttpServletRequest request) {
+        String path = request.getServletPath();
+        String method = request.getMethod();
+
+        return HttpMethod.POST.matches(method)
+                && ("/auth/register".equals(path)
+                        || "/auth/login".equals(path)
+                        || "/auth/verificar-codigo".equals(path)
+                        || "/pagos/webhook".equals(path));
     }
 }

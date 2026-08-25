@@ -24,7 +24,7 @@ public class SecurityConfig {
     private static final String[] ENDPOINTS_PUBLICOS = {
             "/auth/register",
             "/auth/login",
-            "/auth/login/verificar-codigo",
+            "/auth/verificar-codigo",
             "/pagos/webhook"
     };
 

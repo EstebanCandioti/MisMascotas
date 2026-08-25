@@ -1,7 +1,8 @@
 package com.MisMascotas.backend.Entity;
 
 import java.io.Serializable;
-import java.time.OffsetDateTime;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -16,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -51,11 +53,30 @@ public class Album {
     private String descripcion;
 
     @Column(name = "creado_en", nullable = false, updatable = false)
-    private OffsetDateTime creadoEn;
+    private Instant creadoEn;
+
+    @Column(name = "id_cliente", unique = true)
+    private UUID idCliente;
+
+    @Column(name = "actualizado_en", nullable = false)
+    private LocalDateTime actualizadoEn;
+
+    @Column(name = "fecha_eliminacion")
+    private LocalDateTime fechaEliminacion;
 
     @PrePersist
     protected void onCreate() {
-        this.creadoEn = OffsetDateTime.now();
+        if (creadoEn == null) {
+            creadoEn = Instant.now();
+        }
+        if (actualizadoEn == null) {
+            actualizadoEn = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        actualizadoEn = LocalDateTime.now();
     }
 }
 
@@ -93,6 +114,24 @@ class AlbumMascota {
     @MapsId("idMascota")
     @JoinColumn(name = "id_mascota", nullable = false)
     private Mascota mascota;
+
+    @Column(name = "actualizado_en", nullable = false)
+    private LocalDateTime actualizadoEn;
+
+    @Column(name = "fecha_eliminacion")
+    private LocalDateTime fechaEliminacion;
+
+    @PrePersist
+    protected void onCreate() {
+        if (actualizadoEn == null) {
+            actualizadoEn = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        actualizadoEn = LocalDateTime.now();
+    }
 }
 
 @Entity
@@ -125,10 +164,29 @@ class Foto {
     private Usuario subidaPor;
 
     @Column(name = "creado_en", nullable = false, updatable = false)
-    private OffsetDateTime creadoEn;
+    private Instant creadoEn;
+
+    @Column(name = "id_cliente", unique = true)
+    private UUID idCliente;
+
+    @Column(name = "actualizado_en", nullable = false)
+    private LocalDateTime actualizadoEn;
+
+    @Column(name = "fecha_eliminacion")
+    private LocalDateTime fechaEliminacion;
 
     @PrePersist
     protected void onCreate() {
-        this.creadoEn = OffsetDateTime.now();
+        if (creadoEn == null) {
+            creadoEn = Instant.now();
+        }
+        if (actualizadoEn == null) {
+            actualizadoEn = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        actualizadoEn = LocalDateTime.now();
     }
 }

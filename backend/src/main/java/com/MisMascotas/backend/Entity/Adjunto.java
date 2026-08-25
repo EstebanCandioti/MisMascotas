@@ -1,6 +1,7 @@
 package com.MisMascotas.backend.Entity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,10 +44,27 @@ public class Adjunto {
     @Column(name = "subida_en", nullable = false, updatable = false)
     private Instant subidaEn;
 
+    @Column(name = "id_cliente", unique = true)
+    private UUID idCliente;
+
+    @Column(name = "actualizado_en", nullable = false)
+    private LocalDateTime actualizadoEn;
+
+    @Column(name = "fecha_eliminacion")
+    private LocalDateTime fechaEliminacion;
+
     @PrePersist
     public void prePersist() {
         if (subidaEn == null) {
             subidaEn = Instant.now();
         }
+        if (actualizadoEn == null) {
+            actualizadoEn = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        actualizadoEn = LocalDateTime.now();
     }
 }

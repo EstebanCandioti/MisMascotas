@@ -1,8 +1,11 @@
 package com.MisMascotas.backend.DTO;
 
-import java.util.UUID;
-
 public record LoginResponseDTO(
-        UUID usuarioId,
+        String token,
+        String tipo,
         String mensaje) {
+
+    public LoginResponseDTO(String token, String mensaje) {
+        this(token, "Bearer", mensaje);
+    }
 }

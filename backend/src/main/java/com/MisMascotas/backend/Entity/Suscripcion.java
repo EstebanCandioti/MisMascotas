@@ -38,9 +38,6 @@ public class Suscripcion {
     @Column(name = "tipo_plan", nullable = false, length = 50)
     private String tipoPlan;
 
-    @Column(name = "estado", nullable = false, length = 50)
-    private String estado;
-
     @Column(name = "fecha_inicio", nullable = false)
     private Instant fechaInicio;
 
@@ -55,6 +52,13 @@ public class Suscripcion {
 
     @Column(name = "id_suscripcion_mercadopago", length = 150)
     private String idSuscripcionMercadopago;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estado_id", nullable = false)
+    private Estado estadoCatalogo;
+
+    @Column(name = "estado", nullable = false, length = 50)
+    private String estado;
 
     @OneToMany(mappedBy = "suscripcion")
     private List<Pago> pagos = new ArrayList<>();

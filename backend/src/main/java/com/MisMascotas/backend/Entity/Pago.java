@@ -39,9 +39,13 @@ public class Pago {
     @Column(name = "fecha_pago", nullable = false)
     private Instant fechaPago;
 
-    @Column(name = "estado", nullable = false, length = 50)
-    private String estado;
-
     @Column(name = "id_transaccion_mercadopago", length = 150)
     private String idTransaccionMercadopago;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estado_id", nullable = false)
+    private Estado estadoCatalogo;
+
+    @Column(name = "estado", nullable = false, length = 50)
+    private String estado;
 }

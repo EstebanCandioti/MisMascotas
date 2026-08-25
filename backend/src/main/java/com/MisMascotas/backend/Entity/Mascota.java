@@ -3,6 +3,7 @@ package com.MisMascotas.backend.Entity;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -68,14 +70,21 @@ public class Mascota {
     @Column(name = "notas")
     private String notas;
 
-    @Column(name = "estado", nullable = false, length = 50)
-    private String estado = "activo";
-
     @Column(name = "fecha_eliminacion")
-    private Instant fechaEliminacion;
+    private LocalDateTime fechaEliminacion;
 
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
+
+    @Column(name = "id_cliente", unique = true)
+    private UUID idCliente;
+
+    @Column(name = "actualizado_en", nullable = false)
+    private LocalDateTime actualizadoEn;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estado_id", nullable = false)
+    private Estado estado;
 
     @OneToMany(mappedBy = "mascota")
     private List<EventoClinico> eventosClinicos = new ArrayList<>();
@@ -88,5 +97,13 @@ public class Mascota {
         if (creadoEn == null) {
             creadoEn = Instant.now();
         }
+        if (actualizadoEn == null) {
+            actualizadoEn = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        actualizadoEn = LocalDateTime.now();
     }
 }

@@ -1,6 +1,8 @@
 package com.MisMascotas.backend.Exception;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -41,10 +43,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
-        String mensaje = ex.getBindingResult()
-                .getFieldErrors()
+        Map<String, String> erroresPorCampo = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            erroresPorCampo.putIfAbsent(error.getField(), formatearErrorCampo(error));
+        }
+
+        String mensaje = erroresPorCampo.values()
                 .stream()
-                .map(this::formatearErrorCampo)
                 .collect(Collectors.joining("; "));
 
         return buildResponse(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION", mensaje);

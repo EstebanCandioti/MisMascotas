@@ -1,6 +1,7 @@
 package com.MisMascotas.backend.Entity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,7 +49,7 @@ public class Recordatorio {
     private Instant fechaHoraInicio;
 
     @Column(name = "modalidad", nullable = false, length = 50)
-    private String modalidad;
+    private String modalidad = "unica";
 
     @Column(name = "intervalo_valor")
     private Integer intervaloValor;
@@ -61,9 +63,6 @@ public class Recordatorio {
     @Column(name = "fecha_fin")
     private Instant fechaFin;
 
-    @Column(name = "estado", nullable = false, length = 50)
-    private String estado = "pendiente";
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "confirmado_por_id")
     private Usuario confirmadoPor;
@@ -74,10 +73,31 @@ public class Recordatorio {
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estado_id", nullable = false)
+    private Estado estado;
+
+    @Column(name = "id_cliente", unique = true)
+    private UUID idCliente;
+
+    @Column(name = "actualizado_en", nullable = false)
+    private LocalDateTime actualizadoEn;
+
+    @Column(name = "fecha_eliminacion")
+    private LocalDateTime fechaEliminacion;
+
     @PrePersist
     public void prePersist() {
         if (creadoEn == null) {
             creadoEn = Instant.now();
         }
+        if (actualizadoEn == null) {
+            actualizadoEn = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        actualizadoEn = LocalDateTime.now();
     }
 }

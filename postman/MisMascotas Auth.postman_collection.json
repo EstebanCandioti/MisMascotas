@@ -1,390 +1,362 @@
 {
   "info": {
-    "_postman_id": "8f3f3997-c9b8-4d0c-a6f2-5ed52fd52e85",
-    "name": "MisMascotas - Auth Basico",
-    "description": "Coleccion basica para probar Auth, JWT y endpoint protegido de usuario.",
+    "name": "MisMascotas - Auth (CU1 + CU2 2FA)",
+    "description": "Tests basicos de AuthController: registro, login con token pre-auth, verificacion de codigo 2FA y acceso a endpoint protegido. Correr en orden. Para verificar codigo, copiar el codigo recibido por email en la variable codigo antes de ejecutar el request correspondiente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080", "type": "string" },
+    { "key": "email", "value": "", "type": "string" },
+    { "key": "password", "value": "Test1234", "type": "string" },
+    { "key": "preAuthToken", "value": "", "type": "string" },
+    { "key": "sessionToken", "value": "", "type": "string" },
+    { "key": "codigo", "value": "", "type": "string" }
+  ],
   "item": [
     {
-      "name": "01 - Register OK",
-      "event": [
+      "name": "CU1 - Registrarse",
+      "item": [
         {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "if (!pm.collectionVariables.get('testEmail')) {",
-              "    pm.collectionVariables.set('testEmail', `test_${Date.now()}@mismascotas.com`);",
-              "}",
-              "if (!pm.collectionVariables.get('testPassword')) {",
-              "    pm.collectionVariables.set('testPassword', 'Password123');",
-              "}"
-            ],
-            "type": "text/javascript"
+          "name": "01 - Registrar usuario - 200",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const email = `test_${Date.now()}@mismascotas.test`;",
+                  "pm.collectionVariables.set('email', email);",
+                  "pm.collectionVariables.set('password', 'Test1234');",
+                  "pm.collectionVariables.unset('preAuthToken');",
+                  "pm.collectionVariables.unset('sessionToken');",
+                  "pm.collectionVariables.unset('codigo');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve JWT de sesion Bearer', () => {",
+                  "    pm.expect(body.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(body.tipo).to.eql('Bearer');",
+                  "});",
+                  "pm.collectionVariables.set('sessionToken', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
           }
         },
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 200 OK', function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "const json = pm.response.json();",
-              "",
-              "pm.test('Devuelve token Bearer', function () {",
-              "    pm.expect(json).to.have.property('token').that.is.a('string').and.is.not.empty;",
-              "    pm.expect(json).to.have.property('tipo', 'Bearer');",
-              "});",
-              "",
-              "if (json.token) {",
-              "    pm.collectionVariables.set('token', json.token);",
-              "}"
-            ],
-            "type": "text/javascript"
+          "name": "02 - Registrar con email duplicado - 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "const body = pm.response.json();",
+                  "pm.test('ERROR_NEGOCIO por email duplicado', () => {",
+                  "    pm.expect(body.codigo).to.eql('ERROR_NEGOCIO');",
+                  "    pm.expect(body.mensaje).to.include('ya esta registrado');",
+                  "    pm.expect(body).to.have.property('timestamp');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Usuario Duplicado\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
           }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Usuario Test\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/auth/register",
-          "host": [
-            "{{baseUrl}}"
+        {
+          "name": "03 - Registrar con campos vacios - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('ERROR_VALIDACION con un error por campo', () => {",
+                  "    pm.expect(body.codigo).to.eql('ERROR_VALIDACION');",
+                  "    pm.expect(body.mensaje).to.include('nombre:');",
+                  "    pm.expect(body.mensaje).to.include('email:');",
+                  "    pm.expect(body.mensaje).to.include('password:');",
+                  "    pm.expect((body.mensaje.match(/password:/g) || []).length).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
           ],
-          "path": [
-            "auth",
-            "register"
-          ]
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"email\": \"\",\n  \"password\": \"\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          }
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "02 - Register Duplicado debe fallar",
-      "event": [
+      "name": "CU2 - Login 2FA",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 409 Conflict o 400 Bad Request', function () {",
-              "    pm.expect([400, 409]).to.include(pm.response.code);",
-              "});",
-              "",
-              "pm.test('Devuelve respuesta de error', function () {",
-              "    const json = pm.response.json();",
-              "    pm.expect(json).to.be.an('object');",
-              "});"
-            ],
-            "type": "text/javascript"
+          "name": "01 - Login credenciales correctas devuelve pre-auth - 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve token pre-auth Bearer y mensaje', () => {",
+                  "    pm.expect(body.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(body.tipo).to.eql('Bearer');",
+                  "    pm.expect(body.mensaje).to.eql('Codigo de verificacion enviado');",
+                  "});",
+                  "pm.collectionVariables.set('preAuthToken', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
           }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombre\": \"Usuario Test\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/auth/register",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "auth",
-            "register"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "03 - Login OK envia codigo",
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 200 OK', function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "const json = pm.response.json();",
-              "",
-              "pm.test('Devuelve usuarioId y mensaje', function () {",
-              "    pm.expect(json).to.have.property('usuarioId').that.is.a('string').and.is.not.empty;",
-              "    pm.expect(json).to.have.property('mensaje').that.is.a('string').and.is.not.empty;",
-              "});",
-              "",
-              "if (json.usuarioId) {",
-              "    pm.collectionVariables.set('usuarioId', json.usuarioId);",
-              "}"
-            ],
-            "type": "text/javascript"
+          "name": "02 - Token pre-auth no accede a endpoint protegido - 401 o 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401 o 403', () => pm.expect([401, 403]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{preAuthToken}}" } ],
+            "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] }
           }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/auth/login",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "auth",
-            "login"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "04 - Login password incorrecta debe fallar",
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 401 Unauthorized', function () {",
-              "    pm.response.to.have.status(401);",
-              "});",
-              "",
-              "pm.test('No devuelve token', function () {",
-              "    const json = pm.response.json();",
-              "    pm.expect(json.token).to.be.undefined;",
-              "});"
+          "name": "03 - Verificar codigo correcto - 200",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('codigo')) {",
+                  "    throw new Error('Carga la variable de coleccion codigo con el codigo recibido por email antes de ejecutar este request.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve JWT final Bearer', () => {",
+                  "    pm.expect(body.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(body.tipo).to.eql('Bearer');",
+                  "});",
+                  "pm.collectionVariables.set('sessionToken', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{preAuthToken}}" }
             ],
-            "type": "text/javascript"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
           }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"PasswordIncorrecta123\"\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/auth/login",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "auth",
-            "login"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "05 - Verificar codigo 2FA OK manual",
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 200 OK', function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "const json = pm.response.json();",
-              "",
-              "pm.test('Devuelve token Bearer', function () {",
-              "    pm.expect(json).to.have.property('token').that.is.a('string').and.is.not.empty;",
-              "    pm.expect(json).to.have.property('tipo', 'Bearer');",
-              "});",
-              "",
-              "if (json.token) {",
-              "    pm.collectionVariables.set('token', json.token);",
-              "}"
+          "name": "04 - Reutilizar codigo usado debe fallar - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('CODIGO_INVALIDO', () => {",
+                  "    pm.expect(body.codigo).to.eql('CODIGO_INVALIDO');",
+                  "    pm.expect(body.mensaje).to.eql('El codigo no es valido');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{preAuthToken}}" }
             ],
-            "type": "text/javascript"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
           }
-        }
-      ],
-      "request": {
-        "description": "Antes de ejecutar este request, cargar la variable codigo con el codigo generado en la tabla codigo_verificacion.",
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"usuarioId\": \"{{usuarioId}}\",\n  \"codigo\": \"{{codigo}}\"\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/auth/login/verificar-codigo",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "auth",
-            "login",
-            "verificar-codigo"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "06 - Usuario me con token",
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 200 OK', function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "const json = pm.response.json();",
-              "",
-              "pm.test('Devuelve perfil del usuario logueado', function () {",
-              "    pm.expect(json).to.have.property('idUsuario').that.is.a('string').and.is.not.empty;",
-              "    pm.expect(json).to.have.property('email', pm.collectionVariables.get('testEmail'));",
-              "    pm.expect(json).to.have.property('nombre').that.is.a('string').and.is.not.empty;",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/usuario/me",
-          "host": [
-            "{{baseUrl}}"
+          "name": "05 - Acceder a /usuario/me con JWT final - 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve perfil del usuario', () => {",
+                  "    pm.expect(body.email).to.eql(pm.collectionVariables.get('email'));",
+                  "    pm.expect(body.nombre).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
           ],
-          "path": [
-            "usuario",
-            "me"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "07 - Usuario me sin token debe fallar",
-      "event": [
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{sessionToken}}" } ],
+            "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] }
+          }
+        },
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 401 o 403 sin token', function () {",
-              "    pm.expect([401, 403]).to.include(pm.response.code);",
-              "});"
-            ],
-            "type": "text/javascript"
+          "name": "06 - Verificar codigo sin token pre-auth - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('ERROR_NEGOCIO por token faltante', () => {",
+                  "    pm.expect(body.codigo).to.eql('ERROR_NEGOCIO');",
+                  "    pm.expect(body.mensaje).to.eql('Token de verificacion invalido');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
+          }
+        },
+        {
+          "name": "07 - Login password incorrecta - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "const body = pm.response.json();",
+                  "pm.test('Mensaje generico', () => {",
+                  "    pm.expect(body.codigo).to.eql('NO_AUTENTICADO');",
+                  "    pm.expect(body.mensaje).to.eql('Credenciales invalidas');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"PasswordIncorrecta1\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "08 - Login campos vacios - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('ERROR_VALIDACION', () => {",
+                  "    pm.expect(body.codigo).to.eql('ERROR_VALIDACION');",
+                  "    pm.expect(body.mensaje).to.include('email:');",
+                  "    pm.expect(body.mensaje).to.include('password:');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
           }
         }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/usuario/me",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "usuario",
-            "me"
-          ]
-        }
-      },
-      "response": []
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          ""
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          ""
-        ]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "testEmail",
-      "value": ""
-    },
-    {
-      "key": "testPassword",
-      "value": "Password123"
-    },
-    {
-      "key": "usuarioId",
-      "value": ""
-    },
-    {
-      "key": "codigo",
-      "value": ""
-    },
-    {
-      "key": "token",
-      "value": ""
+      ]
     }
   ]
 }

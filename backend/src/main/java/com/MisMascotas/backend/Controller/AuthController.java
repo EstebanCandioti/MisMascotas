@@ -1,8 +1,10 @@
 package com.MisMascotas.backend.Controller;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,13 +34,22 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
-        return ResponseEntity.ok(new LoginResponseDTO(
-                authService.autenticarCredenciales(request),
-                "Codigo de verificacion enviado"));
+        return ResponseEntity.ok(authService.autenticarCredenciales(request));
     }
 
-    @PostMapping("/login/verificar-codigo")
-    public ResponseEntity<AuthResponseDTO> verificarCodigo(@Valid @RequestBody VerificarCodigoRequestDTO request) {
-        return ResponseEntity.ok(authService.validarCodigoYCrearSesion(request));
+    @PostMapping("/verificar-codigo")
+    public ResponseEntity<AuthResponseDTO> verificarCodigo(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader,
+            @Valid @RequestBody VerificarCodigoRequestDTO request) {
+        String tokenPreAuth = extraerBearerToken(authorizationHeader);
+        return ResponseEntity.ok(authService.validarCodigoYCrearSesion(tokenPreAuth, request));
+    }
+
+    private String extraerBearerToken(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Token de verificacion invalido");
+        }
+
+        return authorizationHeader.substring(7);
     }
 }

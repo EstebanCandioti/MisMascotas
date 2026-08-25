@@ -1,8 +1,5 @@
 package com.MisMascotas.backend.Service;
 
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,36 +8,34 @@ import org.springframework.stereotype.Service;
 
 import com.MisMascotas.backend.DTO.AuthResponseDTO;
 import com.MisMascotas.backend.DTO.LoginRequestDTO;
+import com.MisMascotas.backend.DTO.LoginResponseDTO;
 import com.MisMascotas.backend.DTO.RegistroRequestDTO;
 import com.MisMascotas.backend.DTO.VerificarCodigoRequestDTO;
 import com.MisMascotas.backend.Entity.CodigoVerificacion;
+import com.MisMascotas.backend.Entity.Usuario;
 import com.MisMascotas.backend.Exception.CodigoExpiradoException;
 import com.MisMascotas.backend.Exception.CodigoInvalidoException;
-import com.MisMascotas.backend.Entity.Usuario;
-import com.MisMascotas.backend.Repository.CodigoVerificacionRepository;
 import com.MisMascotas.backend.Repository.UsuarioRepository;
 import com.MisMascotas.backend.Security.JwtService;
 
 @Service
 public class AuthService {
 
-    private static final int CODIGO_MIN = 100000;
-    private static final int CODIGO_RANGO = 900000;
-    private static final int MINUTOS_VALIDEZ_CODIGO = 10;
-
     private final UsuarioRepository usuarioRepository;
-    private final CodigoVerificacionRepository codigoVerificacionRepository;
+    private final CodigoVerificacionService codigoVerificacionService;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(
             UsuarioRepository usuarioRepository,
-            CodigoVerificacionRepository codigoVerificacionRepository,
+            CodigoVerificacionService codigoVerificacionService,
+            EmailService emailService,
             PasswordEncoder passwordEncoder,
             JwtService jwtService) {
         this.usuarioRepository = usuarioRepository;
-        this.codigoVerificacionRepository = codigoVerificacionRepository;
+        this.codigoVerificacionService = codigoVerificacionService;
+        this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -64,7 +59,7 @@ public class AuthService {
         return new AuthResponseDTO(token);
     }
 
-    public UUID autenticarCredenciales(LoginRequestDTO request) {
+    public LoginResponseDTO autenticarCredenciales(LoginRequestDTO request) {
         if (request.email() == null || request.email().trim().isEmpty()
                 || request.password() == null || request.password().isEmpty()) {
             throw new BadCredentialsException("Credenciales invalidas");
@@ -76,51 +71,31 @@ public class AuthService {
             throw new BadCredentialsException("Credenciales invalidas");
         }
 
-        generarYEnviarCodigoVerificacion(usuario.getIdUsuario());
-        return usuario.getIdUsuario();
+        generarYEnviarCodigoVerificacion(usuario);
+        String tokenPreAuth = jwtService.generarTokenPreAuth(usuario);
+        return new LoginResponseDTO(tokenPreAuth, "Codigo de verificacion enviado");
     }
 
-    public void generarYEnviarCodigoVerificacion(UUID usuarioId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("El usuario no existe"));
-
-        CodigoVerificacion codigoVerificacion = new CodigoVerificacion();
-        codigoVerificacion.setUsuario(usuario);
-        codigoVerificacion.setCodigo(generarCodigo());
-        codigoVerificacion.setExpiraEn(Instant.now().plus(MINUTOS_VALIDEZ_CODIGO, ChronoUnit.MINUTES));
-        codigoVerificacion.setUsado(false);
-
-        codigoVerificacionRepository.save(codigoVerificacion);
-        enviarCodigoPorEmail(usuario, codigoVerificacion.getCodigo());
-    }
-
-    public AuthResponseDTO validarCodigoYCrearSesion(VerificarCodigoRequestDTO request) {
-        CodigoVerificacion codigoVerificacion = codigoVerificacionRepository
-                .findFirstByUsuario_IdUsuarioAndUsadoFalseOrderByCreadoEnDesc(request.usuarioId())
-                .orElseThrow(() -> new CodigoInvalidoException("El codigo no es valido"));
-
-        if (codigoVerificacion.getExpiraEn().isBefore(Instant.now())) {
-            generarYEnviarCodigoVerificacion(request.usuarioId());
-            throw new CodigoExpiradoException("El codigo expiro. Te enviamos uno nuevo");
+    public AuthResponseDTO validarCodigoYCrearSesion(String tokenPreAuth, VerificarCodigoRequestDTO request) {
+        UUID usuarioId = jwtService.validarTokenPreAuthYExtraerUsuarioId(tokenPreAuth);
+        if (usuarioId == null) {
+            throw new BadCredentialsException("Token de verificacion invalido");
         }
 
-        if (!codigoVerificacion.getCodigo().equals(request.codigo())) {
-            throw new CodigoInvalidoException("El codigo no es valido");
+        try {
+            Usuario usuario = codigoVerificacionService.validarCodigo(usuarioId, request.codigo());
+            String tokenSesion = jwtService.generarToken(usuario);
+            return new AuthResponseDTO(tokenSesion);
+        } catch (CodigoExpiradoException ex) {
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new CodigoInvalidoException("El codigo no es valido"));
+            generarYEnviarCodigoVerificacion(usuario);
+            throw ex;
         }
-
-        codigoVerificacion.setUsado(true);
-        codigoVerificacionRepository.save(codigoVerificacion);
-
-        String token = jwtService.generarToken(codigoVerificacion.getUsuario());
-        return new AuthResponseDTO(token);
     }
 
-    private String generarCodigo() {
-        return String.valueOf(CODIGO_MIN + secureRandom.nextInt(CODIGO_RANGO));
+    private void generarYEnviarCodigoVerificacion(Usuario usuario) {
+        CodigoVerificacion codigoVerificacion = codigoVerificacionService.generarParaUsuario(usuario);
+        emailService.enviarCodigoVerificacion(usuario.getEmail(), codigoVerificacion.getCodigo());
     }
-
-    private void enviarCodigoPorEmail(Usuario usuario, String codigo) {
-        // Pendiente: integrar JavaMailSender cuando este configurado el SMTP.
-    }
-
 }
