@@ -1,0 +1,67 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.temp
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.*.local
+
+# IDE / editors
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# Java / Spring Boot
+**/target/
+**/build/
+**/out/
+**/.gradle/
+**/.settings/
+**/.classpath
+**/.project
+**/.factorypath
+**/.springBeans
+**/.sts4-cache
+**/.apt_generated
+
+# Node / Next / Vite
+**/node_modules/
+**/.next/
+**/out/
+**/dist/
+**/coverage/
+**/.cache/
+**/.npm/
+**/.pnpm-store/
+
+# React Native / Expo
+**/.expo/
+**/expo-env.d.ts
+**/android/
+**/ios/
+**/*.jks
+**/*.p8
+**/*.p12
+**/*.key
+**/*.mobileprovision
+**/*.orig.*
+**/.kotlin/
+**/web-build/
+**/metro-health-check*
+
+# Debug logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# OS
+.DS_Store
