@@ -1,21 +1,17 @@
 package com.MisMascotas.backend.Entity;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,35 +19,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "album")
+@Table(name = "album_mascota")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Album {
+public class AlbumMascota {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_album", updatable = false, nullable = false)
-    private UUID idAlbum;
+    @EmbeddedId
+    private AlbumMascotaId id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "creado_por_id", nullable = false)
-    private Usuario creadoPor;
+    @MapsId("idAlbum")
+    @JoinColumn(name = "id_album", nullable = false)
+    private Album album;
 
-    @NotBlank
-    @Column(name = "nombre", nullable = false, length = 150)
-    private String nombre;
-
-    @Column(name = "descripcion", columnDefinition = "text")
-    private String descripcion;
-
-    @Column(name = "creado_en", nullable = false, updatable = false)
-    private Instant creadoEn;
-
-    @Column(name = "id_cliente", unique = true)
-    private UUID idCliente;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId("idMascota")
+    @JoinColumn(name = "id_mascota", nullable = false)
+    private Mascota mascota;
 
     @Column(name = "actualizado_en", nullable = false)
     private LocalDateTime actualizadoEn;
@@ -61,9 +48,6 @@ public class Album {
 
     @PrePersist
     protected void onCreate() {
-        if (creadoEn == null) {
-            creadoEn = Instant.now();
-        }
         if (actualizadoEn == null) {
             actualizadoEn = LocalDateTime.now();
         }

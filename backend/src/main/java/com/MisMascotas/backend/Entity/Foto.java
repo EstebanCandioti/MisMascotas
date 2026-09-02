@@ -23,29 +23,33 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "album")
+@Table(name = "foto")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Album {
+public class Foto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_album", updatable = false, nullable = false)
-    private UUID idAlbum;
+    @Column(name = "id_foto", updatable = false, nullable = false)
+    private UUID idFoto;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "creado_por_id", nullable = false)
-    private Usuario creadoPor;
+    @JoinColumn(name = "album_id", nullable = false)
+    private Album album;
 
     @NotBlank
-    @Column(name = "nombre", nullable = false, length = 150)
-    private String nombre;
+    @Column(name = "url_archivo", nullable = false, columnDefinition = "text")
+    private String urlArchivo;
 
-    @Column(name = "descripcion", columnDefinition = "text")
-    private String descripcion;
+    @Column(name = "formato", length = 20)
+    private String formato;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subida_por_id")
+    private Usuario subidaPor;
 
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
