@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -38,9 +40,9 @@ public class LogAuditoria {
     @JoinColumn(name = "actor_id")
     private Usuario actor;
 
-    @NotBlank
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_accion", nullable = false, length = 30)
-    private String tipoAccion;
+    private TipoAccionAuditoria tipoAccion;
 
     @NotBlank
     @Column(name = "entidad_afectada", nullable = false, length = 50)
