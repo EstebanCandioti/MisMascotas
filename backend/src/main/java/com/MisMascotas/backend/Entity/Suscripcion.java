@@ -57,9 +57,8 @@ public class Suscripcion {
     @JoinColumn(name = "estado_id", nullable = false)
     private Estado estadoCatalogo;
 
-    @Column(name = "estado", nullable = false, length = 50)
-    private String estado;
 
     @OneToMany(mappedBy = "suscripcion")
     private List<Pago> pagos = new ArrayList<>();
 }
+

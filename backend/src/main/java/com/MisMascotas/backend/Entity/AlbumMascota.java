@@ -1,14 +1,16 @@
 package com.MisMascotas.backend.Entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -27,34 +29,37 @@ import lombok.Setter;
 @Builder
 public class AlbumMascota {
 
-    @EmbeddedId
-    private AlbumMascotaId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_album_mascota", nullable = false, updatable = false)
+    private UUID idAlbumMascota;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId("idAlbum")
     @JoinColumn(name = "id_album", nullable = false)
     private Album album;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId("idMascota")
     @JoinColumn(name = "id_mascota", nullable = false)
     private Mascota mascota;
 
+    @Column(name = "id_cliente", unique = true)
+    private UUID idCliente;
+
     @Column(name = "actualizado_en", nullable = false)
-    private LocalDateTime actualizadoEn;
+    private Instant actualizadoEn;
 
     @Column(name = "fecha_eliminacion")
-    private LocalDateTime fechaEliminacion;
+    private Instant fechaEliminacion;
 
     @PrePersist
     protected void onCreate() {
         if (actualizadoEn == null) {
-            actualizadoEn = LocalDateTime.now();
+            actualizadoEn = Instant.now();
         }
     }
 
     @PreUpdate
     protected void onUpdate() {
-        actualizadoEn = LocalDateTime.now();
+        actualizadoEn = Instant.now();
     }
 }

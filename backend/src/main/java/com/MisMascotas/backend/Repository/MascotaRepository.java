@@ -12,7 +12,7 @@ import com.MisMascotas.backend.Entity.Mascota;
 @Repository
 public interface MascotaRepository extends JpaRepository<Mascota, UUID> {
 
-    List<Mascota> findByPropietarioIdAndFechaEliminacionIsNull(UUID propietarioId);
+    List<Mascota> findByPropietario_IdUsuarioAndFechaEliminacionIsNull(UUID propietarioId);
 
     Optional<Mascota> findByIdMascotaAndFechaEliminacionIsNull(UUID idMascota);
 }

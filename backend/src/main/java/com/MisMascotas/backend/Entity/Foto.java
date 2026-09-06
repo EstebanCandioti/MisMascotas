@@ -1,7 +1,6 @@
 package com.MisMascotas.backend.Entity;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -58,10 +57,10 @@ public class Foto {
     private UUID idCliente;
 
     @Column(name = "actualizado_en", nullable = false)
-    private LocalDateTime actualizadoEn;
+    private Instant actualizadoEn;
 
     @Column(name = "fecha_eliminacion")
-    private LocalDateTime fechaEliminacion;
+    private Instant fechaEliminacion;
 
     @PrePersist
     protected void onCreate() {
@@ -69,12 +68,12 @@ public class Foto {
             creadoEn = Instant.now();
         }
         if (actualizadoEn == null) {
-            actualizadoEn = LocalDateTime.now();
+            actualizadoEn = Instant.now();
         }
     }
 
     @PreUpdate
     protected void onUpdate() {
-        actualizadoEn = LocalDateTime.now();
+        actualizadoEn = Instant.now();
     }
 }

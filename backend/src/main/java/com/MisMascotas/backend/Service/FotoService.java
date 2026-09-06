@@ -1,6 +1,6 @@
 package com.MisMascotas.backend.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +30,7 @@ public class FotoService {
     @Transactional
     public FotoResponseDTO crear(UUID albumId, FotoRequestDTO request, UUID subidaPorId) {
         Album album = albumRepository.findByIdAlbumAndFechaEliminacionIsNull(albumId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Álbum no encontrado con ID: " + albumId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ãlbum no encontrado con ID: " + albumId));
 
         Usuario usuarioRef = subidaPorId != null ? entityManager.getReference(Usuario.class, subidaPorId) : null;
 
@@ -49,7 +49,7 @@ public class FotoService {
     @Transactional(readOnly = true)
     public List<FotoResponseDTO> listarPorAlbum(UUID albumId) {
         albumRepository.findByIdAlbumAndFechaEliminacionIsNull(albumId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Álbum no encontrado con ID: " + albumId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ãlbum no encontrado con ID: " + albumId));
 
         List<Foto> fotos = fotoRepository.findFotosActivasPorAlbum(albumId);
         return fotos.stream().map(this::mapToResponse).toList();
@@ -70,7 +70,7 @@ public class FotoService {
                 .filter(f -> f.getFechaEliminacion() == null)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Foto no encontrada con ID: " + id));
 
-        foto.setFechaEliminacion(LocalDateTime.now());
+        foto.setFechaEliminacion(Instant.now());
         fotoRepository.save(foto);
     }
 
@@ -85,3 +85,4 @@ public class FotoService {
         );
     }
 }
+

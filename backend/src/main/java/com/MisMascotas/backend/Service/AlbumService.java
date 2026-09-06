@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,9 +38,7 @@ public class AlbumService {
 
         Album albumGuardado = albumRepository.save(album);
 
-        AlbumMascotaId albumMascotaId = new AlbumMascotaId(albumGuardado.getIdAlbum(), request.mascotaId());
         AlbumMascota albumMascota = AlbumMascota.builder()
-                .id(albumMascotaId)
                 .album(albumGuardado)
                 .mascota(mascotaRef)
                 .build();
@@ -66,10 +64,10 @@ public class AlbumService {
     @Transactional(readOnly = true)
     public AlbumResponseDTO obtenerPorId(UUID id) {
         Album album = albumRepository.findByIdAlbumAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Álbum no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ãlbum no encontrado con ID: " + id));
 
         UUID mascotaId = albumMascotaRepository.findByAlbumIdActivo(id)
-                .map(rel -> rel.getId().getIdMascota())
+                .map(rel -> rel.getMascota().getIdMascota())
                 .orElse(null);
 
         int fotosCount = fotoRepository.countFotosActivasPorAlbum(id);
@@ -80,7 +78,7 @@ public class AlbumService {
     @Transactional
     public AlbumResponseDTO editar(UUID id, AlbumRequestDTO request) {
         Album album = albumRepository.findByIdAlbumAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Álbum no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ãlbum no encontrado con ID: " + id));
 
         album.setNombre(request.nombre());
         album.setDescripcion(request.descripcion());
@@ -88,7 +86,7 @@ public class AlbumService {
         Album actualizado = albumRepository.save(album);
 
         UUID mascotaId = albumMascotaRepository.findByAlbumIdActivo(id)
-                .map(rel -> rel.getId().getIdMascota())
+                .map(rel -> rel.getMascota().getIdMascota())
                 .orElse(null);
 
         int fotosCount = fotoRepository.countFotosActivasPorAlbum(id);
@@ -99,9 +97,9 @@ public class AlbumService {
     @Transactional
     public void eliminar(UUID id) {
         Album album = albumRepository.findByIdAlbumAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Álbum no encontrado con ID: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ãlbum no encontrado con ID: " + id));
 
-        LocalDateTime ahora = LocalDateTime.now();
+        Instant ahora = Instant.now();
         album.setFechaEliminacion(ahora);
         albumRepository.save(album);
 
@@ -130,3 +128,4 @@ public class AlbumService {
         );
     }
 }
+

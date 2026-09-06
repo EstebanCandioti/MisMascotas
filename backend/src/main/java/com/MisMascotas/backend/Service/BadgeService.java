@@ -1,6 +1,6 @@
 package com.MisMascotas.backend.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,7 +57,7 @@ public class BadgeService {
         Badge badge = badgeRepository.findByIdBadgeAndFechaEliminacionIsNull(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Badge no encontrada con ID: " + id));
 
-        badge.setFechaEliminacion(LocalDateTime.now());
+        badge.setFechaEliminacion(Instant.now());
         badgeRepository.save(badge);
     }
 
@@ -70,3 +70,4 @@ public class BadgeService {
         );
     }
 }
+

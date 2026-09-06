@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,7 +51,7 @@ public class MascotaService {
 
     @Transactional(readOnly = true)
     public List<MascotaResponseDTO> listarPorPropietario(UUID propietarioId) {
-        return mascotaRepository.findByPropietarioIdAndFechaEliminacionIsNull(propietarioId)
+        return mascotaRepository.findByPropietario_IdUsuarioAndFechaEliminacionIsNull(propietarioId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -94,7 +94,7 @@ public class MascotaService {
         Mascota mascota = mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
 
-        mascota.setFechaEliminacion(LocalDateTime.now());
+        mascota.setFechaEliminacion(Instant.now());
         mascotaRepository.save(mascota);
     }
 
