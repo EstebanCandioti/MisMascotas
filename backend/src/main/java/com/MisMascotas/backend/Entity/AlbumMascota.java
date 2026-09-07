@@ -14,33 +14,33 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Table(name = "album_mascota")
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "badge")
-public class Badge {
+@AllArgsConstructor
+@Builder
+public class AlbumMascota {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_badge", updatable = false, nullable = false)
-    private UUID idBadge;
+    @Column(name = "id_album_mascota", nullable = false, updatable = false)
+    private UUID idAlbumMascota;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "mascota_id", nullable = false)
+    @JoinColumn(name = "id_album", nullable = false)
+    private Album album;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_mascota", nullable = false)
     private Mascota mascota;
-
-    @NotBlank
-    @Column(name = "texto", nullable = false, length = 100)
-    private String texto;
-
-    @Column(name = "emoji", length = 10)
-    private String emoji;
 
     @Column(name = "id_cliente", unique = true)
     private UUID idCliente;
@@ -52,14 +52,14 @@ public class Badge {
     private Instant fechaEliminacion;
 
     @PrePersist
-    public void prePersist() {
+    protected void onCreate() {
         if (actualizadoEn == null) {
             actualizadoEn = Instant.now();
         }
     }
 
     @PreUpdate
-    public void preUpdate() {
+    protected void onUpdate() {
         actualizadoEn = Instant.now();
     }
 }
