@@ -25,7 +25,7 @@ function NavItem({ label, icon, route, activeRoute }: NavItemProps) {
   return (
     <TouchableOpacity
       style={styles.item}
-      onPress={() => router.replace(`/${route}` as Href)}
+      onPress={() => router.replace(({ inicio: "/home/inicio", mascotas: "/pets/mascotas", albumes: "/albums/albumes", calendario: "/health/calendario", cuidadores: "/caregivers/cuidadores", configuracion: "/account/configuracion" }[route]) as Href)}
     >
       <Ionicons
         name={icon}

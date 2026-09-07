@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AppBottomNav from "@/components/app-bottom-nav";
 import ScreenHeader from "@/components/screen-header";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
 
 export default function CalendarioScreen() {
   const { reminders, events } = useAppData();

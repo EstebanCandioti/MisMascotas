@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import AppBottomNav from "@/components/app-bottom-nav";
 import PetCard from "@/components/pet-card";
 import ScreenHeader from "@/components/screen-header";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
 
 export default function MascotasScreen() {
   const router = useRouter();
@@ -47,13 +47,13 @@ export default function MascotasScreen() {
             breed={`${pet.breed} · ${pet.age}`}
             emoji={pet.emoji}
             color={pet.color}
-            onPress={() => router.push({ pathname: "/mascota-detalle", params: { id: pet.id } })}
+            onPress={() => router.push({ pathname: "/pets/mascota-detalle", params: { id: pet.id } })}
           />
         ))}
 
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push("/mascota-formulario")}
+          onPress={() => router.push("/pets/mascota-formulario")}
         >
           <Ionicons name="add-circle-outline" size={24} color="#7C4DFF" />
 

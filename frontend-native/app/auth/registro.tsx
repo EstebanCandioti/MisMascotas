@@ -11,26 +11,40 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
+import { login as loginRequest, register as registerRequest } from "../../services/api";
 
 export default function RegistroScreen() {
   const router = useRouter();
-  const { users, setUsers, setCurrentUser } = useAppData();
+  const { setPendingAuthToken, setPendingCredentials } = useAppData();
 
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const register = () => {
+  async function register() {
     const normalizedEmail = email.trim().toLowerCase();
     if (!name.trim() || !lastName.trim() || !normalizedEmail || !password) { Alert.alert("Completá los datos", "Todos los campos son obligatorios."); return; }
     if (password !== repeatPassword) { Alert.alert("Las contraseñas no coinciden", "Revisá la confirmación de contraseña."); return; }
-    if (users.some((user) => user.email === normalizedEmail)) { Alert.alert("Correo registrado", "Ya existe una cuenta con ese correo."); return; }
-    const user = { id: `user-${Date.now()}`, name: `${name.trim()} ${lastName.trim()}`, email: normalizedEmail, password };
-    setUsers([...users, user]); setCurrentUser(user); router.replace("/inicio");
-  };
+
+    setLoading(true);
+    try {
+      await registerRequest(`${name.trim()} ${lastName.trim()}`, normalizedEmail, password);
+      const loginResponse = await loginRequest(normalizedEmail, password);
+      setPendingAuthToken(loginResponse.token);
+      setPendingCredentials(normalizedEmail, password);
+      router.push("/auth/verificar-codigo");
+    } catch (error) {
+      Alert.alert("No se pudo crear la cuenta", error instanceof Error ? error.message : "Revisá los datos e intentá nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -103,8 +117,11 @@ export default function RegistroScreen() {
               onChangeText={setPassword}
               placeholder="••••••••"
               placeholderTextColor="#171321"
-              secureTextEntry
+              secureTextEntry={!showPassword}
             />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={21} color="#7C4DFF" />
+            </TouchableOpacity>
           </View>
 
           <Text style={styles.label}>Repetir contraseña</Text>
@@ -120,12 +137,15 @@ export default function RegistroScreen() {
               onChangeText={setRepeatPassword}
               placeholder="••••••••"
               placeholderTextColor="#171321"
-              secureTextEntry
+              secureTextEntry={!showRepeatPassword}
             />
+            <TouchableOpacity onPress={() => setShowRepeatPassword(!showRepeatPassword)}>
+              <Ionicons name={showRepeatPassword ? "eye-off-outline" : "eye-outline"} size={21} color="#7C4DFF" />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={register}>
-            <Text style={styles.buttonText}>Crear cuenta</Text>
+          <TouchableOpacity style={styles.button} onPress={register} disabled={loading}>
+            <Text style={styles.buttonText}>{loading ? "Creando..." : "Crear cuenta"}</Text>
             <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
@@ -134,7 +154,7 @@ export default function RegistroScreen() {
           ¿Ya tenés cuenta?{" "}
           <Text
             style={styles.switchLink}
-            onPress={() => router.replace("/login")}
+            onPress={() => router.replace("/auth/login")}
           >
             Iniciar sesión
           </Text>

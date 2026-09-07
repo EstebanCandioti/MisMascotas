@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
 
 const types = [
   { id: "Consulta", icon: "medkit-outline" as const },
@@ -22,7 +22,7 @@ export default function RegistrarEventoScreen() {
   const saveEvent = () => {
     if (!title.trim()) { Alert.alert("Falta el título", "Ingresá el nombre del evento clínico."); return; }
     setEvents([{ id: `event-${Date.now()}`, type, title: title.trim(), pet: mascota, detail: notes.trim() || "Sin observaciones adicionales.", date: "27 AGO 2026" }, ...events]);
-    Alert.alert("Evento registrado", `${type}: ${title} se guardó localmente para ${mascota}.`, [{ text: "Ver historial", onPress: () => router.replace({ pathname: "/historial-clinico", params: { mascota } }) }]);
+    Alert.alert("Evento registrado", `${type}: ${title} se guardó localmente para ${mascota}.`, [{ text: "Ver historial", onPress: () => router.replace({ pathname: "/health/historial-clinico", params: { mascota } }) }]);
   };
 
   return (

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
 
 export default function PerfilScreen() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function PerfilScreen() {
           <View style={styles.summaryItem}><Text style={styles.summaryNumber}>4</Text><Text style={styles.summaryText}>Badges</Text></View>
         </View>
 
-        <View style={styles.headerRow}><Text style={styles.sectionTitle}>Mis badges</Text><TouchableOpacity onPress={() => router.push("/badges")}><Text style={styles.link}>Ver todos</Text></TouchableOpacity></View>
+        <View style={styles.headerRow}><Text style={styles.sectionTitle}>Mis badges</Text><TouchableOpacity onPress={() => router.push("/account/badges")}><Text style={styles.link}>Ver todos</Text></TouchableOpacity></View>
         <View style={styles.badges}>
           <View style={styles.badge}><Text style={styles.badgeEmoji}>🏆</Text><Text style={styles.badgeText}>Primer registro</Text></View>
           <View style={styles.badge}><Text style={styles.badgeEmoji}>💜</Text><Text style={styles.badgeText}>Cuidador atento</Text></View>

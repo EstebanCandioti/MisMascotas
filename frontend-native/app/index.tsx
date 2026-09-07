@@ -6,5 +6,5 @@ export default function Index() {
 
   if (!ready) return null;
 
-  return <Redirect href={currentUser ? "/inicio" : "/login"} />;
+  return <Redirect href={currentUser ? "/home/inicio" : "/auth/login"} />;
 }

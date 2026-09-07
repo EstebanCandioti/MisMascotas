@@ -39,7 +39,7 @@ export default function MascotaDetalleScreen() {
   const deletePet = () => {
     Alert.alert("Eliminar mascota", `¿Querés eliminar a ${pet.name}?`, [
       { text: "Cancelar", style: "cancel" },
-      { text: "Eliminar", style: "destructive", onPress: () => router.replace("/mascotas") },
+      { text: "Eliminar", style: "destructive", onPress: () => router.replace("/pets/mascotas") },
     ]);
   };
 
@@ -49,7 +49,7 @@ export default function MascotaDetalleScreen() {
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}><Ionicons name="chevron-back" size={24} color="#30293A" /></TouchableOpacity>
           <Text style={styles.topTitle}>Detalle de mascota</Text>
-          <TouchableOpacity style={styles.editButton} onPress={() => router.push({ pathname: "/mascota-formulario", params: { id: id ?? "fido" } })}><Ionicons name="pencil-outline" size={20} color="#7C4DFF" /></TouchableOpacity>
+          <TouchableOpacity style={styles.editButton} onPress={() => router.push({ pathname: "/pets/mascota-formulario", params: { id: id ?? "fido" } })}><Ionicons name="pencil-outline" size={20} color="#7C4DFF" /></TouchableOpacity>
         </View>
 
         <View style={styles.hero}>
@@ -71,9 +71,9 @@ export default function MascotaDetalleScreen() {
 
         <Text style={styles.sectionTitle}>Accesos rápidos</Text>
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/registrar-evento", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="medical-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Registrar evento</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/recordatorios", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="alarm-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Crear recordatorio</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/historial-clinico", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="document-text-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Ver historial</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/registrar-evento", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="medical-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Registrar evento</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/recordatorios", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="alarm-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Crear recordatorio</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/historial-clinico", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="document-text-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Ver historial</Text></TouchableOpacity>
         </View>
 
         {editing && <TouchableOpacity style={styles.saveButton} onPress={() => { setEditing(false); Alert.alert("Cambios guardados", `El peso de ${pet.name} se actualizó de forma simulada.`); }}><Text style={styles.saveText}>Guardar cambios</Text></TouchableOpacity>}

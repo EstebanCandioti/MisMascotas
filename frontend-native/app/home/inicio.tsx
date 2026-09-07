@@ -44,7 +44,7 @@ export default function InicioScreen() {
             <Ionicons name="paw-outline" size={25} color="#7C4DFF" />
             <Text style={styles.brandText}>Mis Mascotas</Text>
           </View>
-          <TouchableOpacity style={styles.avatar} onPress={() => router.push("/perfil")}>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push("/account/perfil")}>
             <Text style={styles.avatarText}>US</Text>
           </TouchableOpacity>
         </View>
@@ -111,7 +111,7 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Próximos recordatorios</Text>
-          <TouchableOpacity onPress={() => router.push("/recordatorios")}>
+          <TouchableOpacity onPress={() => router.push("/health/recordatorios")}>
             <Text style={styles.link}>Ver todos</Text>
           </TouchableOpacity>
         </View>

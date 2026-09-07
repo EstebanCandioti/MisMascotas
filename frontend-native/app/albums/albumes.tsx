@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AppBottomNav from "@/components/app-bottom-nav";
 import ScreenHeader from "@/components/screen-header";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
 
 export default function AlbumesScreen() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function AlbumesScreen() {
         <View style={styles.tip}><Ionicons name="camera-outline" size={24} color="#7C4DFF" /><Text style={styles.tipText}>Cada foto puede quedar organizada por mascota y momento.</Text></View>
         <Text style={styles.sectionTitle}>Tus álbumes</Text>
         {albums.map((album) => (
-          <TouchableOpacity key={album.id} style={styles.album} onPress={() => router.push({ pathname: "/album-detalle", params: { id: album.id, nombre: album.name } })}>
+          <TouchableOpacity key={album.id} style={styles.album} onPress={() => router.push({ pathname: "/albums/album-detalle", params: { id: album.id, nombre: album.name } })}>
             <View style={[styles.cover, { backgroundColor: album.color }]}><Text style={styles.emoji}>{album.emoji}</Text></View>
             <View style={styles.info}><Text style={styles.albumName}>{album.name}</Text><Text style={styles.albumCount}>{album.photos.length} fotos</Text></View>
             <Ionicons name="chevron-forward" size={21} color="#9A94A4" />

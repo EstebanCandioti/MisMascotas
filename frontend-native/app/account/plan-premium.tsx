@@ -1,7 +1,7 @@
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
 
 const benefits = ["Mascotas ilimitadas", "Historial clínico completo", "Exportar historial en PDF", "Álbumes sin límite", "Recordatorios avanzados"];
 

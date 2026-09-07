@@ -1,7 +1,7 @@
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAppData } from "../context/app-data-context";
+import { useAppData } from "../../context/app-data-context";
 
 export default function HistorialClinicoScreen() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function HistorialClinicoScreen() {
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.back} onPress={() => router.back()}><Ionicons name="chevron-back" size={24} color="#30293A" /></TouchableOpacity>
         <Text style={styles.topTitle}>Historial clínico</Text>
-        <TouchableOpacity style={styles.add} onPress={() => router.push({ pathname: "/registrar-evento", params: { mascota } })}><Ionicons name="add" size={24} color="#7C4DFF" /></TouchableOpacity>
+        <TouchableOpacity style={styles.add} onPress={() => router.push({ pathname: "/health/registrar-evento", params: { mascota } })}><Ionicons name="add" size={24} color="#7C4DFF" /></TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}><View style={styles.heroIcon}><Ionicons name="document-text-outline" size={28} color="#7C4DFF" /></View><View><Text style={styles.heroTitle}>{mascota}</Text><Text style={styles.heroText}>Eventos y controles de salud</Text></View></View>
@@ -22,7 +22,7 @@ export default function HistorialClinicoScreen() {
         <View style={styles.timeline}>
           {petEvents.map((event, index) => <View key={event.id} style={styles.eventRow}><View style={styles.timelineColumn}><View style={styles.eventDot}><Ionicons name="medical-outline" size={18} color="#7C4DFF" /></View>{index !== petEvents.length - 1 && <View style={styles.timelineLine} />}</View><View style={styles.eventCard}><Text style={styles.eventType}>{event.type.toUpperCase()}</Text><Text style={styles.eventTitle}>{event.title}</Text><Text style={styles.eventDetail}>{event.detail}</Text><Text style={styles.eventDate}>{event.date}</Text></View></View>)}
         </View>
-        <TouchableOpacity style={styles.addEvent} onPress={() => router.push({ pathname: "/registrar-evento", params: { mascota } })}><Ionicons name="add-circle-outline" size={22} color="#FFFFFF" /><Text style={styles.addText}>Registrar evento clínico</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.addEvent} onPress={() => router.push({ pathname: "/health/registrar-evento", params: { mascota } })}><Ionicons name="add-circle-outline" size={22} color="#FFFFFF" /><Text style={styles.addText}>Registrar evento clínico</Text></TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

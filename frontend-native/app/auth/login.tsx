@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Alert,
   SafeAreaView,
@@ -9,31 +9,47 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useAppData } from "../context/app-data-context";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useAppData } from "../../context/app-data-context";
+import { login as loginRequest } from "../../services/api";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { users, setCurrentUser } = useAppData();
+  const { setPendingAuthToken, setPendingCredentials } = useAppData();
 
   const [email, setEmail] = useState("");
+  const [emailInputKey, setEmailInputKey] = useState(0);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const handleLogin = () => {
-  const emailNormalizado = email.trim().toLowerCase();
+  const [loading, setLoading] = useState(false);
 
-  const user = users.find((item) => item.email === emailNormalizado && item.password === password);
-  if (user) {
-    setCurrentUser(user);
-    router.replace("/inicio");
-    return;
-  }
-
-  Alert.alert(
-    "Datos incorrectos",
-    "Revisá tu correo y contraseña. Demo: usuario@demo.com / Demo1234."
+  useFocusEffect(
+    useCallback(() => {
+      setEmail("");
+      setEmailInputKey((key) => key + 1);
+      setPassword("");
+      setShowPassword(false);
+    }, []),
   );
-};
+
+  async function handleLogin() {
+    if (!email.trim() || !password) {
+      Alert.alert("Completá los datos", "Ingresá tu correo y contraseña.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await loginRequest(email.trim().toLowerCase(), password);
+      setPendingAuthToken(response.token);
+      setPendingCredentials(email.trim().toLowerCase(), password);
+      router.push("/auth/verificar-codigo");
+    } catch (error) {
+      Alert.alert("No se pudo iniciar sesión", error instanceof Error ? error.message : "Revisá tus datos e intentá nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,15 +71,21 @@ export default function LoginScreen() {
           <Text style={styles.label}>Correo electrónico</Text>
           <View style={styles.inputBox}>
             <Ionicons name="mail-outline" size={21} color="#948FA0" />
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="usuario@demo.com"
-              placeholderTextColor="#7A7486"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <View style={styles.inputField}>
+              {!email && (
+                <View pointerEvents="none" style={styles.placeholderOverlay}>
+                  <Text style={styles.emailPlaceholder}>usuario@demo.com</Text>
+                </View>
+              )}
+              <TextInput
+                key={emailInputKey}
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
           </View>
 
           <Text style={styles.label}>Contraseña</Text>
@@ -85,8 +107,8 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Ingresar</Text>
+          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+            <Text style={styles.buttonText}>{loading ? "Ingresando..." : "Ingresar"}</Text>
             <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
@@ -95,7 +117,7 @@ export default function LoginScreen() {
           ¿No tenés cuenta?{" "}
           <Text
             style={styles.switchLink}
-            onPress={() => router.push("/registro")}
+            onPress={() => router.push("/auth/registro")}
           >
             Registrate gratis
           </Text>
@@ -148,6 +170,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#FCFAFD",
     paddingHorizontal: 15,
     marginBottom: 19,
+  },
+  inputField: { flex: 1, height: "100%", justifyContent: "center" },
+  placeholderOverlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 13,
+    justifyContent: "center",
+  },
+  emailPlaceholder: {
+    color: "#7A7486",
+    fontSize: 14,
+    fontWeight: "600",
   },
   input: {
     flex: 1,
