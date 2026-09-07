@@ -1,16 +1,15 @@
 package com.MisMascotas.backend.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.MisMascotas.backend.DTO.LogAuditoriaResponseDTO;
@@ -33,6 +32,8 @@ public class LogAuditoriaService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    // CU24 E.1: la auditoria usa una transaccion independiente para que un fallo al registrar el log no revierta la accion principal.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrar(String entidadAfectada, TipoAccionAuditoria tipoAccion, UUID idEntidad,
             String valorAnterior, String valorNuevo) {
         LogAuditoria log = LogAuditoria.builder()
@@ -71,8 +72,13 @@ public class LogAuditoriaService {
             Instant desde,
             Instant hasta,
             Pageable pageable) {
-        Specification<LogAuditoria> specification = crearSpecification(entidadAfectada, tipoAccion, desde, hasta);
-        return logAuditoriaRepository.findAll(specification, pageable).map(LogAuditoriaMapper::toDTO);
+        String entidadNormalizada = entidadAfectada != null && !entidadAfectada.isBlank()
+                ? entidadAfectada.trim()
+                : null;
+
+        return logAuditoriaRepository
+                .buscarConFiltros(entidadNormalizada, tipoAccion, desde, hasta, pageable)
+                .map(LogAuditoriaMapper::toDTO);
     }
 
     private Usuario obtenerUsuarioActualONull() {
@@ -82,41 +88,5 @@ public class LogAuditoriaService {
         }
 
         return usuarioRepository.findByEmail(auth.getName());
-    }
-
-    private Specification<LogAuditoria> crearSpecification(
-            String entidadAfectada,
-            TipoAccionAuditoria tipoAccion,
-            Instant desde,
-            Instant hasta) {
-        List<Specification<LogAuditoria>> specs = new ArrayList<>();
-
-        if (entidadAfectada != null && !entidadAfectada.isBlank()) {
-            String entidadNormalizada = entidadAfectada.trim().toLowerCase();
-            specs.add((root, query, cb) -> cb.equal(cb.lower(root.get("entidadAfectada")), entidadNormalizada));
-        }
-
-        if (tipoAccion != null) {
-            specs.add((root, query, cb) -> cb.equal(root.get("tipoAccion"), tipoAccion));
-        }
-
-        if (desde != null) {
-            specs.add((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("fechaHora"), desde));
-        }
-
-        if (hasta != null) {
-            specs.add((root, query, cb) -> cb.lessThanOrEqualTo(root.get("fechaHora"), hasta));
-        }
-
-        if (specs.isEmpty()) {
-            return (root, query, cb) -> cb.conjunction();
-        }
-
-        Specification<LogAuditoria> specification = specs.get(0);
-        for (int i = 1; i < specs.size(); i++) {
-            specification = specification.and(specs.get(i));
-        }
-
-        return specification;
     }
 }
