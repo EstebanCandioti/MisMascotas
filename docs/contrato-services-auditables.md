@@ -7,7 +7,7 @@ Este documento define las convenciones que debe cumplir cualquier metodo de serv
 La anotacion se aplica sobre metodos de service:
 
 ```java
-@Auditable(entidad = "Mascota", accion = TipoAccionAuditoria.CREATE)
+@Auditable(entidad = "mascota", accion = TipoAccionAuditoria.CREATE)
 ```
 
 El atributo `entidad` identifica la entidad afectada. El atributo `accion` indica el tipo de accion registrada en `log_auditoria`.
@@ -51,15 +51,19 @@ Acciones que intentan capturar estado anterior:
 
 Para acciones `CREATE`, el aspecto toma el identificador desde el objeto devuelto por el metodo.
 
-El objeto de respuesta debe exponer un getter publico cuyo nombre empiece con `getId` y cuyo retorno sea `UUID`, por ejemplo:
+El objeto de respuesta debe exponer un identificador publico cuyo nombre empiece con `getId` o `id`, cuyo retorno sea `UUID` y que no reciba parametros. Esto cubre getters JavaBean y accessors de records.
+
+Ejemplos compatibles:
 
 ```java
 getIdMascota()
 getIdAlbum()
-getIdRecordatorio()
+idMascota()
+idAlbum()
 ```
 
-Si el metodo devuelve `void`, `null` o un objeto sin getter de ID compatible, no se puede completar `id_entidad`.
+Si el metodo devuelve `void`, `null` o un objeto sin identificador compatible, no se puede completar `id_entidad`.
+
 
 ## Actor de la accion
 

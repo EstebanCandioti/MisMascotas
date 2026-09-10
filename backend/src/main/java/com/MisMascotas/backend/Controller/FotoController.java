@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.MisMascotas.backend.DTO.FotoRequestDTO;
 import com.MisMascotas.backend.DTO.FotoResponseDTO;
 import com.MisMascotas.backend.Service.FotoService;
+import com.MisMascotas.backend.Service.UsuarioAutenticadoService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +26,13 @@ import lombok.RequiredArgsConstructor;
 public class FotoController {
 
     private final FotoService fotoService;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     @PostMapping("/albumes/{albumId}/fotos")
     public ResponseEntity<FotoResponseDTO> crear(@PathVariable UUID albumId,
                                                 @Valid @RequestBody FotoRequestDTO request,
                                                 Principal principal) {
-        UUID subidaPorId = principal != null ? UUID.fromString(principal.getName()) : null;
+        UUID subidaPorId = usuarioAutenticadoService.obtenerIdUsuario(principal);
         FotoResponseDTO nuevaFoto = fotoService.crear(albumId, request, subidaPorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaFoto);
     }

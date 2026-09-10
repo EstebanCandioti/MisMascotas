@@ -51,10 +51,10 @@ public class LogAuditoria {
     @Column(name = "id_entidad")
     private UUID idEntidad;
 
-    @Column(name = "valor_anterior")
+    @Column(name = "valor_anterior", columnDefinition = "text")
     private String valorAnterior;
 
-    @Column(name = "valor_nuevo")
+    @Column(name = "valor_nuevo", columnDefinition = "text")
     private String valorNuevo;
 
     @Column(name = "fecha_hora", nullable = false, updatable = false)

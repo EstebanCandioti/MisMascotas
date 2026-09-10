@@ -15,4 +15,6 @@ public interface MascotaRepository extends JpaRepository<Mascota, UUID> {
     List<Mascota> findByPropietario_IdUsuarioAndFechaEliminacionIsNull(UUID propietarioId);
 
     Optional<Mascota> findByIdMascotaAndFechaEliminacionIsNull(UUID idMascota);
+
+    long countByPropietario_IdUsuarioAndFechaEliminacionIsNull(UUID propietarioId);
 }

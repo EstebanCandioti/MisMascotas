@@ -46,7 +46,7 @@ public class AuditoriaAspect {
 
             Object estadoAnterior = obtenerEstadoActual(joinPoint, idEntidad);
             if (estadoAnterior != null) {
-                valorAnteriorHolder.set(objectMapper.writeValueAsString(estadoAnterior));
+                valorAnteriorHolder.set(serializar(estadoAnterior));
             }
         } catch (Exception ex) {
             logger.warn("No se pudo capturar estado anterior para auditoria: {}", ex.getMessage());
@@ -121,7 +121,7 @@ public class AuditoriaAspect {
         }
 
         for (Method method : objeto.getClass().getMethods()) {
-            if (method.getParameterCount() == 0 && method.getName().startsWith("getId")) {
+            if (esMetodoIdCompatible(method)) {
                 try {
                     Object valor = method.invoke(objeto);
                     if (valor instanceof UUID id) {
@@ -133,7 +133,16 @@ public class AuditoriaAspect {
             }
         }
 
+        logger.warn(
+                "No se encontro un identificador UUID en {} usando getters getId... o accessors id...",
+                objeto.getClass().getName());
         return null;
+    }
+
+    private boolean esMetodoIdCompatible(Method method) {
+        return method.getParameterCount() == 0
+                && UUID.class.equals(method.getReturnType())
+                && (method.getName().startsWith("getId") || method.getName().startsWith("id"));
     }
 
     private Object obtenerEstadoActual(JoinPoint joinPoint, UUID idEntidad) {
@@ -146,6 +155,7 @@ public class AuditoriaAspect {
             return null;
         }
     }
+
 
     private String serializar(Object objeto) {
         if (objeto == null) {

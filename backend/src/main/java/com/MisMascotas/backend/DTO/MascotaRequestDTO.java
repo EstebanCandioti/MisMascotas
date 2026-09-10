@@ -2,8 +2,6 @@ package com.MisMascotas.backend.DTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
-
 import jakarta.validation.constraints.NotBlank;
 
 public record MascotaRequestDTO(
@@ -21,5 +19,5 @@ public record MascotaRequestDTO(
     String fotoPerfil,
     BigDecimal pesoActual,
     String notas,
-    UUID estadoId
+    Integer estadoId
 ) {}

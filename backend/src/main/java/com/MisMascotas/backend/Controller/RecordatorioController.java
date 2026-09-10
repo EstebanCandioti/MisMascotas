@@ -3,6 +3,7 @@ package com.MisMascotas.backend.Controller;
 import com.MisMascotas.backend.DTO.RecordatorioRequestDTO;
 import com.MisMascotas.backend.DTO.RecordatorioResponseDTO;
 import com.MisMascotas.backend.Service.RecordatorioService;
+import com.MisMascotas.backend.Service.UsuarioAutenticadoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,12 +19,13 @@ import java.util.UUID;
 public class RecordatorioController {
 
     private final RecordatorioService recordatorioService;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     @PostMapping("/mascotas/{mascotaId}/recordatorios")
     public ResponseEntity<RecordatorioResponseDTO> crear(@PathVariable UUID mascotaId,
                                                          @Valid @RequestBody RecordatorioRequestDTO request,
                                                          Principal principal) {
-        UUID creadoPorId = UUID.fromString(principal.getName());
+        UUID creadoPorId = usuarioAutenticadoService.obtenerIdUsuario(principal);
         RecordatorioRequestDTO requestNormalizado = new RecordatorioRequestDTO(
                 mascotaId,
                 request.titulo(),

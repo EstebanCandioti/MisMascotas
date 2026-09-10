@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.MisMascotas.backend.DTO.AlbumRequestDTO;
 import com.MisMascotas.backend.DTO.AlbumResponseDTO;
 import com.MisMascotas.backend.Service.AlbumService;
+import com.MisMascotas.backend.Service.UsuarioAutenticadoService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,13 @@ import lombok.RequiredArgsConstructor;
 public class AlbumController {
 
     private final AlbumService albumService;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     @PostMapping("/mascotas/{mascotaId}/albumes")
     public ResponseEntity<AlbumResponseDTO> crear(@PathVariable UUID mascotaId,
                                                  @Valid @RequestBody AlbumRequestDTO request,
                                                  Principal principal) {
-        UUID creadoPorId = UUID.fromString(principal.getName());
+        UUID creadoPorId = usuarioAutenticadoService.obtenerIdUsuario(principal);
         AlbumRequestDTO requestNormalizado = new AlbumRequestDTO(
                 request.nombre(),
                 request.descripcion(),

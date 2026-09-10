@@ -3,6 +3,7 @@ package com.MisMascotas.backend.Controller;
 import com.MisMascotas.backend.DTO.MascotaRequestDTO;
 import com.MisMascotas.backend.DTO.MascotaResponseDTO;
 import com.MisMascotas.backend.Service.MascotaService;
+import com.MisMascotas.backend.Service.UsuarioAutenticadoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,17 +20,18 @@ import java.util.UUID;
 public class MascotaController {
 
     private final MascotaService mascotaService;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     @PostMapping
     public ResponseEntity<MascotaResponseDTO> crear(@Valid @RequestBody MascotaRequestDTO request,
                                                   Principal principal) {
-        UUID propietarioId = UUID.fromString(principal.getName());
+        UUID propietarioId = usuarioAutenticadoService.obtenerIdUsuario(principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(mascotaService.crear(request, propietarioId));
     }
 
     @GetMapping
     public ResponseEntity<List<MascotaResponseDTO>> listarPorPropietario(Principal principal) {
-        UUID propietarioId = UUID.fromString(principal.getName());
+        UUID propietarioId = usuarioAutenticadoService.obtenerIdUsuario(principal);
         return ResponseEntity.ok(mascotaService.listarPorPropietario(propietarioId));
     }
 
@@ -40,13 +42,16 @@ public class MascotaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MascotaResponseDTO> editar(@PathVariable UUID id,
-                                                   @Valid @RequestBody MascotaRequestDTO request) {
-        return ResponseEntity.ok(mascotaService.editar(id, request));
+                                                   @Valid @RequestBody MascotaRequestDTO request,
+                                                   Principal principal) {
+        UUID propietarioId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(mascotaService.editar(id, request, propietarioId));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
-        mascotaService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id, Principal principal) {
+        UUID propietarioId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        mascotaService.eliminar(id, propietarioId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface EstadoRepository extends JpaRepository<Estado, Integer> {
 
     Optional<Estado> findByNombreIgnoreCase(String nombre);
+
+    Optional<Estado> findByEntidadIgnoreCaseAndNombreIgnoreCase(String entidad, String nombre);
 }
