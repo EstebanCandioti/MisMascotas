@@ -1,0 +1,281 @@
+{
+  "info": {
+    "name": "MisMascotas - Auth + Mascotas + Auditoria",
+    "description": "Pruebas basicas para registro, login 2FA, CRUD simple de mascotas y consulta de auditoria. Correr en orden. Para verificar codigo, cargar la variable codigo con el codigo recibido por email antes de ejecutar el request de verificacion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080", "type": "string" },
+    { "key": "email", "value": "", "type": "string" },
+    { "key": "password", "value": "Test1234", "type": "string" },
+    { "key": "preAuthToken", "value": "", "type": "string" },
+    { "key": "sessionToken", "value": "", "type": "string" },
+    { "key": "codigo", "value": "", "type": "string" },
+    { "key": "mascotaId", "value": "", "type": "string" },
+    { "key": "estadoMascotaId", "value": "1", "type": "string" },
+    { "key": "auditEntidad", "value": "mascota", "type": "string" },
+    { "key": "auditIdEntidad", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{sessionToken}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "01 - Registrar usuario - 200",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const email = `test_${Date.now()}@mismascotas.test`;",
+                  "pm.collectionVariables.set('email', email);",
+                  "pm.collectionVariables.set('password', 'Test1234');",
+                  "pm.collectionVariables.unset('preAuthToken');",
+                  "pm.collectionVariables.unset('sessionToken');",
+                  "pm.collectionVariables.unset('codigo');",
+                  "pm.collectionVariables.unset('mascotaId');",
+                  "pm.collectionVariables.unset('auditIdEntidad');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve JWT de sesion', () => pm.expect(body.token).to.be.a('string').and.not.empty);",
+                  "pm.collectionVariables.set('sessionToken', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "02 - Registrar email duplicado - 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "const body = pm.response.json();",
+                  "pm.test('Error de negocio', () => {",
+                  "  pm.expect(body.codigo).to.eql('ERROR_NEGOCIO');",
+                  "  pm.expect(body.mensaje).to.include('ya esta registrado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "03 - Login credenciales correctas - 200 pre-auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve token pre-auth', () => pm.expect(body.token).to.be.a('string').and.not.empty);",
+                  "pm.collectionVariables.set('preAuthToken', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "04 - Verificar codigo 2FA - 200 sesion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('codigo')) {",
+                  "  throw new Error('Carga la variable de coleccion codigo con el codigo recibido por email antes de ejecutar este request.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve JWT de sesion', () => pm.expect(body.token).to.be.a('string').and.not.empty);",
+                  "pm.collectionVariables.set('sessionToken', body.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{preAuthToken}}", "type": "string" } ] },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
+          }
+        },
+        {
+          "name": "05 - Login credenciales invalidas - 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "const body = pm.response.json();",
+                  "pm.test('Credenciales invalidas', () => {",
+                  "  pm.expect(body.codigo).to.eql('NO_AUTENTICADO');",
+                  "  pm.expect(body.mensaje).to.include('Credenciales invalidas');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"PasswordIncorrecta123\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "06 - Verificar codigo incorrecto - 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('Codigo invalido', () => pm.expect(body.codigo).to.eql('CODIGO_INVALIDO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{preAuthToken}}", "type": "string" } ] },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"000000\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mascotas",
+      "item": [
+        {
+          "name": "01 - Crear mascota - 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve idMascota', () => pm.expect(body.idMascota).to.be.a('string').and.not.empty);",
+                  "pm.collectionVariables.set('mascotaId', body.idMascota);",
+                  "pm.collectionVariables.set('auditEntidad', 'mascota');",
+                  "pm.collectionVariables.set('auditIdEntidad', body.idMascota);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 12.50,\n  \"notas\": \"Mascota creada desde Postman\",\n  \"estadoId\": {{estadoMascotaId}}\n}" },
+            "url": { "raw": "{{base_url}}/mascotas", "host": ["{{base_url}}"], "path": ["mascotas"] }
+          }
+        },
+        {
+          "name": "02 - Listar mis mascotas - 200",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Devuelve array', () => pm.expect(pm.response.json()).to.be.an('array'));" ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/mascotas", "host": ["{{base_url}}"], "path": ["mascotas"] } }
+        },
+        {
+          "name": "03 - Obtener mascota por id - 200",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('Status 200', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.test('Coincide idMascota', () => pm.expect(body.idMascota).to.eql(pm.collectionVariables.get('mascotaId')));" ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] } }
+        },
+        {
+          "name": "04 - Editar mascota - 200",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('Status 200', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.test('Nombre actualizado', () => pm.expect(body.nombre).to.eql('Mora Editada'));" ] } } ],
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora Editada\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 13.10,\n  \"notas\": \"Mascota editada desde Postman\",\n  \"estadoId\": {{estadoMascotaId}}\n}" },
+            "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] }
+          }
+        },
+        {
+          "name": "05 - Eliminar mascota - 204",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('Status 204', () => pm.response.to.have.status(204));" ] } } ],
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] } }
+        },
+        {
+          "name": "06 - Obtener mascota eliminada - 404",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('Status 404', () => pm.response.to.have.status(404));", "const body = pm.response.json();", "pm.test('Recurso no encontrado', () => pm.expect(body.codigo).to.eql('RECURSO_NO_ENCONTRADO'));" ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "Auditoria",
+      "item": [
+        {
+          "name": "01 - Listar auditoria paginada - 200",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('Status 200', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.test('Respuesta paginada', () => { pm.expect(body).to.have.property('content'); pm.expect(body.content).to.be.an('array'); });" ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/auditoria?page=0&size=20&sort=fechaHora,desc", "host": ["{{base_url}}"], "path": ["auditoria"], "query": [ { "key": "page", "value": "0" }, { "key": "size", "value": "20" }, { "key": "sort", "value": "fechaHora,desc" } ] } }
+        },
+        {
+          "name": "02 - Buscar auditoria por entidad/id - 200",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('Status 200', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.test('Devuelve array', () => pm.expect(body).to.be.an('array'));", "pm.test('Incluye acciones de mascota si ya se ejecuto el CRUD', () => {", "  if (body.length > 0) {", "    pm.expect(body.some(log => ['CREATE', 'UPDATE', 'DELETE'].includes(log.tipoAccion))).to.eql(true);", "  }", "});" ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/auditoria/{{auditEntidad}}/{{auditIdEntidad}}", "host": ["{{base_url}}"], "path": ["auditoria", "{{auditEntidad}}", "{{auditIdEntidad}}"] } }
+        }
+      ]
+    }
+  ]
+}

@@ -37,7 +37,6 @@ CREATE TABLE public.suscripcion (
   fecha_cancelacion timestamp with time zone,
   id_suscripcion_mercadopago character varying,
   estado_id integer NOT NULL,
-  estado character varying NOT NULL,
   CONSTRAINT suscripcion_pkey PRIMARY KEY (id_suscripcion),
   CONSTRAINT suscripcion_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuario(id_usuario),
   CONSTRAINT suscripcion_estado_id_fkey FOREIGN KEY (estado_id) REFERENCES public.estados(id_estado)
@@ -49,7 +48,6 @@ CREATE TABLE public.pago (
   fecha_pago timestamp with time zone NOT NULL DEFAULT now(),
   id_transaccion_mercadopago character varying,
   estado_id integer NOT NULL,
-  estado character varying NOT NULL,
   CONSTRAINT pago_pkey PRIMARY KEY (id_pago),
   CONSTRAINT pago_suscripcion_id_fkey FOREIGN KEY (suscripcion_id) REFERENCES public.suscripcion(id_suscripcion),
   CONSTRAINT pago_estado_id_fkey FOREIGN KEY (estado_id) REFERENCES public.estados(id_estado)
@@ -70,7 +68,7 @@ CREATE TABLE public.mascota (
   fecha_eliminacion timestamp with time zone,
   creado_en timestamp with time zone NOT NULL DEFAULT now(),
   id_cliente uuid UNIQUE,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
   estado_id integer NOT NULL,
   CONSTRAINT mascota_pkey PRIMARY KEY (id_mascota),
   CONSTRAINT mascota_propietario_id_fkey FOREIGN KEY (propietario_id) REFERENCES public.usuario(id_usuario),
@@ -113,8 +111,8 @@ CREATE TABLE public.evento_clinico (
   observaciones character varying,
   creado_en timestamp with time zone NOT NULL DEFAULT now(),
   id_cliente uuid UNIQUE,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
-  fecha_eliminacion timestamp without time zone,
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
+  fecha_eliminacion timestamp with time zone,
   CONSTRAINT evento_clinico_pkey PRIMARY KEY (id_evento),
   CONSTRAINT evento_clinico_mascota_id_fkey FOREIGN KEY (mascota_id) REFERENCES public.mascota(id_mascota),
   CONSTRAINT evento_clinico_registrado_por_id_fkey FOREIGN KEY (registrado_por_id) REFERENCES public.usuario(id_usuario)
@@ -126,8 +124,8 @@ CREATE TABLE public.adjunto (
   formato character varying,
   subida_en timestamp with time zone NOT NULL DEFAULT now(),
   id_cliente uuid UNIQUE,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
-  fecha_eliminacion timestamp without time zone,
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
+  fecha_eliminacion timestamp with time zone,
   CONSTRAINT adjunto_pkey PRIMARY KEY (id_adjunto),
   CONSTRAINT adjunto_evento_id_fkey FOREIGN KEY (evento_id) REFERENCES public.evento_clinico(id_evento)
 );
@@ -148,8 +146,8 @@ CREATE TABLE public.recordatorio (
   creado_en timestamp with time zone NOT NULL DEFAULT now(),
   estado_id integer NOT NULL,
   id_cliente uuid UNIQUE,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
-  fecha_eliminacion timestamp without time zone,
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
+  fecha_eliminacion timestamp with time zone,
   CONSTRAINT recordatorio_pkey PRIMARY KEY (id_recordatorio),
   CONSTRAINT recordatorio_mascota_id_fkey FOREIGN KEY (mascota_id) REFERENCES public.mascota(id_mascota),
   CONSTRAINT recordatorio_creado_por_id_fkey FOREIGN KEY (creado_por_id) REFERENCES public.usuario(id_usuario),
@@ -162,8 +160,8 @@ CREATE TABLE public.badge (
   texto character varying NOT NULL,
   emoji character varying,
   id_cliente uuid UNIQUE,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
-  fecha_eliminacion timestamp without time zone,
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
+  fecha_eliminacion timestamp with time zone,
   CONSTRAINT badge_pkey PRIMARY KEY (id_badge),
   CONSTRAINT badge_mascota_id_fkey FOREIGN KEY (mascota_id) REFERENCES public.mascota(id_mascota)
 );
@@ -174,17 +172,19 @@ CREATE TABLE public.album (
   descripcion text,
   creado_en timestamp with time zone NOT NULL DEFAULT now(),
   id_cliente uuid UNIQUE,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
-  fecha_eliminacion timestamp without time zone,
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
+  fecha_eliminacion timestamp with time zone,
   CONSTRAINT album_pkey PRIMARY KEY (id_album),
   CONSTRAINT album_creado_por_id_fkey FOREIGN KEY (creado_por_id) REFERENCES public.usuario(id_usuario)
 );
 CREATE TABLE public.album_mascota (
   id_album uuid NOT NULL,
   id_mascota uuid NOT NULL,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
-  fecha_eliminacion timestamp without time zone,
-  CONSTRAINT album_mascota_pkey PRIMARY KEY (id_album, id_mascota),
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
+  fecha_eliminacion timestamp with time zone,
+  id_album_mascota uuid NOT NULL,
+  id_cliente uuid UNIQUE,
+  CONSTRAINT album_mascota_pkey PRIMARY KEY (id_album_mascota),
   CONSTRAINT album_mascota_id_album_fkey FOREIGN KEY (id_album) REFERENCES public.album(id_album),
   CONSTRAINT album_mascota_id_mascota_fkey FOREIGN KEY (id_mascota) REFERENCES public.mascota(id_mascota)
 );
@@ -196,8 +196,8 @@ CREATE TABLE public.foto (
   subida_por_id uuid,
   creado_en timestamp with time zone NOT NULL DEFAULT now(),
   id_cliente uuid UNIQUE,
-  actualizado_en timestamp without time zone NOT NULL DEFAULT now(),
-  fecha_eliminacion timestamp without time zone,
+  actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
+  fecha_eliminacion timestamp with time zone,
   CONSTRAINT foto_pkey PRIMARY KEY (id_foto),
   CONSTRAINT foto_album_id_fkey FOREIGN KEY (album_id) REFERENCES public.album(id_album),
   CONSTRAINT foto_subida_por_id_fkey FOREIGN KEY (subida_por_id) REFERENCES public.usuario(id_usuario)

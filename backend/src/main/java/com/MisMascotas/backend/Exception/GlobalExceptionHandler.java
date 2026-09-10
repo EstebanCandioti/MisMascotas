@@ -32,6 +32,16 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "CODIGO_INVALIDO", ex.getMessage());
     }
 
+
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<ErrorResponse> handleAccesoDenegadoException(AccesoDenegadoException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, "ACCESO_DENEGADO", ex.getMessage());
+    }
+
+    @ExceptionHandler(LimiteMascotasAlcanzadoException.class)
+    public ResponseEntity<ErrorResponse> handleLimiteMascotasAlcanzadoException(LimiteMascotasAlcanzadoException ex) {
+        return buildResponse(HttpStatus.CONFLICT, "LIMITE_MASCOTAS_ALCANZADO", ex.getMessage());
+    }
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         HttpStatus status = ex.getMessage() != null && ex.getMessage().contains("ya esta registrado")
