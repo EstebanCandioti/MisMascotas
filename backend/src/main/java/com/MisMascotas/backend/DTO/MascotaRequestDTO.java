@@ -18,6 +18,5 @@ public record MascotaRequestDTO(
     String edadUnidad,
     String fotoPerfil,
     BigDecimal pesoActual,
-    String notas,
-    Integer estadoId
+    String notas
 ) {}

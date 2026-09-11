@@ -11,9 +11,7 @@
     { "key": "preAuthToken", "value": "", "type": "string" },
     { "key": "sessionToken", "value": "", "type": "string" },
     { "key": "codigo", "value": "", "type": "string" },
-    { "key": "mascotaId", "value": "", "type": "string" },
-    { "key": "estadoMascotaId", "value": "1", "type": "string" },
-    { "key": "auditEntidad", "value": "mascota", "type": "string" },
+    { "key": "mascotaId", "value": "", "type": "string" },    { "key": "auditEntidad", "value": "mascota", "type": "string" },
     { "key": "auditIdEntidad", "value": "", "type": "string" }
   ],
   "auth": {
@@ -226,7 +224,7 @@
           "request": {
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 12.50,\n  \"notas\": \"Mascota creada desde Postman\",\n  \"estadoId\": {{estadoMascotaId}}\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 12.50,\n  \"notas\": \"Mascota creada desde Postman\"\n}" },
             "url": { "raw": "{{base_url}}/mascotas", "host": ["{{base_url}}"], "path": ["mascotas"] }
           }
         },
@@ -246,7 +244,7 @@
           "request": {
             "method": "PUT",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora Editada\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 13.10,\n  \"notas\": \"Mascota editada desde Postman\",\n  \"estadoId\": {{estadoMascotaId}}\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora Editada\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 13.10,\n  \"notas\": \"Mascota editada desde Postman\"\n}" },
             "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] }
           }
         },

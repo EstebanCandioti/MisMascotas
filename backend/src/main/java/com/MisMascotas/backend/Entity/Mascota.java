@@ -81,10 +81,6 @@ public class Mascota {
     @Column(name = "actualizado_en", nullable = false)
     private Instant actualizadoEn;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "estado_id", nullable = false)
-    private Estado estado;
-
     @OneToMany(mappedBy = "mascota")
     private List<EventoClinico> eventosClinicos = new ArrayList<>();
 

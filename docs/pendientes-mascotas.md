@@ -4,7 +4,7 @@ Estos puntos quedan documentados como deuda tecnica para resolver en tareas futu
 
 ## Resueltos
 
-- Invariante de eliminacion logica: al eliminar una mascota se actualiza `estado` a ELIMINADA y se establece `fechaEliminacion` dentro de la misma transaccion.
+- Eliminacion logica unificada: el borrado logico de mascotas se expresa solo mediante `fechaEliminacion`, igual que en el resto de las entidades del modelo. Se retiro el estado de mascota para evitar dos fuentes de verdad sobre el mismo hecho y eliminar el riesgo de desincronizacion.
 - Autorizacion para edicion de mascotas: solo el propietario puede editar el perfil base.
 - Autorizacion para eliminacion de mascotas: solo el propietario puede eliminar logicamente la mascota.
 - Limite de mascotas segun plan: usuarios gratuitos pueden tener hasta 5 mascotas activas; usuarios premium no tienen limite.
@@ -12,7 +12,6 @@ Estos puntos quedan documentados como deuda tecnica para resolver en tareas futu
 
 ## Pendientes
 
-- Definir si corresponde implementar recuperacion de mascota eliminada; no esta documentado en ningun caso de uso vigente.
 - Definir revocacion de accesos compartidos al eliminar una mascota; depende del modulo de cuidado compartido.
 - Definir notificacion a cuidadores al eliminar una mascota; depende del modulo de notificaciones push.
 - Implementar purga fisica o proceso de limpieza luego de 30 dias; requiere un proceso programado aun no implementado.
