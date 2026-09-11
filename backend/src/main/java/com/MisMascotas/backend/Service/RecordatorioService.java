@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,23 +53,21 @@ public class RecordatorioService {
 
     @Transactional(readOnly = true)
     public List<RecordatorioResponseDTO> listarPorMascota(UUID mascotaId) {
-        List<Recordatorio> recordatorios = recordatorioRepository.findByMascota_IdMascota(mascotaId);
+        List<Recordatorio> recordatorios = recordatorioRepository.findByMascota_IdMascotaAndFechaEliminacionIsNull(mascotaId);
         return recordatorios.stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public RecordatorioResponseDTO obtenerPorId(UUID id) {
-        Recordatorio recordatorio = recordatorioRepository.findByIdRecordatorio(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Recordatorio no encontrado"));
+        Recordatorio recordatorio = buscarRecordatorioActivo(id);
         return mapToResponse(recordatorio);
     }
 
     @Transactional
     public RecordatorioResponseDTO editar(UUID id, RecordatorioRequestDTO request) {
-        Recordatorio recordatorio = recordatorioRepository.findByIdRecordatorio(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Recordatorio no encontrado"));
+        Recordatorio recordatorio = buscarRecordatorioActivo(id);
 
         recordatorio.setTitulo(request.titulo());
         recordatorio.setTipo(request.tipo());
@@ -88,8 +85,7 @@ public class RecordatorioService {
 
     @Transactional
     public RecordatorioResponseDTO cambiarEstado(UUID id, String nuevoEstado) {
-        Recordatorio recordatorio = recordatorioRepository.findByIdRecordatorio(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Recordatorio no encontrado"));
+        Recordatorio recordatorio = buscarRecordatorioActivo(id);
 
         Estado estado = estadoRepository.findByNombreIgnoreCase(nuevoEstado)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estado no encontrado"));
@@ -103,10 +99,14 @@ public class RecordatorioService {
 
     @Transactional
     public void eliminar(UUID id) {
-        Recordatorio recordatorio = recordatorioRepository.findByIdRecordatorio(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Recordatorio no encontrado"));
+        Recordatorio recordatorio = buscarRecordatorioActivo(id);
+        recordatorio.setFechaEliminacion(Instant.now());
+        recordatorioRepository.save(recordatorio);
+    }
 
-        recordatorioRepository.delete(recordatorio);
+    private Recordatorio buscarRecordatorioActivo(UUID id) {
+        return recordatorioRepository.findByIdRecordatorioAndFechaEliminacionIsNull(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Recordatorio no encontrado"));
     }
 
     private RecordatorioResponseDTO mapToResponse(Recordatorio recordatorio) {
