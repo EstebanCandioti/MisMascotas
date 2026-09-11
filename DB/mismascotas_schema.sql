@@ -37,6 +37,7 @@ CREATE TABLE public.suscripcion (
   fecha_cancelacion timestamp with time zone,
   id_suscripcion_mercadopago character varying,
   estado_id integer NOT NULL,
+  estado character varying NOT NULL,
   CONSTRAINT suscripcion_pkey PRIMARY KEY (id_suscripcion),
   CONSTRAINT suscripcion_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuario(id_usuario),
   CONSTRAINT suscripcion_estado_id_fkey FOREIGN KEY (estado_id) REFERENCES public.estados(id_estado)
@@ -48,6 +49,7 @@ CREATE TABLE public.pago (
   fecha_pago timestamp with time zone NOT NULL DEFAULT now(),
   id_transaccion_mercadopago character varying,
   estado_id integer NOT NULL,
+  estado character varying NOT NULL,
   CONSTRAINT pago_pkey PRIMARY KEY (id_pago),
   CONSTRAINT pago_suscripcion_id_fkey FOREIGN KEY (suscripcion_id) REFERENCES public.suscripcion(id_suscripcion),
   CONSTRAINT pago_estado_id_fkey FOREIGN KEY (estado_id) REFERENCES public.estados(id_estado)
@@ -69,10 +71,8 @@ CREATE TABLE public.mascota (
   creado_en timestamp with time zone NOT NULL DEFAULT now(),
   id_cliente uuid UNIQUE,
   actualizado_en timestamp with time zone NOT NULL DEFAULT now(),
-  estado_id integer NOT NULL,
   CONSTRAINT mascota_pkey PRIMARY KEY (id_mascota),
-  CONSTRAINT mascota_propietario_id_fkey FOREIGN KEY (propietario_id) REFERENCES public.usuario(id_usuario),
-  CONSTRAINT mascota_estado_id_fkey FOREIGN KEY (estado_id) REFERENCES public.estados(id_estado)
+  CONSTRAINT mascota_propietario_id_fkey FOREIGN KEY (propietario_id) REFERENCES public.usuario(id_usuario)
 );
 CREATE TABLE public.invitacion (
   id_invitacion uuid NOT NULL,
@@ -208,8 +208,8 @@ CREATE TABLE public.log_auditoria (
   tipo_accion character varying NOT NULL,
   entidad_afectada character varying NOT NULL,
   id_entidad uuid,
-  valor_anterior character varying,
-  valor_nuevo character varying,
+  valor_anterior text,
+  valor_nuevo text,
   fecha_hora timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT log_auditoria_pkey PRIMARY KEY (id_log),
   CONSTRAINT log_auditoria_actor_id_fkey FOREIGN KEY (actor_id) REFERENCES public.usuario(id_usuario)
