@@ -51,7 +51,19 @@ type AppData = {
   ready: boolean;
 };
 
+type PersistedData = {
+  pets?: Pet[];
+  reminders?: Reminder[];
+  events?: ClinicalEvent[];
+  albums?: Album[];
+  users?: LocalUser[];
+  currentUser?: LocalUser | null;
+  premium?: boolean;
+  notifications?: boolean;
+};
+
 const STORAGE_KEY = "mismascotas-demo-data-v1";
+const isWeb = typeof window !== "undefined";
 
 const initialPets: Pet[] = [
   { id: "fido", name: "Fido", species: "Perro", breed: "Golden Retriever", age: "3 años", weight: "28,5 kg", emoji: "🐶", color: "#F2D5A0" },
@@ -76,6 +88,34 @@ const initialUsers: LocalUser[] = [{ id: "demo", name: "Usuario Demo", email: "u
 
 const AppDataContext = createContext<AppData | null>(null);
 
+async function readPersistedData(): Promise<PersistedData | null> {
+  try {
+    if (isWeb) {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      return saved ? (JSON.parse(saved) as PersistedData) : null;
+    }
+
+    const saved = await AsyncStorage.getItem(STORAGE_KEY);
+    return saved ? (JSON.parse(saved) as PersistedData) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function writePersistedData(data: PersistedData) {
+  try {
+    if (isWeb) {
+      const { currentUser: _currentUser, ...persistedData } = data;
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedData));
+      return;
+    }
+
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignora errores de persistencia para no romper el flujo de la app.
+  }
+}
+
 export function AppDataProvider({ children }: PropsWithChildren) {
   const [pets, setPets] = useState<Pet[]>(initialPets);
   const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
@@ -88,26 +128,20 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
+    readPersistedData()
       .then((saved) => {
-        if (!saved) return;
+        if (saved?.pets) setPets(saved.pets);
+        if (saved?.reminders) setReminders(saved.reminders);
+        if (saved?.events) setEvents(saved.events);
+        if (saved?.albums) setAlbums(saved.albums);
+        if (saved?.users) setUsers(saved.users);
 
-        const data = JSON.parse(saved) as {
-          pets?: Pet[];
-          reminders?: Reminder[];
-          events?: ClinicalEvent[];
-          albums?: Album[];
-          users?: LocalUser[]; currentUser?: LocalUser | null; premium?: boolean; notifications?: boolean;
-        };
+        if (!isWeb && saved?.currentUser) {
+          setCurrentUser(saved.currentUser);
+        }
 
-        if (data.pets) setPets(data.pets);
-        if (data.reminders) setReminders(data.reminders);
-        if (data.events) setEvents(data.events);
-        if (data.albums) setAlbums(data.albums);
-        if (data.users) setUsers(data.users);
-        if (data.currentUser) setCurrentUser(data.currentUser);
-        if (typeof data.premium === "boolean") setPremium(data.premium);
-        if (typeof data.notifications === "boolean") setNotifications(data.notifications);
+        if (typeof saved?.premium === "boolean") setPremium(saved.premium);
+        if (typeof saved?.notifications === "boolean") setNotifications(saved.notifications);
       })
       .finally(() => setReady(true));
   }, []);
@@ -115,10 +149,7 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!ready) return;
 
-    AsyncStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ pets, reminders, events, albums, users, currentUser, premium, notifications }),
-    );
+    writePersistedData({ pets, reminders, events, albums, users, currentUser, premium, notifications });
   }, [pets, reminders, events, albums, users, currentUser, premium, notifications, ready]);
 
   return (

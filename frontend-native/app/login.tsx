@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Alert,
+  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -20,20 +21,23 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const handleLogin = () => {
-  const emailNormalizado = email.trim().toLowerCase();
+    const emailNormalizado = email.trim().toLowerCase();
 
-  const user = users.find((item) => item.email === emailNormalizado && item.password === password);
-  if (user) {
-    setCurrentUser(user);
-    router.replace("/inicio");
-    return;
-  }
+    const user = users.find(
+      (item) => item.email === emailNormalizado && item.password === password,
+    );
 
-  Alert.alert(
-    "Datos incorrectos",
-    "Revisá tu correo y contraseña. Demo: usuario@demo.com / Demo1234."
-  );
-};
+    if (user) {
+      setCurrentUser(user);
+      router.replace("/inicio");
+      return;
+    }
+
+    Alert.alert(
+      "Datos incorrectos",
+      "Revisá tu correo y contraseña. Demo: usuario@demo.com / Demo1234.",
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -85,10 +89,10 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Pressable style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Ingresar</Text>
             <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <Text style={styles.switchText}>
