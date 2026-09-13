@@ -17,6 +17,18 @@ Desde la carpeta `frontend-native`:
 npm install
 ```
 
+La autenticación usa `expo-secure-store` para guardar el token de sesión de forma segura. Si la dependencia todavía no está instalada, ejecutá:
+
+```bash
+npx expo install expo-secure-store
+```
+
+Después de instalarla, reiniciá Expo limpiando la caché:
+
+```bash
+npx expo start -c
+```
+
 ## 2) Configurar la URL del backend
 
 Crear un archivo `.env` dentro de `frontend-native/` con esta línea:
@@ -88,3 +100,4 @@ No hay forma de que Expo Go se conecte al backend local con `localhost` desde el
 - `8080`: puerto del backend Spring Boot
 
 No confundas esos dos.
+
