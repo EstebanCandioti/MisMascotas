@@ -7,7 +7,7 @@ Este proyecto usa Expo Go para correr la app móvil.
 - Node.js
 - npm
 - Expo Go instalado en tu celular
-- ngrok para exponer el backend públicomente desde tu computadora
+- ngrok para exponer el backend públicamente desde tu computadora
 
 ## 1) Instalar dependencias
 
@@ -91,7 +91,7 @@ Si la URL de ngrok cambia, tenés que:
 
 No hay forma de que Expo Go se conecte al backend local con `localhost` desde el teléfono. Para probar desde un celular, o bien:
 
-- usás ngrok, o
+- usás ngrok
 - desplegás el backend en un servicio público como Render
 
 ## Puerto clave
