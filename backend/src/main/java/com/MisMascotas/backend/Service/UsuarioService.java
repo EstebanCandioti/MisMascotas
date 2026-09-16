@@ -1,24 +1,28 @@
 package com.MisMascotas.backend.Service;
 
+import java.security.Principal;
+
 import org.springframework.stereotype.Service;
 
+import com.MisMascotas.backend.DTO.UsuarioResponseDTO;
 import com.MisMascotas.backend.Entity.Usuario;
-import com.MisMascotas.backend.Repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public UsuarioService(UsuarioAutenticadoService usuarioAutenticadoService) {
+        this.usuarioAutenticadoService = usuarioAutenticadoService;
     }
 
-    public Usuario buscarPorEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("El email es obligatorio");
-        }
-
-        return usuarioRepository.findByEmail(email.trim().toLowerCase());
+    public UsuarioResponseDTO obtenerPerfilAutenticado(Principal principal) {
+        Usuario usuario = usuarioAutenticadoService.obtenerUsuario(principal);
+        return new UsuarioResponseDTO(
+                usuario.getIdUsuario(),
+                usuario.getNombre(),
+                usuario.getEmail(),
+                usuario.isEsPremium()
+        );
     }
 }
