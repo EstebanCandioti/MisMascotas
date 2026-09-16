@@ -16,5 +16,7 @@ public record RecordatorioResponseDTO(
     Instant fechaFin,
     UUID creadoPorId,
     Instant creadoEn,
+    UUID confirmadoPorId,
+    Instant confirmadoEn,
     String estado
 ) {}
