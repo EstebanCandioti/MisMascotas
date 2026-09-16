@@ -42,30 +42,54 @@ public class RecordatorioController {
     }
 
     @GetMapping("/mascotas/{mascotaId}/recordatorios")
-    public ResponseEntity<List<RecordatorioResponseDTO>> listarPorMascota(@PathVariable UUID mascotaId) {
-        return ResponseEntity.ok(recordatorioService.listarPorMascota(mascotaId));
+    public ResponseEntity<List<RecordatorioResponseDTO>> listarPorMascota(@PathVariable UUID mascotaId,
+                                                                          Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(recordatorioService.listarPorMascota(mascotaId, usuarioAutenticadoId));
     }
 
     @GetMapping("/recordatorios/{id}")
-    public ResponseEntity<RecordatorioResponseDTO> obtenerPorId(@PathVariable UUID id) {
-        return ResponseEntity.ok(recordatorioService.obtenerPorId(id));
+    public ResponseEntity<RecordatorioResponseDTO> obtenerPorId(@PathVariable UUID id,
+                                                                Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(recordatorioService.obtenerPorId(id, usuarioAutenticadoId));
     }
 
     @PutMapping("/recordatorios/{id}")
     public ResponseEntity<RecordatorioResponseDTO> editar(@PathVariable UUID id,
-                                                          @Valid @RequestBody RecordatorioRequestDTO request) {
-        return ResponseEntity.ok(recordatorioService.editar(id, request));
+                                                          @Valid @RequestBody RecordatorioRequestDTO request,
+                                                          Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(recordatorioService.editar(id, request, usuarioAutenticadoId));
     }
 
     @PatchMapping("/recordatorios/{id}/estado")
     public ResponseEntity<RecordatorioResponseDTO> cambiarEstado(@PathVariable UUID id,
-                                                                @RequestParam String nuevoEstado) {
-        return ResponseEntity.ok(recordatorioService.cambiarEstado(id, nuevoEstado));
+                                                                 @RequestParam String nuevoEstado,
+                                                                 Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(recordatorioService.cambiarEstado(id, nuevoEstado, usuarioAutenticadoId));
+    }
+
+    @PatchMapping("/recordatorios/{id}/confirmacion")
+    public ResponseEntity<RecordatorioResponseDTO> confirmar(@PathVariable UUID id,
+                                                             Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(recordatorioService.confirmar(id, usuarioAutenticadoId));
+    }
+
+    @DeleteMapping("/recordatorios/{id}/confirmacion")
+    public ResponseEntity<RecordatorioResponseDTO> desmarcarConfirmacion(@PathVariable UUID id,
+                                                                         Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(recordatorioService.desmarcarConfirmacion(id, usuarioAutenticadoId));
     }
 
     @DeleteMapping("/recordatorios/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
-        recordatorioService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id,
+                                         Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        recordatorioService.eliminar(id, usuarioAutenticadoId);
         return ResponseEntity.noContent().build();
     }
 }

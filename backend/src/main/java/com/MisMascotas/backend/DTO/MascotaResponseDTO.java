@@ -18,6 +18,5 @@ public record MascotaResponseDTO(
     String fotoPerfil,
     BigDecimal pesoActual,
     String notas,
-    Integer estadoId,
     Instant creadoEn
 ) {}

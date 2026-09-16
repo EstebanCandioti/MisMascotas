@@ -12,7 +12,7 @@ import com.MisMascotas.backend.Entity.Recordatorio;
 @Repository
 public interface RecordatorioRepository extends JpaRepository<Recordatorio, UUID> {
 
-    List<Recordatorio> findByMascota_IdMascota(UUID mascotaId);
+    List<Recordatorio> findByMascota_IdMascotaAndFechaEliminacionIsNull(UUID mascotaId);
 
-    Optional<Recordatorio> findByIdRecordatorio(UUID idRecordatorio);
+    Optional<Recordatorio> findByIdRecordatorioAndFechaEliminacionIsNull(UUID idRecordatorio);
 }
