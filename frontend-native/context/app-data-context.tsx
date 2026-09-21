@@ -49,6 +49,13 @@ type AppData = {
   notifications: boolean;
   setNotifications: (value: boolean) => void;
   ready: boolean;
+  pendingAuthToken: string | null;
+  setPendingAuthToken: (token: string | null) => void;
+  pendingCredentials: { email: string; password: string } | null;
+  setPendingCredentials: (email: string, password: string) => void;
+  completeLogin: (token: string) => Promise<void>;
+  resendCode: () => Promise<void>;
+  logout: () => Promise<void>;
 };
 
 type PersistedData = {
@@ -126,6 +133,8 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const [premium, setPremium] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [ready, setReady] = useState(false);
+  const [pendingAuthToken, setPendingAuthToken] = useState<string | null>(null);
+  const [pendingCredentials, setPendingCredentialsState] = useState<{ email: string; password: string } | null>(null);
 
   useEffect(() => {
     readPersistedData()
@@ -146,6 +155,59 @@ export function AppDataProvider({ children }: PropsWithChildren) {
       .finally(() => setReady(true));
   }, []);
 
+  const setPendingCredentials = (email: string, password: string) => {
+    setPendingCredentialsState({ email, password });
+  };
+
+  const completeLogin = async (token: string) => {
+    if (!pendingCredentials) return;
+
+    const userFromCredentials = users.find((user) => user.email === pendingCredentials.email);
+    const nextUser = userFromCredentials
+      ? { ...userFromCredentials, name: userFromCredentials.name || pendingCredentials.email.split("@")[0] }
+      : { id: `user-${Date.now()}`, name: pendingCredentials.email.split("@")[0], email: pendingCredentials.email, password: pendingCredentials.password };
+
+    setUsers((existing) => {
+      const alreadyExists = existing.some((user) => user.email === pendingCredentials.email);
+      return alreadyExists ? existing : [nextUser, ...existing];
+    });
+
+    setCurrentUser(nextUser);
+    setPendingAuthToken(null);
+    setPendingCredentialsState(null);
+
+    if (typeof token === "string" && token.trim()) {
+      try {
+        const { setAuthToken } = await import("../services/auth-storage");
+        await setAuthToken("mismascotas-auth-token-v2", token);
+      } catch {
+        // no-op: no romper la experiencia si no hay persistencia disponible
+      }
+    }
+  };
+
+  const resendCode = async () => {
+    if (!pendingCredentials) {
+      return;
+    }
+
+    const { login } = await import("../services/api");
+    const response = await login(pendingCredentials.email, pendingCredentials.password);
+    setPendingAuthToken(response.token);
+  };
+
+  const logout = async () => {
+    setCurrentUser(null);
+    setPendingAuthToken(null);
+    setPendingCredentialsState(null);
+    try {
+      const { deleteAuthToken } = await import("../services/auth-storage");
+      await deleteAuthToken("mismascotas-auth-token-v2");
+    } catch {
+      // no-op
+    }
+  };
+
   useEffect(() => {
     if (!ready) return;
 
@@ -154,7 +216,7 @@ export function AppDataProvider({ children }: PropsWithChildren) {
 
   return (
     <AppDataContext.Provider
-      value={{ pets, setPets, reminders, setReminders, events, setEvents, albums, setAlbums, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready }}
+      value={{ pets, setPets, reminders, setReminders, events, setEvents, albums, setAlbums, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
     >
       {children}
     </AppDataContext.Provider>
