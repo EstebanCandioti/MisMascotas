@@ -31,8 +31,6 @@ export type UsuarioResponse = {
   nombre: string;
   email: string;
   esPremium: boolean;
-  activo: boolean;
-  creadoEn: string;
 };
 
 type ApiErrorBody = {

@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import AppBottomNav from "@/components/app-bottom-nav";
+import { useAppData } from "../../context/app-data-context";
 
 type TaskProps = {
   title: string;
@@ -36,6 +37,10 @@ function Task({ title, detail, time }: TaskProps) {
 
 export default function InicioScreen() {
   const router = useRouter();
+  const { currentUser } = useAppData();
+  const userName = currentUser?.name ?? "Usuario";
+  const userInitials = userName.slice(0, 2).toUpperCase();
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -45,13 +50,13 @@ export default function InicioScreen() {
             <Text style={styles.brandText}>Mis Mascotas</Text>
           </View>
           <TouchableOpacity style={styles.avatar} onPress={() => router.push("/account/perfil")}>
-            <Text style={styles.avatarText}>US</Text>
+            <Text style={styles.avatarText}>{userInitials}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.welcome}>
           <Text style={styles.eyebrow}>JUEVES, 27 DE AGOSTO</Text>
-          <Text style={styles.title}>Hola, Usuario 👋</Text>
+          <Text style={styles.title}>Hola, {userName} 👋</Text>
           <Text style={styles.subtitle}>Todo el cuidado de tus mascotas, en un solo lugar.</Text>
         </View>
 

@@ -19,6 +19,11 @@ export default function PerfilScreen() {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(currentUser?.name ?? "Usuario Demo");
 
+  const toggleEditing = () => {
+    if (!editing) setName(currentUser?.name ?? "Usuario Demo");
+    setEditing(!editing);
+  };
+
   const saveProfile = () => {
     if (currentUser) { const updated = { ...currentUser, name: name.trim() || currentUser.name }; setUsers(users.map((user) => user.id === updated.id ? updated : user)); setCurrentUser(updated); }
     setEditing(false); Alert.alert("Perfil actualizado", "Tus datos se guardaron localmente.");
@@ -30,13 +35,14 @@ export default function PerfilScreen() {
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}><Ionicons name="chevron-back" size={24} color="#30293A" /></TouchableOpacity>
           <Text style={styles.topTitle}>Mi perfil</Text>
-          <TouchableOpacity style={styles.editButton} onPress={() => editing ? saveProfile() : setEditing(true)}><Ionicons name={editing ? "checkmark" : "pencil-outline"} size={20} color="#7C4DFF" /></TouchableOpacity>
+          <TouchableOpacity style={styles.editButton} onPress={() => editing ? saveProfile() : toggleEditing()}><Ionicons name={editing ? "checkmark" : "pencil-outline"} size={20} color="#7C4DFF" /></TouchableOpacity>
         </View>
 
         <View style={styles.hero}>
           <View style={styles.avatar}><Text style={styles.avatarText}>{name.slice(0, 2).toUpperCase()}</Text></View>
           {editing ? <TextInput value={name} onChangeText={setName} style={styles.nameInput} /> : <Text style={styles.name}>{name}</Text>}
           <Text style={styles.email}>{currentUser?.email ?? "usuario@demo.com"}</Text>
+          <Text style={styles.membership}>{currentUser?.esPremium ? "Plan Premium" : "Plan gratuito"}</Text>
           <Text style={styles.since}>Miembro desde agosto de 2026</Text>
         </View>
 
@@ -71,7 +77,7 @@ export default function PerfilScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAF9FC" }, content: { padding: 20, paddingBottom: 36 },
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 23 }, backButton: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" }, topTitle: { color: "#201B29", fontSize: 17, fontWeight: "800" }, editButton: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#EEE8FF", alignItems: "center", justifyContent: "center" },
-  hero: { alignItems: "center", marginBottom: 25 }, avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: "#7C4DFF", alignItems: "center", justifyContent: "center" }, avatarText: { color: "#FFFFFF", fontSize: 28, fontWeight: "800" }, name: { color: "#201B29", fontSize: 24, fontWeight: "800", marginTop: 11 }, nameInput: { color: "#201B29", fontSize: 22, fontWeight: "800", textAlign: "center", marginTop: 7, minWidth: 200, borderBottomWidth: 1, borderBottomColor: "#C5B5FF", paddingVertical: 3 }, email: { color: "#7F7888", fontSize: 13, marginTop: 4 }, since: { color: "#9A94A2", fontSize: 11, marginTop: 6 },
+  hero: { alignItems: "center", marginBottom: 25 }, avatar: { width: 90, height: 90, borderRadius: 45, backgroundColor: "#7C4DFF", alignItems: "center", justifyContent: "center" }, avatarText: { color: "#FFFFFF", fontSize: 28, fontWeight: "800" }, name: { color: "#201B29", fontSize: 24, fontWeight: "800", marginTop: 11 }, nameInput: { color: "#201B29", fontSize: 22, fontWeight: "800", textAlign: "center", marginTop: 7, minWidth: 200, borderBottomWidth: 1, borderBottomColor: "#C5B5FF", paddingVertical: 3 }, email: { color: "#7F7888", fontSize: 13, marginTop: 4 }, membership: { color: "#7C4DFF", fontSize: 11, fontWeight: "700", marginTop: 6 }, since: { color: "#9A94A2", fontSize: 11, marginTop: 4 },
   summary: { flexDirection: "row", alignItems: "center", paddingVertical: 18, backgroundColor: "#FFFFFF", borderRadius: 17, marginBottom: 28 }, summaryItem: { flex: 1, alignItems: "center" }, summaryNumber: { color: "#7C4DFF", fontSize: 21, fontWeight: "800" }, summaryText: { color: "#807989", fontSize: 11, marginTop: 3 }, divider: { height: 32, width: 1, backgroundColor: "#EEEAF2" },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, sectionTitle: { color: "#201B29", fontSize: 19, fontWeight: "800", marginBottom: 12 }, link: { color: "#7C4DFF", fontSize: 13, fontWeight: "800" },
   badges: { flexDirection: "row", gap: 10, marginBottom: 29 }, badge: { flex: 1, alignItems: "center", paddingVertical: 13, backgroundColor: "#FFFFFF", borderRadius: 16 }, badgeEmoji: { fontSize: 24 }, badgeText: { color: "#58505F", fontSize: 9, fontWeight: "700", marginTop: 7, textAlign: "center" },

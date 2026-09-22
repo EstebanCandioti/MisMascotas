@@ -6,6 +6,8 @@ import {
   useEffect,
   useState,
 } from "react";
+import { AUTH_TOKEN_KEY, getCurrentUser } from "../services/api";
+import { getAuthToken } from "../services/auth-storage";
 
 export type Pet = {
   id: string;
@@ -29,7 +31,7 @@ export type Reminder = {
 export type ClinicalEvent = { id: string; type: string; title: string; pet: string; detail: string; date: string };
 export type AlbumPhoto = { id: string; emoji: string; color: string; title: string; date: string };
 export type Album = { id: string; name: string; emoji: string; color: string; photos: AlbumPhoto[] };
-export type LocalUser = { id: string; name: string; email: string; password: string };
+export type LocalUser = { id: string; name: string; email: string; password: string; esPremium?: boolean };
 
 type AppData = {
   pets: Pet[];
@@ -155,6 +157,34 @@ export function AppDataProvider({ children }: PropsWithChildren) {
       .finally(() => setReady(true));
   }, []);
 
+  useEffect(() => {
+    if (!ready || !currentUser) return;
+
+    let cancelled = false;
+
+    getAuthToken(AUTH_TOKEN_KEY)
+      .then((token) => token ? getCurrentUser(token) : null)
+      .then((profile) => {
+        if (!profile || cancelled) return;
+
+        setCurrentUser((user) => user ? {
+          ...user,
+          id: profile.idUsuario,
+          name: profile.nombre,
+          email: profile.email,
+          esPremium: profile.esPremium,
+        } : user);
+        setPremium(profile.esPremium);
+      })
+      .catch(() => {
+        // Conserva los datos locales si el servidor no está disponible.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, currentUser?.id]);
+
   const setPendingCredentials = (email: string, password: string) => {
     setPendingCredentialsState({ email, password });
   };
@@ -180,8 +210,19 @@ export function AppDataProvider({ children }: PropsWithChildren) {
       try {
         const { setAuthToken } = await import("../services/auth-storage");
         await setAuthToken("mismascotas-auth-token-v2", token);
+
+        const profile = await getCurrentUser(token);
+        const authenticatedUser = {
+          ...nextUser,
+          id: profile.idUsuario,
+          name: profile.nombre,
+          email: profile.email,
+          esPremium: profile.esPremium,
+        };
+        setCurrentUser(authenticatedUser);
+        setPremium(profile.esPremium);
       } catch {
-        // no-op: no romper la experiencia si no hay persistencia disponible
+        // Conserva el usuario local si no se puede consultar el perfil.
       }
     }
   };
