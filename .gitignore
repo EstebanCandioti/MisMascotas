@@ -12,7 +12,6 @@ Thumbs.db
 .env.*.local
 
 # IDE / editors
-.vscode/
 .idea/
 *.iml
 *.ipr

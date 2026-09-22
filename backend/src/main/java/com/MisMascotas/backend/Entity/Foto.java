@@ -15,32 +15,43 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Table(name = "foto")
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "badge")
-public class Badge {
+@AllArgsConstructor
+@Builder
+public class Foto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_badge", updatable = false, nullable = false)
-    private UUID idBadge;
+    @Column(name = "id_foto", updatable = false, nullable = false)
+    private UUID idFoto;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "mascota_id", nullable = false)
-    private Mascota mascota;
+    @JoinColumn(name = "album_id", nullable = false)
+    private Album album;
 
     @NotBlank
-    @Column(name = "texto", nullable = false, length = 100)
-    private String texto;
+    @Column(name = "url_archivo", nullable = false, columnDefinition = "text")
+    private String urlArchivo;
 
-    @Column(name = "emoji", length = 10)
-    private String emoji;
+    @Column(name = "formato", length = 20)
+    private String formato;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subida_por_id")
+    private Usuario subidaPor;
+
+    @Column(name = "creado_en", nullable = false, updatable = false)
+    private Instant creadoEn;
 
     @Column(name = "id_cliente", unique = true)
     private UUID idCliente;
@@ -52,14 +63,17 @@ public class Badge {
     private Instant fechaEliminacion;
 
     @PrePersist
-    public void prePersist() {
+    protected void onCreate() {
+        if (creadoEn == null) {
+            creadoEn = Instant.now();
+        }
         if (actualizadoEn == null) {
             actualizadoEn = Instant.now();
         }
     }
 
     @PreUpdate
-    public void preUpdate() {
+    protected void onUpdate() {
         actualizadoEn = Instant.now();
     }
 }

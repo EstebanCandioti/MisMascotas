@@ -3,7 +3,6 @@ package com.MisMascotas.backend.Entity;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -71,7 +70,7 @@ public class Mascota {
     private String notas;
 
     @Column(name = "fecha_eliminacion")
-    private LocalDateTime fechaEliminacion;
+    private Instant fechaEliminacion;
 
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
@@ -80,11 +79,7 @@ public class Mascota {
     private UUID idCliente;
 
     @Column(name = "actualizado_en", nullable = false)
-    private LocalDateTime actualizadoEn;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "estado_id", nullable = false)
-    private Estado estado;
+    private Instant actualizadoEn;
 
     @OneToMany(mappedBy = "mascota")
     private List<EventoClinico> eventosClinicos = new ArrayList<>();
@@ -98,12 +93,12 @@ public class Mascota {
             creadoEn = Instant.now();
         }
         if (actualizadoEn == null) {
-            actualizadoEn = LocalDateTime.now();
+            actualizadoEn = Instant.now();
         }
     }
 
     @PreUpdate
     public void preUpdate() {
-        actualizadoEn = LocalDateTime.now();
+        actualizadoEn = Instant.now();
     }
 }
