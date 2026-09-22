@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<ErrorResponse> handleRecursoNoEncontradoException(RecursoNoEncontradoException ex) {
@@ -30,6 +34,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CodigoInvalidoException.class)
     public ResponseEntity<ErrorResponse> handleCodigoInvalidoException(CodigoInvalidoException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, "CODIGO_INVALIDO", ex.getMessage());
+    }
+
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<ErrorResponse> handleAccesoDenegadoException(AccesoDenegadoException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, "ACCESO_DENEGADO", ex.getMessage());
+    }
+
+    @ExceptionHandler(LimiteMascotasAlcanzadoException.class)
+    public ResponseEntity<ErrorResponse> handleLimiteMascotasAlcanzadoException(LimiteMascotasAlcanzadoException ex) {
+        return buildResponse(HttpStatus.CONFLICT, "LIMITE_MASCOTAS_ALCANZADO", ex.getMessage());
+    }
+
+    @ExceptionHandler(EstadoNoConfiguradoException.class)
+    public ResponseEntity<ErrorResponse> handleEstadoNoConfiguradoException(EstadoNoConfiguradoException ex) {
+        logger.error("Error de configuracion de estados", ex);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "ESTADO_NO_CONFIGURADO", ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

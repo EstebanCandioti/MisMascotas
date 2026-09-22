@@ -1,50 +1,103 @@
-# Welcome to your Expo app 👋
+# MisMascotas Frontend Native
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Este proyecto usa Expo Go para correr la app móvil.
 
-## Get started
+## Requisitos
 
-1. Install dependencies
+- Node.js
+- npm
+- Expo Go instalado en tu celular
+- ngrok para exponer el backend públicamente desde tu computadora
 
-   ```bash
-   npm install
-   ```
+## 1) Instalar dependencias
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Desde la carpeta `frontend-native`:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+La autenticación usa `expo-secure-store` para guardar el token de sesión de forma segura. Si la dependencia todavía no está instalada, ejecutá:
 
-## Learn more
+```bash
+npx expo install expo-secure-store
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Después de instalarla, reiniciá Expo limpiando la caché:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx expo start -c
+```
 
-## Join the community
+## 2) Configurar la URL del backend
 
-Join our community of developers creating universal apps.
+Crear un archivo `.env` dentro de `frontend-native/` con esta línea:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```env
+EXPO_PUBLIC_API_BASE_URL=https://TU_URL_DE_NGROK
+```
+
+Ejemplo:
+
+```env
+EXPO_PUBLIC_API_BASE_URL=https://861e-152-170-185-250.ngrok-free.app
+```
+
+> Importante: la URL debe ser la de ngrok, no `localhost`. El backend corre en `http://localhost:8080`, pero Expo Go no puede acceder a tu PC usando `localhost`.
+
+## 3) Levantar el backend
+
+Asegurate de que el backend de Spring Boot esté corriendo localmente en:
+
+```bash
+http://localhost:8080
+```
+
+## 4) Exponer el backend con ngrok
+
+En otra terminal, desde la raíz del proyecto, ejecutá:
+
+```bash
+ngrok http 8080
+```
+
+Copiá la URL pública que te da ngrok, por ejemplo:
+
+```bash
+https://abcd1234.ngrok-free.app
+```
+
+Y reemplazá esa URL en el `.env`.
+
+## 5) Levantar Expo
+
+Desde `frontend-native`:
+
+```bash
+npx expo start
+```
+
+Luego abrí la app en Expo Go y escaneá el QR.
+
+## Nota importante
+
+Si la URL de ngrok cambia, tenés que:
+
+1. actualizar el `.env`
+2. reiniciar Expo
+3. volver a abrir la app en Expo Go
+
+## Si no querés usar ngrok
+
+No hay forma de que Expo Go se conecte al backend local con `localhost` desde el teléfono. Para probar desde un celular, o bien:
+
+- usás ngrok
+- desplegás el backend en un servicio público como Render
+
+## Puerto clave
+
+- `8081`: puerto del Expo Dev Server
+- `8080`: puerto del backend Spring Boot
+
+No confundas esos dos.
+

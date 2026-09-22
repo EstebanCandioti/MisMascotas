@@ -3,13 +3,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type RouteName =
-  | "inicio"
-  | "mascotas"
-  | "albumes"
-  | "calendario"
-  | "cuidadores"
-  | "configuracion";
+const ROUTE_PATHS = {
+  inicio: "/home/inicio",
+  mascotas: "/pets/mascotas",
+  albumes: "/albums/albumes",
+  calendario: "/health/calendario",
+  cuidadores: "/caregivers/cuidadores",
+  configuracion: "/account/configuracion",
+} as const;
+
+type RouteName = keyof typeof ROUTE_PATHS;
 
 type NavItemProps = {
   label: string;
@@ -25,7 +28,7 @@ function NavItem({ label, icon, route, activeRoute }: NavItemProps) {
   return (
     <TouchableOpacity
       style={styles.item}
-      onPress={() => router.replace(`/${route}` as Href)}
+      onPress={() => router.replace(ROUTE_PATHS[route] as Href)}
     >
       <Ionicons
         name={icon}

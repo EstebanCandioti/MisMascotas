@@ -1,8 +1,10 @@
 package com.MisMascotas.backend.Security;
 
 import java.io.IOException;
+import java.time.Instant;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,7 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            escribirError(response, HttpServletResponse.SC_UNAUTHORIZED, "NO_AUTENTICADO", "Token de verificacion no valido para este endpoint");
             return;
         }
 
@@ -81,5 +83,16 @@ public class JwtFilter extends OncePerRequestFilter {
                         || "/auth/login".equals(path)
                         || "/auth/verificar-codigo".equals(path)
                         || "/pagos/webhook".equals(path));
+    }
+
+    private void escribirError(HttpServletResponse response, int status, String codigo, String mensaje) throws IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(String.format(
+                "{\"codigo\":\"%s\",\"mensaje\":\"%s\",\"timestamp\":\"%s\"}",
+                codigo,
+                mensaje,
+                Instant.now()));
     }
 }

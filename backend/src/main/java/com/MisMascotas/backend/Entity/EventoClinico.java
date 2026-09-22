@@ -2,7 +2,6 @@ package com.MisMascotas.backend.Entity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -74,10 +73,10 @@ public class EventoClinico {
     private UUID idCliente;
 
     @Column(name = "actualizado_en", nullable = false)
-    private LocalDateTime actualizadoEn;
+    private Instant actualizadoEn;
 
     @Column(name = "fecha_eliminacion")
-    private LocalDateTime fechaEliminacion;
+    private Instant fechaEliminacion;
 
     @OneToMany(mappedBy = "evento")
     private List<Adjunto> adjuntos = new ArrayList<>();
@@ -91,12 +90,12 @@ public class EventoClinico {
             creadoEn = Instant.now();
         }
         if (actualizadoEn == null) {
-            actualizadoEn = LocalDateTime.now();
+            actualizadoEn = Instant.now();
         }
     }
 
     @PreUpdate
     public void preUpdate() {
-        actualizadoEn = LocalDateTime.now();
+        actualizadoEn = Instant.now();
     }
 }

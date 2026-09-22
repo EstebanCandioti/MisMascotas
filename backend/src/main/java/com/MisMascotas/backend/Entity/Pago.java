@@ -46,6 +46,5 @@ public class Pago {
     @JoinColumn(name = "estado_id", nullable = false)
     private Estado estadoCatalogo;
 
-    @Column(name = "estado", nullable = false, length = 50)
-    private String estado;
 }
+

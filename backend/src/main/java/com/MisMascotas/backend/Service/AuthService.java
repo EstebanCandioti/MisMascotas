@@ -1,8 +1,14 @@
 package com.MisMascotas.backend.Service;
 
+import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +18,7 @@ import com.MisMascotas.backend.DTO.LoginResponseDTO;
 import com.MisMascotas.backend.DTO.RegistroRequestDTO;
 import com.MisMascotas.backend.DTO.VerificarCodigoRequestDTO;
 import com.MisMascotas.backend.Entity.CodigoVerificacion;
+import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
 import com.MisMascotas.backend.Exception.CodigoExpiradoException;
 import com.MisMascotas.backend.Exception.CodigoInvalidoException;
@@ -21,23 +28,28 @@ import com.MisMascotas.backend.Security.JwtService;
 @Service
 public class AuthService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
     private final UsuarioRepository usuarioRepository;
     private final CodigoVerificacionService codigoVerificacionService;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final LogAuditoriaService logAuditoriaService;
 
     public AuthService(
             UsuarioRepository usuarioRepository,
             CodigoVerificacionService codigoVerificacionService,
             EmailService emailService,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+            JwtService jwtService,
+            LogAuditoriaService logAuditoriaService) {
         this.usuarioRepository = usuarioRepository;
         this.codigoVerificacionService = codigoVerificacionService;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.logAuditoriaService = logAuditoriaService;
     }
 
     public AuthResponseDTO registrar(RegistroRequestDTO request) {
@@ -54,8 +66,12 @@ public class AuthService {
         usuario.setEsPremium(false);
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
-        String token = jwtService.generarToken(usuarioGuardado);
+        registrarAuditoriaUsuario(
+                usuarioGuardado,
+                TipoAccionAuditoria.CREATE,
+                construirValorUsuarioCreado(usuarioGuardado));
 
+        String token = jwtService.generarToken(usuarioGuardado);
         return new AuthResponseDTO(token);
     }
 
@@ -85,6 +101,7 @@ public class AuthService {
         try {
             Usuario usuario = codigoVerificacionService.validarCodigo(usuarioId, request.codigo());
             String tokenSesion = jwtService.generarToken(usuario);
+            registrarAuditoriaUsuario(usuario, TipoAccionAuditoria.LOGIN, null);
             return new AuthResponseDTO(tokenSesion);
         } catch (CodigoExpiradoException ex) {
             Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -97,5 +114,50 @@ public class AuthService {
     private void generarYEnviarCodigoVerificacion(Usuario usuario) {
         CodigoVerificacion codigoVerificacion = codigoVerificacionService.generarParaUsuario(usuario);
         emailService.enviarCodigoVerificacion(usuario.getEmail(), codigoVerificacion.getCodigo());
+    }
+
+    private void registrarAuditoriaUsuario(Usuario usuario, TipoAccionAuditoria accion, String valorNuevo) {
+        Authentication autenticacionAnterior = SecurityContextHolder.getContext().getAuthentication();
+
+        try {
+            UsernamePasswordAuthenticationToken autenticacionTemporal = new UsernamePasswordAuthenticationToken(
+                    usuario.getEmail(),
+                    null,
+                    List.of());
+            SecurityContextHolder.getContext().setAuthentication(autenticacionTemporal);
+
+            logAuditoriaService.registrar(
+                    "usuario",
+                    accion,
+                    usuario.getIdUsuario(),
+                    null,
+                    valorNuevo);
+        } catch (Exception ex) {
+            logger.warn(
+                    "No se pudo registrar auditoria de auth {} para usuario {}: {}",
+                    accion,
+                    usuario.getIdUsuario(),
+                    ex.getMessage());
+        } finally {
+            SecurityContextHolder.getContext().setAuthentication(autenticacionAnterior);
+        }
+    }
+
+    private String construirValorUsuarioCreado(Usuario usuario) {
+        return String.format(
+                "{\"idUsuario\":\"%s\",\"email\":\"%s\",\"nombre\":\"%s\",\"activo\":%s,\"esPremium\":%s}",
+                usuario.getIdUsuario(),
+                escaparJson(usuario.getEmail()),
+                escaparJson(usuario.getNombre()),
+                usuario.isActivo(),
+                usuario.isEsPremium());
+    }
+
+    private String escaparJson(String valor) {
+        if (valor == null) {
+            return "";
+        }
+
+        return valor.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }
