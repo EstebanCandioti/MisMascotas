@@ -37,7 +37,7 @@ function Task({ title, detail, time }: TaskProps) {
 
 export default function InicioScreen() {
   const router = useRouter();
-  const { currentUser } = useAppData();
+  const { currentUser, pets } = useAppData();
   const userName = currentUser?.name ?? "Usuario";
   const userInitials = userName.slice(0, 2).toUpperCase();
 
@@ -62,7 +62,7 @@ export default function InicioScreen() {
 
         <View style={styles.summary}>
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryNumber}>3</Text>
+            <Text style={styles.summaryNumber}>{pets.length}</Text>
             <Text style={styles.summaryLabel}>Mascotas</Text>
           </View>
           <View style={styles.summaryDivider} />
@@ -143,12 +143,17 @@ export default function InicioScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mis mascotas</Text>
-          <Text style={styles.link}>Administrar</Text>
+          <TouchableOpacity onPress={() => router.push("/pets/mascotas")}><Text style={styles.link}>Administrar</Text></TouchableOpacity>
         </View>
         <View style={styles.petsRow}>
-          <View style={styles.petCard}><View style={[styles.petLargeAvatar, { backgroundColor: "#F2D5A0" }]}><Text style={styles.emoji}>🐶</Text></View><Text style={styles.petCardName}>Fido</Text><Text style={styles.petBreed}>Golden Retriever</Text></View>
-          <View style={styles.petCard}><View style={[styles.petLargeAvatar, { backgroundColor: "#D9CDFC" }]}><Text style={styles.emoji}>🐱</Text></View><Text style={styles.petCardName}>Luna</Text><Text style={styles.petBreed}>Siamés</Text></View>
-          <View style={styles.petCard}><View style={[styles.petLargeAvatar, { backgroundColor: "#C9E5F3" }]}><Text style={styles.emoji}>🐶</Text></View><Text style={styles.petCardName}>Rex</Text><Text style={styles.petBreed}>Bulldog</Text></View>
+          {pets.slice(0, 3).map((pet) => (
+            <TouchableOpacity key={pet.id} style={styles.petCard} onPress={() => router.push({ pathname: "/pets/mascota-detalle", params: { id: pet.id } })}>
+              <View style={[styles.petLargeAvatar, { backgroundColor: pet.color }]}><Text style={styles.emoji}>{pet.emoji}</Text></View>
+              <Text style={styles.petCardName}>{pet.name}</Text>
+              <Text style={styles.petBreed}>{pet.breed}</Text>
+            </TouchableOpacity>
+          ))}
+          {!pets.length && <Text style={styles.emptyPets}>Todavía no tenés mascotas registradas.</Text>}
         </View>
       </ScrollView>
 
@@ -209,4 +214,5 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 25 },
   petCardName: { color: "#282331", fontSize: 13, fontWeight: "800", marginTop: 7 },
   petBreed: { color: "#8B8593", fontSize: 9, marginTop: 2, textAlign: "center" },
+  emptyPets: { color: "#8B8593", fontSize: 13, paddingVertical: 18 },
 });
