@@ -31,7 +31,34 @@ export type UsuarioResponse = {
   nombre: string;
   email: string;
   esPremium: boolean;
-  activo: boolean;
+};
+
+export type MascotaRequest = {
+  nombre: string;
+  especie: string;
+  raza?: string;
+  fechaNacimiento?: string;
+  fechaAproximada: boolean;
+  edadValor?: number;
+  edadUnidad?: string;
+  fotoPerfil?: string;
+  pesoActual?: number;
+  notas?: string;
+};
+
+export type MascotaResponse = {
+  idMascota: string;
+  propietarioId: string;
+  nombre: string;
+  especie: string;
+  raza: string | null;
+  fechaNacimiento: string | null;
+  fechaAproximada: boolean;
+  edadValor: number | null;
+  edadUnidad: string | null;
+  fotoPerfil: string | null;
+  pesoActual: number | null;
+  notas: string | null;
   creadoEn: string;
 };
 
@@ -92,6 +119,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new ApiError(response.status, code, message);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return (await response.json()) as T;
 }
 
@@ -120,5 +151,33 @@ export function verifyCode(tokenPreAuth: string, codigo: string) {
 export function getCurrentUser(token: string) {
   return request<UsuarioResponse>("/usuario/me", {
     headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getPets() {
+  return request<MascotaResponse[]>("/mascotas");
+}
+
+export function getPet(id: string) {
+  return request<MascotaResponse>(`/mascotas/${id}`);
+}
+
+export function createPet(data: MascotaRequest) {
+  return request<MascotaResponse>("/mascotas", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updatePet(id: string, data: MascotaRequest) {
+  return request<MascotaResponse>(`/mascotas/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deletePet(id: string) {
+  return request<void>(`/mascotas/${id}`, {
+    method: "DELETE",
   });
 }

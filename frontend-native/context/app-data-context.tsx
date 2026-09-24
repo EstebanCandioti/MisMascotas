@@ -6,6 +6,8 @@ import {
   useEffect,
   useState,
 } from "react";
+import { AUTH_TOKEN_KEY, getCurrentUser, getPets, type MascotaResponse } from "../services/api";
+import { getAuthToken } from "../services/auth-storage";
 
 export type Pet = {
   id: string;
@@ -16,6 +18,13 @@ export type Pet = {
   weight: string;
   emoji: string;
   color: string;
+  fechaNacimiento?: string | null;
+  fechaAproximada?: boolean;
+  edadValor?: number | null;
+  edadUnidad?: string | null;
+  fotoPerfil?: string | null;
+  pesoActual?: number | null;
+  notas?: string | null;
 };
 
 export type Reminder = {
@@ -29,11 +38,12 @@ export type Reminder = {
 export type ClinicalEvent = { id: string; type: string; title: string; pet: string; detail: string; date: string };
 export type AlbumPhoto = { id: string; emoji: string; color: string; title: string; date: string };
 export type Album = { id: string; name: string; emoji: string; color: string; photos: AlbumPhoto[] };
-export type LocalUser = { id: string; name: string; email: string; password: string };
+export type LocalUser = { id: string; name: string; email: string; password: string; esPremium?: boolean };
 
 type AppData = {
   pets: Pet[];
   setPets: (pets: Pet[]) => void;
+  refreshPets: () => Promise<void>;
   reminders: Reminder[];
   setReminders: (reminders: Reminder[]) => void;
   events: ClinicalEvent[];
@@ -93,6 +103,31 @@ const initialAlbums: Album[] = [
 ];
 const initialUsers: LocalUser[] = [{ id: "demo", name: "Usuario Demo", email: "usuario@demo.com", password: "Demo1234" }];
 
+function mapPetResponse(pet: MascotaResponse): Pet {
+  const emoji = pet.especie.toLowerCase().includes("gato") ? "🐱" : "🐶";
+  const age = pet.edadValor != null && pet.edadUnidad
+    ? `${pet.edadValor} ${pet.edadUnidad.toLowerCase()}`
+    : pet.fechaNacimiento ?? "Edad no indicada";
+
+  return {
+    id: pet.idMascota,
+    name: pet.nombre,
+    species: pet.especie,
+    breed: pet.raza ?? "Raza no indicada",
+    age,
+    weight: pet.pesoActual != null ? `${pet.pesoActual} kg` : "Peso no indicado",
+    emoji,
+    color: emoji === "🐱" ? "#D9CDFC" : "#F2D5A0",
+    fechaNacimiento: pet.fechaNacimiento,
+    fechaAproximada: pet.fechaAproximada,
+    edadValor: pet.edadValor,
+    edadUnidad: pet.edadUnidad,
+    fotoPerfil: pet.fotoPerfil,
+    pesoActual: pet.pesoActual,
+    notas: pet.notas,
+  };
+}
+
 const AppDataContext = createContext<AppData | null>(null);
 
 async function readPersistedData(): Promise<PersistedData | null> {
@@ -136,6 +171,15 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const [pendingAuthToken, setPendingAuthToken] = useState<string | null>(null);
   const [pendingCredentials, setPendingCredentialsState] = useState<{ email: string; password: string } | null>(null);
 
+  const refreshPets = async () => {
+    try {
+      const remotePets = await getPets();
+      setPets(remotePets.map(mapPetResponse));
+    } catch {
+      // Conserva las mascotas locales si el backend no está disponible.
+    }
+  };
+
   useEffect(() => {
     readPersistedData()
       .then((saved) => {
@@ -154,6 +198,38 @@ export function AppDataProvider({ children }: PropsWithChildren) {
       })
       .finally(() => setReady(true));
   }, []);
+
+  useEffect(() => {
+    if (!ready || !currentUser) return;
+
+    let cancelled = false;
+
+    getAuthToken(AUTH_TOKEN_KEY)
+      .then(async (token) => {
+        if (!token) return null;
+        await refreshPets();
+        return getCurrentUser(token);
+      })
+      .then((profile) => {
+        if (!profile || cancelled) return;
+
+        setCurrentUser((user) => user ? {
+          ...user,
+          id: profile.idUsuario,
+          name: profile.nombre,
+          email: profile.email,
+          esPremium: profile.esPremium,
+        } : user);
+        setPremium(profile.esPremium);
+      })
+      .catch(() => {
+        // Conserva los datos locales si el servidor no está disponible.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, currentUser?.id]);
 
   const setPendingCredentials = (email: string, password: string) => {
     setPendingCredentialsState({ email, password });
@@ -180,8 +256,19 @@ export function AppDataProvider({ children }: PropsWithChildren) {
       try {
         const { setAuthToken } = await import("../services/auth-storage");
         await setAuthToken("mismascotas-auth-token-v2", token);
+
+        const profile = await getCurrentUser(token);
+        const authenticatedUser = {
+          ...nextUser,
+          id: profile.idUsuario,
+          name: profile.nombre,
+          email: profile.email,
+          esPremium: profile.esPremium,
+        };
+        setCurrentUser(authenticatedUser);
+        setPremium(profile.esPremium);
       } catch {
-        // no-op: no romper la experiencia si no hay persistencia disponible
+        // Conserva el usuario local si no se puede consultar el perfil.
       }
     }
   };
@@ -216,7 +303,7 @@ export function AppDataProvider({ children }: PropsWithChildren) {
 
   return (
     <AppDataContext.Provider
-      value={{ pets, setPets, reminders, setReminders, events, setEvents, albums, setAlbums, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
+      value={{ pets, setPets, refreshPets, reminders, setReminders, events, setEvents, albums, setAlbums, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
     >
       {children}
     </AppDataContext.Provider>
