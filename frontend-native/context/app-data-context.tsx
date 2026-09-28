@@ -35,7 +35,22 @@ export type Reminder = {
   detail: string;
   done: boolean;
 };
-export type ClinicalEvent = { id: string; type: string; title: string; pet: string; detail: string; date: string };
+export type ClinicalEvent = {
+  id: string;
+  petId?: string;
+  type: string;
+  title: string;
+  pet: string;
+  detail: string;
+  date: string;
+  dose?: string;
+  reason?: string;
+  diagnosis?: string;
+  weight?: number;
+  observations?: string;
+  attachmentUrl?: string;
+  attachmentFormat?: string;
+};
 export type AlbumPhoto = { id: string; emoji: string; color: string; title: string; date: string };
 export type Album = { id: string; name: string; emoji: string; color: string; photos: AlbumPhoto[] };
 export type LocalUser = { id: string; name: string; email: string; password: string; esPremium?: boolean };
@@ -94,8 +109,8 @@ const initialReminders: Reminder[] = [
   { id: "pipeta", title: "Pipeta antiparasitaria", pet: "Luna", date: "27 AGO", detail: "Completado hoy", done: true },
 ];
 const initialEvents: ClinicalEvent[] = [
-  { id: "consulta-fido", type: "Consulta", title: "Control general", pet: "Fido", detail: "Sin hallazgos. Se recomienda control anual.", date: "20 AGO 2026" },
-  { id: "vacuna-fido", type: "Vacuna", title: "Vacuna séxtuple", pet: "Fido", detail: "Aplicada correctamente.", date: "15 MAY 2026" },
+  { id: "consulta-fido", petId: "fido", type: "Consulta", title: "Control general", pet: "Fido", detail: "Sin hallazgos. Se recomienda control anual.", date: "20 AGO 2026" },
+  { id: "vacuna-fido", petId: "fido", type: "Vacuna", title: "Vacuna séxtuple", pet: "Fido", detail: "Aplicada correctamente.", date: "15 MAY 2026" },
 ];
 const initialAlbums: Album[] = [
   { id: "fido", name: "Momentos de Fido", emoji: "🐶", color: "#F2D5A0", photos: [{ id: "1", emoji: "🐶", color: "#F2D5A0", title: "Paseo en la plaza", date: "20 AGO" }, { id: "2", emoji: "🌳", color: "#D6EBC7", title: "Tarde al aire libre", date: "14 AGO" }] },
