@@ -51,8 +51,6 @@ export type ClinicalEvent = {
   attachmentUrl?: string;
   attachmentFormat?: string;
 };
-export type AlbumPhoto = { id: string; emoji: string; color: string; title: string; date: string };
-export type Album = { id: string; name: string; emoji: string; color: string; photos: AlbumPhoto[] };
 export type LocalUser = { id: string; name: string; email: string; password: string; esPremium?: boolean };
 
 type AppData = {
@@ -63,8 +61,6 @@ type AppData = {
   setReminders: (reminders: Reminder[]) => void;
   events: ClinicalEvent[];
   setEvents: (events: ClinicalEvent[]) => void;
-  albums: Album[];
-  setAlbums: (albums: Album[]) => void;
   users: LocalUser[];
   currentUser: LocalUser | null;
   setCurrentUser: (user: LocalUser | null) => void;
@@ -87,7 +83,6 @@ type PersistedData = {
   pets?: Pet[];
   reminders?: Reminder[];
   events?: ClinicalEvent[];
-  albums?: Album[];
   users?: LocalUser[];
   currentUser?: LocalUser | null;
   premium?: boolean;
@@ -111,10 +106,6 @@ const initialReminders: Reminder[] = [
 const initialEvents: ClinicalEvent[] = [
   { id: "consulta-fido", petId: "fido", type: "Consulta", title: "Control general", pet: "Fido", detail: "Sin hallazgos. Se recomienda control anual.", date: "20 AGO 2026" },
   { id: "vacuna-fido", petId: "fido", type: "Vacuna", title: "Vacuna séxtuple", pet: "Fido", detail: "Aplicada correctamente.", date: "15 MAY 2026" },
-];
-const initialAlbums: Album[] = [
-  { id: "fido", name: "Momentos de Fido", emoji: "🐶", color: "#F2D5A0", photos: [{ id: "1", emoji: "🐶", color: "#F2D5A0", title: "Paseo en la plaza", date: "20 AGO" }, { id: "2", emoji: "🌳", color: "#D6EBC7", title: "Tarde al aire libre", date: "14 AGO" }] },
-  { id: "luna", name: "Luna en casa", emoji: "🐱", color: "#D9CDFC", photos: [{ id: "3", emoji: "🐱", color: "#D9CDFC", title: "Siesta", date: "08 AGO" }] },
 ];
 const initialUsers: LocalUser[] = [{ id: "demo", name: "Usuario Demo", email: "usuario@demo.com", password: "Demo1234" }];
 
@@ -177,7 +168,6 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const [pets, setPets] = useState<Pet[]>(initialPets);
   const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
   const [events, setEvents] = useState<ClinicalEvent[]>(initialEvents);
-  const [albums, setAlbums] = useState<Album[]>(initialAlbums);
   const [users, setUsers] = useState<LocalUser[]>(initialUsers);
   const [currentUser, setCurrentUser] = useState<LocalUser | null>(null);
   const [premium, setPremium] = useState(false);
@@ -201,7 +191,6 @@ export function AppDataProvider({ children }: PropsWithChildren) {
         if (saved?.pets) setPets(saved.pets);
         if (saved?.reminders) setReminders(saved.reminders);
         if (saved?.events) setEvents(saved.events);
-        if (saved?.albums) setAlbums(saved.albums);
         if (saved?.users) setUsers(saved.users);
 
         if (!isWeb && saved?.currentUser) {
@@ -313,12 +302,12 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!ready) return;
 
-    writePersistedData({ pets, reminders, events, albums, users, currentUser, premium, notifications });
-  }, [pets, reminders, events, albums, users, currentUser, premium, notifications, ready]);
+    writePersistedData({ pets, reminders, events, users, currentUser, premium, notifications });
+  }, [pets, reminders, events, users, currentUser, premium, notifications, ready]);
 
   return (
     <AppDataContext.Provider
-      value={{ pets, setPets, refreshPets, reminders, setReminders, events, setEvents, albums, setAlbums, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
+      value={{ pets, setPets, refreshPets, reminders, setReminders, events, setEvents, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
     >
       {children}
     </AppDataContext.Provider>

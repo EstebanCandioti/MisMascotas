@@ -62,6 +62,36 @@ export type MascotaResponse = {
   creadoEn: string;
 };
 
+export type AlbumRequest = {
+  nombre: string;
+  descripcion?: string;
+  mascotaId: string;
+};
+
+export type AlbumResponse = {
+  idAlbum: string;
+  nombre: string;
+  descripcion: string | null;
+  mascotaId: string | null;
+  creadoPorId: string | null;
+  creadoEn: string;
+  cantidadFotos: number;
+};
+
+export type FotoRequest = {
+  urlArchivo: string;
+  formato?: string;
+};
+
+export type FotoResponse = {
+  idFoto: string;
+  albumId: string;
+  urlArchivo: string;
+  formato: string | null;
+  subidaPorId: string | null;
+  creadoEn: string;
+};
+
 type ApiErrorBody = {
   codigo?: string;
   message?: string;
@@ -178,6 +208,55 @@ export function updatePet(id: string, data: MascotaRequest) {
 
 export function deletePet(id: string) {
   return request<void>(`/mascotas/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function getAlbums(petId: string) {
+  return request<AlbumResponse[]>(`/mascotas/${encodeURIComponent(petId)}/albumes`);
+}
+
+export function getAlbum(id: string) {
+  return request<AlbumResponse>(`/albumes/${encodeURIComponent(id)}`);
+}
+
+export function createAlbum(data: AlbumRequest) {
+  return request<AlbumResponse>(`/mascotas/${encodeURIComponent(data.mascotaId)}/albumes`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateAlbum(id: string, data: AlbumRequest) {
+  return request<AlbumResponse>(`/albumes/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteAlbum(id: string) {
+  return request<void>(`/albumes/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export function getAlbumPhotos(albumId: string) {
+  return request<FotoResponse[]>(`/albumes/${encodeURIComponent(albumId)}/fotos`);
+}
+
+export function getPhoto(id: string) {
+  return request<FotoResponse>(`/fotos/${encodeURIComponent(id)}`);
+}
+
+export function createAlbumPhoto(albumId: string, data: FotoRequest) {
+  return request<FotoResponse>(`/albumes/${encodeURIComponent(albumId)}/fotos`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteAlbumPhoto(id: string) {
+  return request<void>(`/fotos/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }
