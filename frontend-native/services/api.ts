@@ -92,6 +92,36 @@ export type FotoResponse = {
   creadoEn: string;
 };
 
+export type RecordatorioRequest = {
+  mascotaId: string;
+  titulo: string;
+  tipo: "PIPETA_ANTIPARASITARIO" | "VISITA_VETERINARIO" | "MEDICACION" | "VACUNA" | "OTRO";
+  fechaHoraInicio: string;
+  modalidad?: "unica" | "recurrente" | "dias_semana";
+  intervaloValor?: number;
+  intervaloUnidad?: "dias" | "semanas" | "meses" | "anios";
+  diasSemana?: string;
+  fechaFin?: string;
+};
+
+export type RecordatorioResponse = {
+  idRecordatorio: string;
+  mascotaId: string;
+  titulo: string;
+  tipo: string;
+  fechaHoraInicio: string;
+  modalidad: string;
+  intervaloValor: number | null;
+  intervaloUnidad: string | null;
+  diaSemana: string | null;
+  fechaFin: string | null;
+  creadoPorId: string;
+  creadoEn: string;
+  confirmadoPorId: string | null;
+  confirmadoEn: string | null;
+  estado: string | null;
+};
+
 type ApiErrorBody = {
   codigo?: string;
   message?: string;
@@ -257,6 +287,53 @@ export function createAlbumPhoto(albumId: string, data: FotoRequest) {
 
 export function deleteAlbumPhoto(id: string) {
   return request<void>(`/fotos/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export function getPetReminders(petId: string) {
+  return request<RecordatorioResponse[]>(`/mascotas/${encodeURIComponent(petId)}/recordatorios`);
+}
+
+export function getReminder(id: string) {
+  return request<RecordatorioResponse>(`/recordatorios/${encodeURIComponent(id)}`);
+}
+
+export function createReminder(data: RecordatorioRequest) {
+  return request<RecordatorioResponse>(`/mascotas/${encodeURIComponent(data.mascotaId)}/recordatorios`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateReminder(id: string, data: RecordatorioRequest) {
+  return request<RecordatorioResponse>(`/recordatorios/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateReminderStatus(id: string, status: string) {
+  const query = new URLSearchParams({ nuevoEstado: status });
+  return request<RecordatorioResponse>(`/recordatorios/${encodeURIComponent(id)}/estado?${query.toString()}`, {
+    method: "PATCH",
+  });
+}
+
+export function confirmReminder(id: string) {
+  return request<RecordatorioResponse>(`/recordatorios/${encodeURIComponent(id)}/confirmacion`, {
+    method: "PATCH",
+  });
+}
+
+export function unconfirmReminder(id: string) {
+  return request<RecordatorioResponse>(`/recordatorios/${encodeURIComponent(id)}/confirmacion`, {
+    method: "DELETE",
+  });
+}
+
+export function deleteReminder(id: string) {
+  return request<void>(`/recordatorios/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }

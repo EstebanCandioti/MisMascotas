@@ -3,10 +3,18 @@ import {
   createContext,
   type PropsWithChildren,
   useContext,
+  useCallback,
   useEffect,
   useState,
 } from "react";
-import { AUTH_TOKEN_KEY, getCurrentUser, getPets, type MascotaResponse } from "../services/api";
+import {
+  AUTH_TOKEN_KEY,
+  getCurrentUser,
+  getPetReminders,
+  getPets,
+  type MascotaResponse,
+  type RecordatorioResponse,
+} from "../services/api";
 import { getAuthToken } from "../services/auth-storage";
 
 export type Pet = {
@@ -29,11 +37,20 @@ export type Pet = {
 
 export type Reminder = {
   id: string;
+  petId: string;
   title: string;
+  type: string;
   pet: string;
   date: string;
   detail: string;
   done: boolean;
+  modality: string;
+  intervalValue: number | null;
+  intervalUnit: string | null;
+  weekdays: string | null;
+  endDate: string | null;
+  confirmedAt: string | null;
+  status: string | null;
 };
 export type ClinicalEvent = {
   id: string;
@@ -56,9 +73,11 @@ export type LocalUser = { id: string; name: string; email: string; password: str
 type AppData = {
   pets: Pet[];
   setPets: (pets: Pet[]) => void;
-  refreshPets: () => Promise<void>;
+  refreshPets: () => Promise<Pet[]>;
   reminders: Reminder[];
   setReminders: (reminders: Reminder[]) => void;
+  refreshReminders: (petsToLoad: Pet[]) => Promise<void>;
+  remindersError: string | null;
   events: ClinicalEvent[];
   setEvents: (events: ClinicalEvent[]) => void;
   users: LocalUser[];
@@ -81,7 +100,6 @@ type AppData = {
 
 type PersistedData = {
   pets?: Pet[];
-  reminders?: Reminder[];
   events?: ClinicalEvent[];
   users?: LocalUser[];
   currentUser?: LocalUser | null;
@@ -98,11 +116,6 @@ const initialPets: Pet[] = [
   { id: "rex", name: "Rex", species: "Perro", breed: "Bulldog", age: "5 años", weight: "22 kg", emoji: "🐶", color: "#C9E5F3" },
 ];
 
-const initialReminders: Reminder[] = [
-  { id: "vacuna", title: "Vacuna antirrábica", pet: "Fido", date: "30 AGO", detail: "En 3 días", done: false },
-  { id: "control", title: "Control anual", pet: "Rex", date: "03 SEP", detail: "En 7 días", done: false },
-  { id: "pipeta", title: "Pipeta antiparasitaria", pet: "Luna", date: "27 AGO", detail: "Completado hoy", done: true },
-];
 const initialEvents: ClinicalEvent[] = [
   { id: "consulta-fido", petId: "fido", type: "Consulta", title: "Control general", pet: "Fido", detail: "Sin hallazgos. Se recomienda control anual.", date: "20 AGO 2026" },
   { id: "vacuna-fido", petId: "fido", type: "Vacuna", title: "Vacuna séxtuple", pet: "Fido", detail: "Aplicada correctamente.", date: "15 MAY 2026" },
@@ -136,6 +149,33 @@ function mapPetResponse(pet: MascotaResponse): Pet {
 
 const AppDataContext = createContext<AppData | null>(null);
 
+export function mapReminderResponse(reminder: RecordatorioResponse, pet: Pet): Reminder {
+  const startDate = new Date(reminder.fechaHoraInicio);
+  const recurrence = reminder.modalidad === "recurrente" && reminder.intervaloValor && reminder.intervaloUnidad
+    ? `Cada ${reminder.intervaloValor} ${reminder.intervaloUnidad}`
+    : reminder.modalidad === "dias_semana" && reminder.diaSemana
+      ? `Días: ${reminder.diaSemana}`
+      : "Único";
+
+  return {
+    id: reminder.idRecordatorio,
+    petId: reminder.mascotaId,
+    title: reminder.titulo,
+    type: reminder.tipo,
+    pet: pet.name,
+    date: Number.isNaN(startDate.getTime()) ? reminder.fechaHoraInicio : startDate.toISOString(),
+    detail: recurrence,
+    done: Boolean(reminder.confirmadoEn) || reminder.estado?.toUpperCase() === "COMPLETADO",
+    modality: reminder.modalidad,
+    intervalValue: reminder.intervaloValor,
+    intervalUnit: reminder.intervaloUnidad,
+    weekdays: reminder.diaSemana,
+    endDate: reminder.fechaFin,
+    confirmedAt: reminder.confirmadoEn,
+    status: reminder.estado,
+  };
+}
+
 async function readPersistedData(): Promise<PersistedData | null> {
   try {
     if (isWeb) {
@@ -166,7 +206,8 @@ async function writePersistedData(data: PersistedData) {
 
 export function AppDataProvider({ children }: PropsWithChildren) {
   const [pets, setPets] = useState<Pet[]>(initialPets);
-  const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [remindersError, setRemindersError] = useState<string | null>(null);
   const [events, setEvents] = useState<ClinicalEvent[]>(initialEvents);
   const [users, setUsers] = useState<LocalUser[]>(initialUsers);
   const [currentUser, setCurrentUser] = useState<LocalUser | null>(null);
@@ -175,21 +216,41 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const [ready, setReady] = useState(false);
   const [pendingAuthToken, setPendingAuthToken] = useState<string | null>(null);
   const [pendingCredentials, setPendingCredentialsState] = useState<{ email: string; password: string } | null>(null);
+  const currentUserId = currentUser?.id;
 
-  const refreshPets = async () => {
-    try {
-      const remotePets = await getPets();
-      setPets(remotePets.map(mapPetResponse));
-    } catch {
-      // Conserva las mascotas locales si el backend no está disponible.
+  const refreshPets = useCallback(async (): Promise<Pet[]> => {
+    const remotePets = await getPets();
+    const mappedPets = remotePets.map(mapPetResponse);
+    setPets(mappedPets);
+    return mappedPets;
+  }, []);
+
+  const refreshReminders = useCallback(async (petsToLoad: Pet[]) => {
+    if (!petsToLoad.length) {
+      setReminders([]);
+      setRemindersError(null);
+      return;
     }
-  };
+
+    try {
+      const remindersByPet = await Promise.all(
+        petsToLoad.map(async (pet) => {
+          const results = await getPetReminders(pet.id);
+          return results.map((reminder) => mapReminderResponse(reminder, pet));
+        }),
+      );
+      setReminders(remindersByPet.flat().sort((first, second) => Date.parse(first.date) - Date.parse(second.date)));
+      setRemindersError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudieron cargar los recordatorios.";
+      setRemindersError(message);
+    }
+  }, []);
 
   useEffect(() => {
     readPersistedData()
       .then((saved) => {
         if (saved?.pets) setPets(saved.pets);
-        if (saved?.reminders) setReminders(saved.reminders);
         if (saved?.events) setEvents(saved.events);
         if (saved?.users) setUsers(saved.users);
 
@@ -204,16 +265,19 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    if (!ready || !currentUser) return;
+    if (!ready || !currentUserId) return;
 
     let cancelled = false;
 
-    getAuthToken(AUTH_TOKEN_KEY)
-      .then(async (token) => {
-        if (!token) return null;
-        await refreshPets();
-        return getCurrentUser(token);
-      })
+    const loadAccountData = async () => {
+      const token = await getAuthToken(AUTH_TOKEN_KEY);
+      if (!token) return null;
+      const remotePets = await refreshPets();
+      await refreshReminders(remotePets);
+      return getCurrentUser(token);
+    };
+
+    loadAccountData()
       .then((profile) => {
         if (!profile || cancelled) return;
 
@@ -233,7 +297,7 @@ export function AppDataProvider({ children }: PropsWithChildren) {
     return () => {
       cancelled = true;
     };
-  }, [ready, currentUser?.id]);
+  }, [currentUserId, ready, refreshPets, refreshReminders]);
 
   const setPendingCredentials = (email: string, password: string) => {
     setPendingCredentialsState({ email, password });
@@ -289,6 +353,8 @@ export function AppDataProvider({ children }: PropsWithChildren) {
 
   const logout = async () => {
     setCurrentUser(null);
+    setReminders([]);
+    setRemindersError(null);
     setPendingAuthToken(null);
     setPendingCredentialsState(null);
     try {
@@ -302,12 +368,12 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!ready) return;
 
-    writePersistedData({ pets, reminders, events, users, currentUser, premium, notifications });
-  }, [pets, reminders, events, users, currentUser, premium, notifications, ready]);
+    writePersistedData({ pets, events, users, currentUser, premium, notifications });
+  }, [pets, events, users, currentUser, premium, notifications, ready]);
 
   return (
     <AppDataContext.Provider
-      value={{ pets, setPets, refreshPets, reminders, setReminders, events, setEvents, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
+      value={{ pets, setPets, refreshPets, reminders, setReminders, refreshReminders, remindersError, events, setEvents, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
     >
       {children}
     </AppDataContext.Provider>
