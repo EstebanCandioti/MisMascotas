@@ -36,6 +36,8 @@ public class SecurityConfig {
             "/auth/register",
             "/auth/login",
             "/auth/verificar-codigo",
+            "/auth/refresh",
+            "/auth/logout",
             "/pagos/webhook"
     };
 

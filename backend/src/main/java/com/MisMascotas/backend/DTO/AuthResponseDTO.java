@@ -1,10 +1,10 @@
 package com.MisMascotas.backend.DTO;
 
-public record AuthResponseDTO(
-        String token,
-        String tipo) {
+import java.time.Instant;
 
-    public AuthResponseDTO(String token) {
-        this(token, "Bearer");
-    }
+public record AuthResponseDTO(
+        String accessToken,
+        String refreshToken,
+        String tipo,
+        Instant accessTokenExpiraEn) {
 }

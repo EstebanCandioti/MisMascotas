@@ -23,12 +23,14 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    private static final long DIAS_EXPIRACION = 30;
     private static final String CLAIM_ID_USUARIO = "idUsuario";
     private static final String CLAIM_PRE_AUTH = "pre_auth";
 
     @Value("${jwt.secret}")
     private String secret;
+
+    @Value("${jwt.access-token-expiration-minutes}")
+    private long minutosExpiracionAccessToken;
 
     @Value("${jwt.pre-auth-expiration-minutes:10}")
     private long minutosExpiracionPreAuth;
@@ -54,18 +56,17 @@ public class JwtService {
     }
 
     public String generarToken(Usuario usuario) {
+        return generarTokenAcceso(usuario).token();
+    }
+
+    public TokenAcceso generarTokenAcceso(Usuario usuario) {
         validarUsuarioParaToken(usuario);
 
         Instant ahora = Instant.now();
-        Instant expiracion = ahora.plus(DIAS_EXPIRACION, ChronoUnit.DAYS);
+        Instant expiracion = ahora.plus(minutosExpiracionAccessToken, ChronoUnit.MINUTES);
+        String token = generarJwt(usuario, ahora, expiracion, false);
 
-        return Jwts.builder()
-                .subject(usuario.getEmail())
-                .claim(CLAIM_ID_USUARIO, usuario.getIdUsuario().toString())
-                .issuedAt(Date.from(ahora))
-                .expiration(Date.from(expiracion))
-                .signWith(getSigningKey(), Jwts.SIG.HS256)
-                .compact();
+        return new TokenAcceso(token, expiracion);
     }
 
     public String generarTokenPreAuth(Usuario usuario) {
@@ -73,15 +74,7 @@ public class JwtService {
 
         Instant ahora = Instant.now();
         Instant expiracion = ahora.plus(minutosExpiracionPreAuth, ChronoUnit.MINUTES);
-
-        return Jwts.builder()
-                .subject(usuario.getEmail())
-                .claim(CLAIM_ID_USUARIO, usuario.getIdUsuario().toString())
-                .claim(CLAIM_PRE_AUTH, true)
-                .issuedAt(Date.from(ahora))
-                .expiration(Date.from(expiracion))
-                .signWith(getSigningKey(), Jwts.SIG.HS256)
-                .compact();
+        return generarJwt(usuario, ahora, expiracion, true);
     }
 
     public String extraerEmail(String token) {
@@ -144,6 +137,22 @@ public class JwtService {
         }
     }
 
+    private String generarJwt(Usuario usuario, Instant emitidoEn, Instant expiracion, boolean preAuth) {
+        var builder = Jwts.builder()
+                .subject(usuario.getEmail())
+                .claim(CLAIM_ID_USUARIO, usuario.getIdUsuario().toString())
+                .issuedAt(Date.from(emitidoEn))
+                .expiration(Date.from(expiracion));
+
+        if (preAuth) {
+            builder.claim(CLAIM_PRE_AUTH, true);
+        }
+
+        return builder
+                .signWith(getSigningKey(), Jwts.SIG.HS256)
+                .compact();
+    }
+
     private Claims extraerClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -165,5 +174,8 @@ public class JwtService {
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public record TokenAcceso(String token, Instant expiraEn) {
     }
 }

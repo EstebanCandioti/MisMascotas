@@ -51,11 +51,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = authorizationHeader.substring(7);
 
         if (jwtService.esTokenPreAuth(token)) {
-            if (esEndpointPublicoDeAuth(request)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
             escribirError(response, HttpServletResponse.SC_UNAUTHORIZED, "NO_AUTENTICADO", "Token de verificacion no valido para este endpoint");
             return;
         }
@@ -87,6 +82,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 && ("/auth/register".equals(path)
                         || "/auth/login".equals(path)
                         || "/auth/verificar-codigo".equals(path)
+                        || "/auth/refresh".equals(path)
+                        || "/auth/logout".equals(path)
                         || "/pagos/webhook".equals(path));
     }
 

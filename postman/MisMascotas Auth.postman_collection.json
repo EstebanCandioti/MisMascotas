@@ -1,401 +1,238 @@
 {
   "info": {
-    "name": "MisMascotas - Auth (CU1 + CU2 2FA)",
-    "description": "Tests basicos de AuthController: registro, login con token pre-auth, verificacion de codigo 2FA y acceso a endpoint protegido. Correr en orden. Para verificar codigo, copiar el codigo recibido por email en la variable codigo antes de ejecutar el request correspondiente.",
+    "name": "MisMascotas - Auth (CU1 + CU2 2FA + Refresh)",
+    "description": "Pruebas basicas del flujo Auth: registro con pre-auth, verificacion por codigo, access token corto, refresh token rotativo, logout y multi-dispositivo. Correr en orden. Para cada request de verificacion, cargar la variable codigo con el ultimo codigo recibido por email.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "base_url", "value": "http://localhost:8080", "type": "string" },
     { "key": "email", "value": "", "type": "string" },
     { "key": "password", "value": "Test1234", "type": "string" },
+    { "key": "codigo", "value": "", "type": "string" },
     { "key": "preAuthToken", "value": "", "type": "string" },
-    { "key": "sessionToken", "value": "", "type": "string" },
-    { "key": "codigo", "value": "", "type": "string" }
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "oldRefreshToken", "value": "", "type": "string" },
+    { "key": "refreshTokenDispositivoA", "value": "", "type": "string" },
+    { "key": "refreshTokenDispositivoB", "value": "", "type": "string" },
+    { "key": "accessTokenDispositivoB", "value": "", "type": "string" },
+    { "key": "refreshTokenRevocado", "value": "", "type": "string" }
   ],
   "item": [
     {
-      "name": "CU1 - Registrarse",
+      "name": "Registro y acceso",
       "item": [
         {
-          "name": "01 - Registrar usuario - 200",
+          "name": "01 - Registrar usuario devuelve pre-auth - 200",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const email = `test_${Date.now()}@mismascotas.test`;",
-                  "pm.collectionVariables.set('email', email);",
-                  "pm.collectionVariables.set('password', 'Test1234');",
-                  "pm.collectionVariables.unset('preAuthToken');",
-                  "pm.collectionVariables.unset('sessionToken');",
-                  "pm.collectionVariables.unset('codigo');"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('Devuelve JWT de sesion Bearer', () => {",
-                  "    pm.expect(body.token).to.be.a('string').and.not.empty;",
-                  "    pm.expect(body.tipo).to.eql('Bearer');",
-                  "});",
-                  "pm.collectionVariables.set('sessionToken', body.token);"
-                ]
-              }
-            }
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "const email = `test_${Date.now()}@mismascotas.test`;",
+              "pm.collectionVariables.set('email', email);",
+              "pm.collectionVariables.set('password', 'Test1234');",
+              "['codigo','preAuthToken','accessToken','refreshToken','oldRefreshToken','refreshTokenDispositivoA','refreshTokenDispositivoB','accessTokenDispositivoB','refreshTokenRevocado'].forEach(k => pm.collectionVariables.unset(k));"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('Devuelve token pre-auth, no sesion', () => {",
+              "  pm.expect(body.token).to.be.a('string').and.not.empty;",
+              "  pm.expect(body.tipo).to.eql('Bearer');",
+              "  pm.expect(body.mensaje).to.eql('Codigo de verificacion enviado');",
+              "  pm.expect(body).to.not.have.property('accessToken');",
+              "  pm.expect(body).to.not.have.property('refreshToken');",
+              "});",
+              "pm.collectionVariables.set('preAuthToken', body.token);"
+            ] } }
           ],
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
-            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
             "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
           }
         },
         {
-          "name": "02 - Registrar con email duplicado - 409",
+          "name": "02 - Acceso a /usuario/me sin token - 401",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] } }
+        },
+        {
+          "name": "03 - Token pre-auth no accede a /usuario/me - 401",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));",
+            "const body = pm.response.json();",
+            "pm.test('NO_AUTENTICADO', () => pm.expect(body.codigo).to.eql('NO_AUTENTICADO'));"
+          ] } }],
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{preAuthToken}}" }], "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] } }
+        },
+        {
+          "name": "04 - Verificar codigo de registro devuelve access + refresh - 200",
           "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
-                  "const body = pm.response.json();",
-                  "pm.test('ERROR_NEGOCIO por email duplicado', () => {",
-                  "    pm.expect(body.codigo).to.eql('ERROR_NEGOCIO');",
-                  "    pm.expect(body.mensaje).to.include('ya esta registrado');",
-                  "    pm.expect(body).to.have.property('timestamp');",
-                  "});"
-                ]
-              }
-            }
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "if (!pm.collectionVariables.get('codigo')) throw new Error('Carga la variable codigo con el ultimo codigo recibido por email antes de ejecutar este request.');"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('Devuelve par de tokens', () => {",
+              "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
+              "  pm.expect(body.refreshToken).to.be.a('string').and.not.empty;",
+              "  pm.expect(body.tipo).to.eql('Bearer');",
+              "  pm.expect(body.accessTokenExpiraEn).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.collectionVariables.set('accessToken', body.accessToken);",
+              "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+            ] } }
           ],
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Usuario Duplicado\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{preAuthToken}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
           }
         },
         {
-          "name": "03 - Registrar con campos vacios - 400",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
-                  "const body = pm.response.json();",
-                  "pm.test('ERROR_VALIDACION con un error por campo', () => {",
-                  "    pm.expect(body.codigo).to.eql('ERROR_VALIDACION');",
-                  "    pm.expect(body.mensaje).to.include('nombre:');",
-                  "    pm.expect(body.mensaje).to.include('email:');",
-                  "    pm.expect(body.mensaje).to.include('password:');",
-                  "    pm.expect((body.mensaje.match(/password:/g) || []).length).to.eql(1);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"\",\n  \"email\": \"\",\n  \"password\": \"\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
-          }
+          "name": "05 - Acceder a /usuario/me con access token - 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('Perfil autenticado', () => pm.expect(body.email).to.eql(pm.collectionVariables.get('email')));"
+          ] } }],
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] } }
         }
       ]
     },
     {
-      "name": "CU2 - Login 2FA",
+      "name": "Refresh rotativo",
       "item": [
         {
-          "name": "01 - Login credenciales correctas devuelve pre-auth - 200",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('Devuelve token pre-auth Bearer y mensaje', () => {",
-                  "    pm.expect(body.token).to.be.a('string').and.not.empty;",
-                  "    pm.expect(body.tipo).to.eql('Bearer');",
-                  "    pm.expect(body.mensaje).to.eql('Codigo de verificacion enviado');",
-                  "});",
-                  "pm.collectionVariables.set('preAuthToken', body.token);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
-          }
+          "name": "01 - Renovar con refresh valido rota token - 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "const anterior = pm.collectionVariables.get('refreshToken');",
+            "pm.test('Devuelve nuevo par de tokens', () => {",
+            "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
+            "  pm.expect(body.refreshToken).to.be.a('string').and.not.empty;",
+            "  pm.expect(body.refreshToken).to.not.eql(anterior);",
+            "});",
+            "pm.collectionVariables.set('oldRefreshToken', anterior);",
+            "pm.collectionVariables.set('accessToken', body.accessToken);",
+            "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] } }
         },
         {
-          "name": "02 - Token pre-auth no accede a /usuario/me - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
-                  "const body = pm.response.json();",
-                  "pm.test('Error uniforme de no autenticado', () => {",
-                  "    pm.expect(body.codigo).to.eql('NO_AUTENTICADO');",
-                  "    pm.expect(body.mensaje).to.be.a('string').and.not.empty;",
-                  "    pm.expect(body).to.have.property('timestamp');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [ { "key": "Authorization", "value": "Bearer {{preAuthToken}}" } ],
-            "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] }
-          }
+          "name": "02 - Reutilizar refresh rotado revoca sesiones activas - 401",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));",
+            "const body = pm.response.json();",
+            "pm.test('NO_AUTENTICADO', () => pm.expect(body.codigo).to.eql('NO_AUTENTICADO'));"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{oldRefreshToken}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] } }
         },
         {
-          "name": "03 - /usuario/me sin token - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
-                  "const body = pm.response.json();",
-                  "pm.test('Error uniforme de no autenticado', () => {",
-                  "    pm.expect(body.codigo).to.eql('NO_AUTENTICADO');",
-                  "    pm.expect(body.mensaje).to.eql('Token ausente o invalido');",
-                  "    pm.expect(body).to.have.property('timestamp');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] }
-          }
+          "name": "03 - Renovar con refresh inexistente - 401",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));",
+            "const body = pm.response.json();",
+            "pm.test('NO_AUTENTICADO', () => pm.expect(body.codigo).to.eql('NO_AUTENTICADO'));",
+            "pm.test('No revela existencia del token', () => pm.expect(body.mensaje).to.eql('Refresh token invalido'));"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"refresh-token-inexistente\"\n}" }, "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] } }
+        }
+      ]
+    },
+    {
+      "name": "Logout y multiples dispositivos",
+      "item": [
+        {
+          "name": "01 - Login dispositivo A devuelve pre-auth - 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.collectionVariables.set('preAuthToken', body.token);",
+            "pm.collectionVariables.unset('codigo');"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] } }
         },
         {
-          "name": "03 - Verificar codigo correcto - 200",
+          "name": "02 - Verificar codigo dispositivo A - 200",
           "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (!pm.collectionVariables.get('codigo')) {",
-                  "    throw new Error('Carga la variable de coleccion codigo con el codigo recibido por email antes de ejecutar este request.');",
-                  "}"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('Devuelve JWT final Bearer', () => {",
-                  "    pm.expect(body.token).to.be.a('string').and.not.empty;",
-                  "    pm.expect(body.tipo).to.eql('Bearer');",
-                  "});",
-                  "pm.collectionVariables.set('sessionToken', body.token);"
-                ]
-              }
-            }
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["if (!pm.collectionVariables.get('codigo')) throw new Error('Actualiza codigo con el ultimo codigo recibido por email para dispositivo A.');"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('accessToken', body.accessToken);",
+              "pm.collectionVariables.set('refreshTokenDispositivoA', body.refreshToken);",
+              "pm.collectionVariables.set('codigo', '');"
+            ] } }
           ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{preAuthToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
-          }
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{preAuthToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] } }
         },
         {
-          "name": "04 - Reutilizar codigo usado debe fallar - 400",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
-                  "const body = pm.response.json();",
-                  "pm.test('CODIGO_INVALIDO', () => {",
-                  "    pm.expect(body.codigo).to.eql('CODIGO_INVALIDO');",
-                  "    pm.expect(body.mensaje).to.eql('El codigo no es valido');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{preAuthToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
-          }
+          "name": "03 - Login dispositivo B devuelve pre-auth - 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.collectionVariables.set('preAuthToken', body.token);",
+            "pm.collectionVariables.unset('codigo');"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] } }
         },
         {
-          "name": "05 - Acceder a /usuario/me con JWT final - 200",
+          "name": "04 - Verificar codigo dispositivo B - 200",
           "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('Devuelve exactamente los cuatro campos del contrato', () => {",
-                  "    pm.expect(Object.keys(body).sort()).to.eql(['email', 'esPremium', 'idUsuario', 'nombre']);",
-                  "});",
-                  "pm.test('Devuelve perfil del usuario autenticado', () => {",
-                  "    pm.expect(body.idUsuario).to.be.a('string').and.not.empty;",
-                  "    pm.expect(body.email).to.eql(pm.collectionVariables.get('email'));",
-                  "    pm.expect(body.nombre).to.be.a('string').and.not.empty;",
-                  "    pm.expect(body.esPremium).to.be.a('boolean');",
-                  "});",
-                  "pm.test('No expone datos sensibles ni campos fuera del contrato', () => {",
-                  "    pm.expect(body).to.not.have.property('passwordHash');",
-                  "    pm.expect(body).to.not.have.property('activo');",
-                  "    pm.expect(body).to.not.have.property('creadoEn');",
-                  "});"
-                ]
-              }
-            }
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["if (!pm.collectionVariables.get('codigo')) throw new Error('Actualiza codigo con el ultimo codigo recibido por email para dispositivo B.');"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('accessTokenDispositivoB', body.accessToken);",
+              "pm.collectionVariables.set('refreshTokenDispositivoB', body.refreshToken);",
+              "pm.collectionVariables.set('codigo', '');"
+            ] } }
           ],
-          "request": {
-            "method": "GET",
-            "header": [ { "key": "Authorization", "value": "Bearer {{sessionToken}}" } ],
-            "url": { "raw": "{{base_url}}/usuario/me", "host": ["{{base_url}}"], "path": ["usuario", "me"] }
-          }
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{preAuthToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] } }
         },
         {
-          "name": "06 - Verificar codigo sin token pre-auth - 400",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
-                  "const body = pm.response.json();",
-                  "pm.test('ERROR_NEGOCIO por token faltante', () => {",
-                  "    pm.expect(body.codigo).to.eql('ERROR_NEGOCIO');",
-                  "    pm.expect(body.mensaje).to.eql('Token de verificacion invalido');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"codigo\": \"123456\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
-          }
+          "name": "05 - Logout dispositivo A - 204",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 204', () => pm.response.to.have.status(204));",
+            "pm.collectionVariables.set('refreshTokenRevocado', pm.collectionVariables.get('refreshTokenDispositivoA'));"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshTokenDispositivoA}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] } }
         },
         {
-          "name": "07 - Login password incorrecta - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
-                  "const body = pm.response.json();",
-                  "pm.test('Mensaje generico', () => {",
-                  "    pm.expect(body.codigo).to.eql('NO_AUTENTICADO');",
-                  "    pm.expect(body.mensaje).to.eql('Credenciales invalidas');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"PasswordIncorrecta1\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
-          }
+          "name": "06 - Renovar despues de logout dispositivo A - 401",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));",
+            "pm.test('NO_AUTENTICADO', () => pm.expect(pm.response.json().codigo).to.eql('NO_AUTENTICADO'));"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshTokenDispositivoA}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] } }
         },
         {
-          "name": "08 - Login campos vacios - 400",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
-                  "const body = pm.response.json();",
-                  "pm.test('ERROR_VALIDACION', () => {",
-                  "    pm.expect(body.codigo).to.eql('ERROR_VALIDACION');",
-                  "    pm.expect(body.mensaje).to.include('email:');",
-                  "    pm.expect(body.mensaje).to.include('password:');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
-          }
+          "name": "07 - Logout con refresh ya revocado - 204",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 204', () => pm.response.to.have.status(204));"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshTokenRevocado}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] } }
+        },
+        {
+          "name": "08 - Dispositivo B renueva despues de logout de A - 200",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('B conserva sesion y rota refresh', () => {",
+            "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
+            "  pm.expect(body.refreshToken).to.be.a('string').and.not.empty;",
+            "  pm.expect(body.refreshToken).to.not.eql(pm.collectionVariables.get('refreshTokenDispositivoB'));",
+            "});",
+            "pm.collectionVariables.set('accessTokenDispositivoB', body.accessToken);",
+            "pm.collectionVariables.set('refreshTokenDispositivoB', body.refreshToken);"
+          ] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshTokenDispositivoB}}\"\n}" }, "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] } }
         }
       ]
     }

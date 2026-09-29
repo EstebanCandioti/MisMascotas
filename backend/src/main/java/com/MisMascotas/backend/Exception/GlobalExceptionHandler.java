@@ -41,6 +41,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, "ACCESO_DENEGADO", ex.getMessage());
     }
 
+    @ExceptionHandler(RefreshTokenInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleRefreshTokenInvalidoException(RefreshTokenInvalidoException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "NO_AUTENTICADO", ex.getMessage());
+    }
+
     @ExceptionHandler(LimiteMascotasAlcanzadoException.class)
     public ResponseEntity<ErrorResponse> handleLimiteMascotasAlcanzadoException(LimiteMascotasAlcanzadoException ex) {
         return buildResponse(HttpStatus.CONFLICT, "LIMITE_MASCOTAS_ALCANZADO", ex.getMessage());

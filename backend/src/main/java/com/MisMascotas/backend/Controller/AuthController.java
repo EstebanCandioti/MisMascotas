@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.MisMascotas.backend.DTO.AuthResponseDTO;
 import com.MisMascotas.backend.DTO.LoginRequestDTO;
 import com.MisMascotas.backend.DTO.LoginResponseDTO;
+import com.MisMascotas.backend.DTO.RefreshTokenRequestDTO;
 import com.MisMascotas.backend.DTO.RegistroRequestDTO;
 import com.MisMascotas.backend.DTO.VerificarCodigoRequestDTO;
 import com.MisMascotas.backend.Service.AuthService;
@@ -28,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> registrar(@Valid @RequestBody RegistroRequestDTO request) {
+    public ResponseEntity<LoginResponseDTO> registrar(@Valid @RequestBody RegistroRequestDTO request) {
         return ResponseEntity.ok(authService.registrar(request));
     }
 
@@ -43,6 +44,17 @@ public class AuthController {
             @Valid @RequestBody VerificarCodigoRequestDTO request) {
         String tokenPreAuth = extraerBearerToken(authorizationHeader);
         return ResponseEntity.ok(authService.validarCodigoYCrearSesion(tokenPreAuth, request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponseDTO> refresh(@Valid @RequestBody RefreshTokenRequestDTO request) {
+        return ResponseEntity.ok(authService.renovarSesion(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequestDTO request) {
+        authService.cerrarSesion(request);
+        return ResponseEntity.noContent().build();
     }
 
     private String extraerBearerToken(String authorizationHeader) {
