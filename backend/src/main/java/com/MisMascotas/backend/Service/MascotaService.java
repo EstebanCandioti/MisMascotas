@@ -64,6 +64,21 @@ public class MascotaService {
     }
 
     @Transactional(readOnly = true)
+    public MascotaResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
+        Mascota mascota = mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
+
+        validarPropietario(mascota, usuarioAutenticadoId);
+
+        return mapToResponse(mascota);
+    }
+
+    /**
+     * Uso exclusivo del aspecto de auditoria para capturar el estado anterior.
+     * Los controllers deben usar la variante que recibe usuarioAutenticadoId.
+     */
+    @Deprecated
+    @Transactional(readOnly = true)
     public MascotaResponseDTO obtenerPorId(UUID id) {
         Mascota mascota = mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));

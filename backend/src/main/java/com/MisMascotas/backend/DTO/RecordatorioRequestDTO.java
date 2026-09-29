@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record RecordatorioRequestDTO(
-    @NotNull(message = "El ID de la mascota es obligatorio")
     UUID mascotaId,
 
     @NotBlank(message = "El titulo es obligatorio")

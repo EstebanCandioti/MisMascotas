@@ -36,8 +36,9 @@ public class MascotaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MascotaResponseDTO> obtenerPorId(@PathVariable UUID id) {
-        return ResponseEntity.ok(mascotaService.obtenerPorId(id));
+    public ResponseEntity<MascotaResponseDTO> obtenerPorId(@PathVariable UUID id, Principal principal) {
+        UUID propietarioId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(mascotaService.obtenerPorId(id, propietarioId));
     }
 
     @PutMapping("/{id}")
