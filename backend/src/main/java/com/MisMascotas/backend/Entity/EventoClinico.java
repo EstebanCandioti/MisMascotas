@@ -2,6 +2,11 @@ package com.MisMascotas.backend.Entity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+<<<<<<< Updated upstream
+=======
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+>>>>>>> Stashed changes
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +54,7 @@ public class EventoClinico {
     private String nombre;
 
     @Column(name = "fecha", nullable = false)
-    private Instant fecha;
+    private LocalDate fecha;
 
     @Column(name = "dosis", length = 100)
     private String dosis;
@@ -84,7 +89,7 @@ public class EventoClinico {
     @PrePersist
     public void prePersist() {
         if (fecha == null) {
-            fecha = Instant.now();
+            fecha = LocalDate.now();
         }
         if (creadoEn == null) {
             creadoEn = Instant.now();
