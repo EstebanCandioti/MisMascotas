@@ -1,6 +1,7 @@
 package com.MisMascotas.backend.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,6 @@ public interface FotoRepository extends JpaRepository<Foto, UUID> {
 
     @Query("SELECT f FROM Foto f WHERE f.album.idAlbum = :albumId AND f.fechaEliminacion IS NULL")
     List<Foto> findFotosActivasPorAlbum(@Param("albumId") UUID albumId);
+
+    Optional<Foto> findByIdFotoAndFechaEliminacionIsNull(UUID idFoto);
 }

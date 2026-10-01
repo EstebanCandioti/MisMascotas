@@ -14,9 +14,12 @@ import com.MisMascotas.backend.Entity.AlbumMascota;
 @Repository
 public interface AlbumMascotaRepository extends JpaRepository<AlbumMascota, UUID> {
 
-    @Query("SELECT am FROM AlbumMascota am WHERE am.mascota.idMascota = :mascotaId AND am.fechaEliminacion IS NULL")
+    @Query("SELECT am FROM AlbumMascota am WHERE am.mascota.idMascota = :mascotaId AND am.fechaEliminacion IS NULL AND am.mascota.fechaEliminacion IS NULL")
     List<AlbumMascota> findByMascotaIdActivos(@Param("mascotaId") UUID mascotaId);
 
-    @Query("SELECT am FROM AlbumMascota am WHERE am.album.idAlbum = :albumId AND am.fechaEliminacion IS NULL")
+    @Query("SELECT am FROM AlbumMascota am WHERE am.album.idAlbum = :albumId AND am.fechaEliminacion IS NULL AND am.mascota.fechaEliminacion IS NULL")
     Optional<AlbumMascota> findByAlbumIdActivo(@Param("albumId") UUID albumId);
+
+    @Query("SELECT am FROM AlbumMascota am WHERE am.album.idAlbum = :albumId AND am.fechaEliminacion IS NULL AND am.mascota.fechaEliminacion IS NULL")
+    List<AlbumMascota> findAllByAlbumIdActivos(@Param("albumId") UUID albumId);
 }

@@ -38,18 +38,24 @@ public class FotoController {
     }
 
     @GetMapping("/albumes/{albumId}/fotos")
-    public ResponseEntity<List<FotoResponseDTO>> listarPorAlbum(@PathVariable UUID albumId) {
-        return ResponseEntity.ok(fotoService.listarPorAlbum(albumId));
+    public ResponseEntity<List<FotoResponseDTO>> listarPorAlbum(@PathVariable UUID albumId,
+                                                                Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(fotoService.listarPorAlbum(albumId, usuarioAutenticadoId));
     }
 
     @GetMapping("/fotos/{id}")
-    public ResponseEntity<FotoResponseDTO> obtenerPorId(@PathVariable UUID id) {
-        return ResponseEntity.ok(fotoService.obtenerPorId(id));
+    public ResponseEntity<FotoResponseDTO> obtenerPorId(@PathVariable UUID id,
+                                                        Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(fotoService.obtenerPorId(id, usuarioAutenticadoId));
     }
 
     @DeleteMapping("/fotos/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
-        fotoService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id,
+                                         Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        fotoService.eliminar(id, usuarioAutenticadoId);
         return ResponseEntity.noContent().build();
     }
 }

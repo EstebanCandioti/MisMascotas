@@ -44,24 +44,32 @@ public class AlbumController {
     }
 
     @GetMapping("/mascotas/{mascotaId}/albumes")
-    public ResponseEntity<List<AlbumResponseDTO>> listarPorMascota(@PathVariable UUID mascotaId) {
-        return ResponseEntity.ok(albumService.listarPorMascota(mascotaId));
+    public ResponseEntity<List<AlbumResponseDTO>> listarPorMascota(@PathVariable UUID mascotaId,
+                                                                   Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(albumService.listarPorMascota(mascotaId, usuarioAutenticadoId));
     }
 
     @GetMapping("/albumes/{id}")
-    public ResponseEntity<AlbumResponseDTO> obtenerPorId(@PathVariable UUID id) {
-        return ResponseEntity.ok(albumService.obtenerPorId(id));
+    public ResponseEntity<AlbumResponseDTO> obtenerPorId(@PathVariable UUID id,
+                                                         Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(albumService.obtenerPorId(id, usuarioAutenticadoId));
     }
 
     @PutMapping("/albumes/{id}")
     public ResponseEntity<AlbumResponseDTO> editar(@PathVariable UUID id,
-                                                  @Valid @RequestBody AlbumRequestDTO request) {
-        return ResponseEntity.ok(albumService.editar(id, request));
+                                                  @Valid @RequestBody AlbumRequestDTO request,
+                                                  Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(albumService.editar(id, request, usuarioAutenticadoId));
     }
 
     @DeleteMapping("/albumes/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
-        albumService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id,
+                                         Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        albumService.eliminar(id, usuarioAutenticadoId);
         return ResponseEntity.noContent().build();
     }
 }
