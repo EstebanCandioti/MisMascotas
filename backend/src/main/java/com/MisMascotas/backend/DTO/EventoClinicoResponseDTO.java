@@ -2,7 +2,6 @@ package com.MisMascotas.backend.DTO;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.UUID;
 
 public record EventoClinicoResponseDTO(
@@ -11,13 +10,12 @@ public record EventoClinicoResponseDTO(
     UUID registradoPorId,
     String registradoPorNombre,
     String tipo,
-    LocalDate fecha,
+    Instant fecha,
     String nombre,
     String dosis,
-    BigDecimal valorNumerico,
+    BigDecimal valorPeso,
     String motivo,
     String diagnostico,
     String observaciones,
-    String urlAdjunto,
     Instant creadoEn
 ) {}

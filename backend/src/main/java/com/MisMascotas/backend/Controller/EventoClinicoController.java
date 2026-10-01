@@ -41,11 +41,10 @@ public class EventoClinicoController {
                 request.fecha(),
                 request.nombre(),
                 request.dosis(),
-                request.valorNumerico(),
+                request.valorPeso(),
                 request.motivo(),
                 request.diagnostico(),
-                request.observaciones(),
-                request.urlAdjunto()
+                request.observaciones()
         );
 
         EventoClinicoResponseDTO nuevoEvento = eventoClinicoService.registrar(requestNormalizado, registradoPorId);
@@ -54,24 +53,32 @@ public class EventoClinicoController {
 
     @GetMapping("/mascotas/{mascotaId}/eventos-clinicos")
     public ResponseEntity<List<EventoClinicoResponseDTO>> listarPorMascota(@PathVariable UUID mascotaId,
-                                                                           @RequestParam(required = false) String tipo) {
-        return ResponseEntity.ok(eventoClinicoService.listarPorMascota(mascotaId, tipo));
+                                                                           @RequestParam(required = false) String tipo,
+                                                                           Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(eventoClinicoService.listarPorMascota(mascotaId, tipo, usuarioAutenticadoId));
     }
 
     @GetMapping("/eventos-clinicos/{id}")
-    public ResponseEntity<EventoClinicoResponseDTO> obtenerPorId(@PathVariable UUID id) {
-        return ResponseEntity.ok(eventoClinicoService.obtenerPorId(id));
+    public ResponseEntity<EventoClinicoResponseDTO> obtenerPorId(@PathVariable UUID id,
+                                                                Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(eventoClinicoService.obtenerPorId(id, usuarioAutenticadoId));
     }
 
     @PutMapping("/eventos-clinicos/{id}")
     public ResponseEntity<EventoClinicoResponseDTO> editar(@PathVariable UUID id,
-                                                          @Valid @RequestBody EventoClinicoRequestDTO request) {
-        return ResponseEntity.ok(eventoClinicoService.editar(id, request));
+                                                          @Valid @RequestBody EventoClinicoRequestDTO request,
+                                                          Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(eventoClinicoService.editar(id, request, usuarioAutenticadoId));
     }
 
     @DeleteMapping("/eventos-clinicos/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
-        eventoClinicoService.eliminar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id,
+                                         Principal principal) {
+        UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        eventoClinicoService.eliminar(id, usuarioAutenticadoId);
         return ResponseEntity.noContent().build();
     }
 }

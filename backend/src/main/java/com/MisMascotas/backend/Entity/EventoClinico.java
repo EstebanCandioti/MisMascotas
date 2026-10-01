@@ -2,7 +2,6 @@ package com.MisMascotas.backend.Entity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,7 +49,7 @@ public class EventoClinico {
     private String nombre;
 
     @Column(name = "fecha", nullable = false)
-    private LocalDate fecha;
+    private Instant fecha;
 
     @Column(name = "dosis", length = 100)
     private String dosis;
@@ -85,7 +84,7 @@ public class EventoClinico {
     @PrePersist
     public void prePersist() {
         if (fecha == null) {
-            fecha = LocalDate.now();
+            fecha = Instant.now();
         }
         if (creadoEn == null) {
             creadoEn = Instant.now();

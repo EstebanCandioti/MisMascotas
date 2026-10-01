@@ -57,6 +57,15 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "ESTADO_NO_CONFIGURADO", ex.getMessage());
     }
 
+    @ExceptionHandler(ReglaNegocioException.class)
+    public ResponseEntity<ErrorResponse> handleReglaNegocioException(ReglaNegocioException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "ERROR_NEGOCIO", ex.getMessage());
+    }
+
+    @ExceptionHandler(ValidacionRequestException.class)
+    public ResponseEntity<ErrorResponse> handleValidacionRequestException(ValidacionRequestException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION", ex.getMessage());
+    }
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         HttpStatus status = ex.getMessage() != null && ex.getMessage().contains("ya esta registrado")

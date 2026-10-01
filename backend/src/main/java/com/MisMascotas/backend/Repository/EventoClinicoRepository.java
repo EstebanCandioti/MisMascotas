@@ -21,4 +21,8 @@ public interface EventoClinicoRepository extends JpaRepository<EventoClinico, UU
     List<EventoClinico> findByMascotaIdAndTipoOrderByFechaDesc(@Param("mascotaId") UUID mascotaId, @Param("tipo") String tipo);
 
     Optional<EventoClinico> findByIdEventoAndFechaEliminacionIsNull(UUID idEvento);
+
+    Optional<EventoClinico> findFirstByMascota_IdMascotaAndTipoAndFechaEliminacionIsNullOrderByFechaDesc(
+            UUID mascotaId,
+            String tipo);
 }
