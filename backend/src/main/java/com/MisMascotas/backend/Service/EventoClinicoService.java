@@ -20,7 +20,6 @@ import com.MisMascotas.backend.Entity.EventoClinico;
 import com.MisMascotas.backend.Entity.Mascota;
 import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
-import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
 import com.MisMascotas.backend.Exception.ReglaNegocioException;
 import com.MisMascotas.backend.Exception.ValidacionRequestException;
@@ -45,6 +44,7 @@ public class EventoClinicoService {
     private final EventoClinicoRepository eventoClinicoRepository;
     private final MascotaRepository mascotaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AccesoMascotaService accesoMascotaService;
 
     @Auditable(entidad = "evento_clinico", accion = TipoAccionAuditoria.CREATE)
     @Transactional
@@ -52,8 +52,7 @@ public class EventoClinicoService {
         String tipoNormalizado = validarRequest(request);
         validarFechaNoFutura(request.fecha());
 
-        Mascota mascota = buscarMascotaActiva(request.mascotaId());
-        validarAccesoMascota(mascota, registradoPorId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(request.mascotaId(), registradoPorId);
 
         Usuario usuario = usuarioRepository.findById(registradoPorId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + registradoPorId));
@@ -70,8 +69,7 @@ public class EventoClinicoService {
 
     @Transactional(readOnly = true)
     public List<EventoClinicoResponseDTO> listarPorMascota(UUID mascotaId, String tipo, UUID usuarioAutenticadoId) {
-        Mascota mascota = buscarMascotaActiva(mascotaId);
-        validarAccesoMascota(mascota, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(mascotaId, usuarioAutenticadoId);
 
         List<EventoClinico> eventos;
         if (tipo != null && !tipo.isBlank()) {
@@ -86,7 +84,7 @@ public class EventoClinicoService {
     @Transactional(readOnly = true)
     public EventoClinicoResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
         EventoClinico evento = buscarEventoActivo(id);
-        validarAccesoEvento(evento, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(evento.getMascota(), usuarioAutenticadoId);
         return mapToResponse(evento);
     }
 
@@ -107,7 +105,7 @@ public class EventoClinicoService {
         validarFechaNoFutura(request.fecha());
 
         EventoClinico evento = buscarEventoActivo(id);
-        validarAccesoEvento(evento, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(evento.getMascota(), usuarioAutenticadoId);
 
         Mascota mascota = evento.getMascota();
         aplicarDatos(evento, request, tipoNormalizado);
@@ -121,7 +119,7 @@ public class EventoClinicoService {
     @Transactional
     public void eliminar(UUID id, UUID usuarioAutenticadoId) {
         EventoClinico evento = buscarEventoActivo(id);
-        validarAccesoEvento(evento, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(evento.getMascota(), usuarioAutenticadoId);
 
         Mascota mascota = evento.getMascota();
         evento.setFechaEliminacion(Instant.now());
@@ -237,26 +235,11 @@ public class EventoClinicoService {
         mascotaRepository.save(mascota);
     }
 
-    private Mascota buscarMascotaActiva(UUID id) {
-        return mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("La mascota no existe o fue eliminada."));
-    }
-
     private EventoClinico buscarEventoActivo(UUID id) {
         return eventoClinicoRepository.findByIdEventoAndFechaEliminacionIsNull(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El evento clinico no existe."));
     }
 
-    private void validarAccesoEvento(EventoClinico evento, UUID usuarioAutenticadoId) {
-        validarAccesoMascota(evento.getMascota(), usuarioAutenticadoId);
-    }
-
-    private void validarAccesoMascota(Mascota mascota, UUID usuarioAutenticadoId) {
-        UUID propietarioId = mascota != null && mascota.getPropietario() != null ? mascota.getPropietario().getIdUsuario() : null;
-        if (!usuarioAutenticadoId.equals(propietarioId)) {
-            throw new AccesoDenegadoException("No tenes permisos para realizar esta accion sobre esta mascota");
-        }
-    }
 
     private EventoClinicoResponseDTO mapToResponse(EventoClinico evento) {
         return new EventoClinicoResponseDTO(
