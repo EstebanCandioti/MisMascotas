@@ -37,7 +37,7 @@ Centralizar el acceso a mascotas. ✅ Implementado y verificado en `AccesoMascot
 Revisar las ramas del front contra el contrato real.
 Front web (Yasmin): ✅ documentado en claude/front-web-que-cambio.md y claude/front-web-especificacion-tecnica.md. Pendiente de aplicar.
 Front nativo (Santiago): ✅ documentado en claude/front-nativo-que-cambio.md y claude/front-nativo-especificacion-tecnica.md. Pendiente de aplicar. Hallazgo principal: el login está roto contra el backend actual (lee token en lugar de accessToken/refreshToken). La versión vigente es feature-reminders, que contiene health y albums.
-Actualizar la colección de Postman. Es el instrumento de todas las pruebas que siguen y hoy no refleja el contrato actual. El contrato de álbumes, fotos, badges y usuario quedó relevado el 7 de octubre y está volcado en la especificación del front nativo.
+Actualizar la colección de Postman. ✅ Completado el 11 de octubre de 2026: la colección integral representa los 40 endpoints expuestos por los 9 controllers, incorpora recordatorios, eventos clínicos, álbumes, fotos y badges, y documenta las consultas de auditoría como deshabilitadas (404). Se agregó la matriz controller ↔ Postman en `postman/MATRIZ_COBERTURA.md`. La ejecución funcional contra Docker y seed continúa en Fase 2.
 Fase 1 — Docker base
 Dockerfile del backend — sirve para local y para despliegue, no compromete ninguna decisión posterior.
 Compose con Postgres, backend, init.sql y seed, con ddl-auto=validate.
@@ -108,7 +108,9 @@ El 2FA obligatorio complica una demostración donde los evaluadores usen la apli
 Si Docker va antes o después de las pruebas manuales. La recomendación es antes, para probar contra un seed conocido en lugar de contra una base con datos acumulados.
 Restricciones de plan premium en álbumes, fotos y badges: relevadas pero no implementadas, incluido el límite de tres badges por mascota.
 Endpoints de usuario: edición de perfil y lo que definan los CU de configuración (CU10, CU10a).
-Reenvío del código 2FA: hoy no hay endpoint propio y los fronts reenvían volviendo a llamar a login, lo que obliga a retener la contraseña en memoria durante la verificación. Un endpoint de reenvío basado en el token de preautenticación lo evitaría.
+Reenvío del código 2FA (futuro, fuera del alcance actual): hoy no hay endpoint propio y los fronts reenvían volviendo a llamar a login, lo que obliga a retener la contraseña en memoria durante la verificación. La propuesta acordada es autorizar el reenvío con un token de preautenticación y un desafío vigente, sin volver a solicitar la contraseña. El registro debe llevar directamente al desafío 2FA; si un usuario pendiente abandona el proceso, puede retomarlo desde login. Por ahora se mantiene un único desafío 2FA vigente por usuario: un nuevo login o reenvío invalida el código anterior, aunque siguen permitidas múltiples sesiones ya verificadas.
+
+Mejoras futuras de seguridad para Auth, expresamente fuera del alcance actual: desafíos 2FA simultáneos e independientes por dispositivo; contexto del intento en el correo (fecha, cliente y ubicación aproximada); cancelación de actividad desconocida; revocación global de sesiones; y revocación de sesiones y desafíos pendientes al cambiar la contraseña. No generar casos ejecutables ni ampliar el contrato actual hasta que estas capacidades entren formalmente en una fase del plan.
 Cuándo está terminado
 Los 27 casos de uso documentados tienen soporte en el backend, o están descontinuados con justificación escrita.
 Ningún endpoint permite operar sobre datos ajenos.

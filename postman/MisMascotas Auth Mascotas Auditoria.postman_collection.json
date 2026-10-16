@@ -1,46 +1,131 @@
 {
   "info": {
-    "name": "MisMascotas - Auth + Mascotas + Auditoria",
-    "description": "Pruebas basicas para registro/login con 2FA, access token, refresh token, CRUD simple de mascotas y consulta de auditoria. Correr en orden. Para verificar codigo, cargar la variable codigo con el codigo recibido por email.",
+    "name": "MisMascotas - Contrato API actual",
+    "description": "Representación del contrato implementado en la rama backend al 11 de octubre de 2026. Incluye los 40 mappings expuestos por los 9 controllers. Todas las rutas salvo Auth requieren Bearer {{accessToken}}. Las consultas de auditoría están documentadas como deshabilitadas y esperan 404. No incluye cuidado compartido, calendario, pagos, PDF, adjuntos ni edición de badges porque esos endpoints no existen.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    { "key": "base_url", "value": "http://localhost:8080", "type": "string" },
-    { "key": "email", "value": "", "type": "string" },
-    { "key": "password", "value": "Test1234", "type": "string" },
-    { "key": "preAuthToken", "value": "", "type": "string" },
-    { "key": "accessToken", "value": "", "type": "string" },
-    { "key": "refreshToken", "value": "", "type": "string" },
-    { "key": "codigo", "value": "", "type": "string" },
-    { "key": "mascotaId", "value": "", "type": "string" },
-    { "key": "auditEntidad", "value": "mascota", "type": "string" },
-    { "key": "auditIdEntidad", "value": "", "type": "string" }
-  ],
   "auth": {
     "type": "bearer",
-    "bearer": [ { "key": "token", "value": "{{accessToken}}", "type": "string" } ]
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "codigo",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "preAuthToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "usuarioId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordatorioId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "albumId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fotoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeId",
+      "value": "",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Auth",
+      "name": "Autenticación y 2FA",
+      "description": "Endpoints públicos. Registro y login devuelven un token de preautenticación. La verificación 2FA requiere ese token como Bearer y devuelve accessToken + refreshToken.",
       "item": [
         {
-          "name": "01 - Registrar usuario - 200 pre-auth",
+          "name": "01 - Registrar usuario - 200",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Crea un usuario y envía el código 2FA por email. Si el email ya existe responde 409 ERROR_NEGOCIO."
+          },
+          "response": [],
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const email = `test_${Date.now()}@mismascotas.test`;",
-                  "pm.collectionVariables.set('email', email);",
-                  "pm.collectionVariables.set('password', 'Test1234');",
-                  "pm.collectionVariables.unset('preAuthToken');",
-                  "pm.collectionVariables.unset('accessToken');",
-                  "pm.collectionVariables.unset('refreshToken');",
-                  "pm.collectionVariables.unset('codigo');",
-                  "pm.collectionVariables.unset('mascotaId');",
-                  "pm.collectionVariables.unset('auditIdEntidad');"
+                  "if (!pm.variables.get('email')) throw new Error('Configura email con una casilla que pueda recibir el código 2FA.');",
+                  "if (!pm.variables.get('password')) throw new Error('Configura password (mínimo 8 caracteres, una mayúscula y un número).');"
                 ]
               }
             },
@@ -51,77 +136,182 @@
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
                   "const body = pm.response.json();",
-                  "pm.test('Devuelve pre-auth y no sesion', () => { pm.expect(body.token).to.be.a('string').and.not.empty; pm.expect(body).to.not.have.property('accessToken'); pm.expect(body).to.not.have.property('refreshToken'); });",
+                  "pm.test('Devuelve pre-auth', () => { pm.expect(body.token).to.be.a('string').and.not.empty; pm.expect(body.tipo).to.eql('Bearer'); });",
                   "pm.collectionVariables.set('preAuthToken', body.token);"
                 ]
               }
             }
-          ],
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
-            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
-          }
+          ]
         },
         {
-          "name": "02 - Registrar email duplicado - 409",
-          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 409', () => pm.response.to.have.status(409));", "pm.test('ERROR_NEGOCIO', () => pm.expect(pm.response.json().codigo).to.eql('ERROR_NEGOCIO'));"] } } ],
+          "name": "02 - Login - 200",
           "request": {
-            "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
-            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
-          }
-        },
-        {
-          "name": "03 - Login credenciales correctas - 200 pre-auth",
-          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.test('Devuelve token pre-auth', () => pm.expect(body.token).to.be.a('string').and.not.empty);", "pm.collectionVariables.set('preAuthToken', body.token);"] } } ],
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
-            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
-          }
-        },
-        {
-          "name": "04 - Verificar codigo 2FA - 200 access + refresh",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valida credenciales, envía un código 2FA y devuelve un token de preautenticación; todavía no crea una sesión."
+          },
+          "response": [],
           "event": [
-            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["if (!pm.collectionVariables.get('codigo')) throw new Error('Carga la variable codigo con el codigo recibido por email.');"] } },
-            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.test('Devuelve access y refresh', () => { pm.expect(body.accessToken).to.be.a('string').and.not.empty; pm.expect(body.refreshToken).to.be.a('string').and.not.empty; });", "pm.collectionVariables.set('accessToken', body.accessToken);", "pm.collectionVariables.set('refreshToken', body.refreshToken);"] } }
-          ],
-          "request": {
-            "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{preAuthToken}}", "type": "string" } ] },
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}" },
-            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
-          }
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('preAuthToken', body.token);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "05 - Login credenciales invalidas - 401",
-          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 401', () => pm.response.to.have.status(401));", "pm.test('NO_AUTENTICADO', () => pm.expect(pm.response.json().codigo).to.eql('NO_AUTENTICADO'));"] } } ],
+          "name": "03 - Verificar código 2FA - 200",
           "request": {
-            "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"PasswordIncorrecta123\"\n}" },
-            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{preAuthToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El header Authorization debe contener el token de preautenticación, no el access token."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get('codigo')) throw new Error('Configura codigo con el último código recibido por email.');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Devuelve sesión', () => { pm.expect(body.accessToken).to.be.a('string').and.not.empty; pm.expect(body.refreshToken).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('accessToken', body.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "06 - Verificar codigo incorrecto - 400",
-          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 400', () => pm.response.to.have.status(400));", "pm.test('CODIGO_INVALIDO', () => pm.expect(pm.response.json().codigo).to.eql('CODIGO_INVALIDO'));"] } } ],
+          "name": "04 - Renovar sesión - 200",
           "request": {
-            "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{preAuthToken}}", "type": "string" } ] },
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"codigo\": \"000000\"\n}" },
-            "url": { "raw": "{{base_url}}/auth/verificar-codigo", "host": ["{{base_url}}"], "path": ["auth", "verificar-codigo"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/refresh",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El refresh token es rotativo: la respuesta reemplaza tanto accessToken como refreshToken."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', body.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usuario",
+      "item": [
+        {
+          "name": "01 - Obtener perfil autenticado - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuario/me",
+            "description": "Único endpoint de usuario actualmente implementado. No existe edición de perfil."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "if (body.idUsuario) pm.collectionVariables.set('usuarioId', body.idUsuario);"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -130,25 +320,939 @@
       "item": [
         {
           "name": "01 - Crear mascota - 201",
-          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 201', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.collectionVariables.set('mascotaId', body.idMascota);", "pm.collectionVariables.set('auditEntidad', 'mascota');", "pm.collectionVariables.set('auditIdEntidad', body.idMascota);"] } } ],
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 12.50,\n  \"notas\": \"Mascota creada desde Postman\"\n}" },
-            "url": { "raw": "{{base_url}}/mascotas", "host": ["{{base_url}}"], "path": ["mascotas"] }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mora\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Mascota creada desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('mascotaId', body.idMascota);"
+                ]
+              }
+            }
+          ]
         },
-        { "name": "02 - Listar mis mascotas - 200", "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.expect(pm.response.json()).to.be.an('array');"] } } ], "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/mascotas", "host": ["{{base_url}}"], "path": ["mascotas"] } } },
-        { "name": "03 - Obtener mascota por id - 200", "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"] } } ], "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] } } },
-        { "name": "04 - Editar mascota - 200", "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"] } } ], "request": { "method": "PUT", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Mora Editada\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 13.10,\n  \"notas\": \"Mascota editada desde Postman\"\n}" }, "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] } } },
-        { "name": "05 - Eliminar mascota - 204", "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 204', () => pm.response.to.have.status(204));"] } } ], "request": { "method": "DELETE", "header": [], "url": { "raw": "{{base_url}}/mascotas/{{mascotaId}}", "host": ["{{base_url}}"], "path": ["mascotas", "{{mascotaId}}"] } } }
+        {
+          "name": "02 - Listar mis mascotas - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/mascotas"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Obtener mascota por ID - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "mascotaId debe ser un UUID de una mascota activa accesible por el usuario autenticado."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Editar mascota - 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mora Editada\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"2022-05-10\",\n  \"fechaAproximada\": false,\n  \"edadValor\": null,\n  \"edadUnidad\": null,\n  \"fotoPerfil\": null,\n  \"pesoActual\": 13.1,\n  \"notas\": \"Mascota editada desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     {
-      "name": "Auditoria",
+      "name": "Recordatorios",
+      "description": "El request usa diasSemana y la respuesta usa diaSemana. Esta inconsistencia refleja el contrato actual y no se corrige en esta fase.",
       "item": [
-        { "name": "01 - Listar auditoria paginada - 200", "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.expect(pm.response.json()).to.have.property('content');"] } } ], "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/auditoria?page=0&size=20&sort=fechaHora,desc", "host": ["{{base_url}}"], "path": ["auditoria"], "query": [ { "key": "page", "value": "0" }, { "key": "size", "value": "20" }, { "key": "sort", "value": "fechaHora,desc" } ] } } },
-        { "name": "02 - Buscar auditoria por entidad/id - 200", "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.expect(pm.response.json()).to.be.an('array');"] } } ], "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/auditoria/{{auditEntidad}}/{{auditIdEntidad}}", "host": ["{{base_url}}"], "path": ["auditoria", "{{auditEntidad}}", "{{auditIdEntidad}}"] } } }
+        {
+          "name": "01 - Crear recordatorio - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Aplicar pipeta\",\n  \"tipo\": \"PIPETA_ANTIPARASITARIO\",\n  \"fechaHoraInicio\": \"2027-01-15T12:00:00Z\",\n  \"modalidad\": \"semanal\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"SEMANAS\",\n  \"diasSemana\": \"LUNES,MIERCOLES\",\n  \"fechaFin\": \"2027-06-30T23:59:59Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Tipos admitidos por validación: PIPETA_ANTIPARASITARIO, VISITA_VETERINARIO, MEDICACION, VACUNA u OTRO. mascotaId se toma del path."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('recordatorioId', body.idRecordatorio);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Listar recordatorios de mascota - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Obtener recordatorio por ID - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Editar recordatorio - 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Aplicar pipeta actualizada\",\n  \"tipo\": \"PIPETA_ANTIPARASITARIO\",\n  \"fechaHoraInicio\": \"2027-01-16T12:00:00Z\",\n  \"modalidad\": \"mensual\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"MESES\",\n  \"diasSemana\": null,\n  \"fechaFin\": \"2027-12-31T23:59:59Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 - Cambiar estado - 200",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}/estado?nuevoEstado=INACTIVO",
+            "description": "nuevoEstado es obligatorio y debe existir para la entidad RECORDATORIO. Estados documentados en los datos actuales: ACTIVO, INACTIVO y COMPLETADO."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 - Confirmar recordatorio - 200",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}/confirmacion"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 - Desmarcar confirmación - 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}/confirmacion"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 - Eliminar recordatorio - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Eventos clínicos",
+      "description": "Tipos actuales: VACUNA, MEDICACION, CONSULTA_VETERINARIA y PESO. La fecha no puede ser posterior al día actual en America/Argentina/Buenos_Aires.",
+      "item": [
+        {
+          "name": "01 - Registrar evento clínico - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/eventos-clinicos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"VACUNA\",\n  \"fecha\": \"2025-01-15T12:00:00Z\",\n  \"nombre\": \"Antirrábica\",\n  \"dosis\": null,\n  \"valorPeso\": null,\n  \"motivo\": null,\n  \"diagnostico\": null,\n  \"observaciones\": \"Aplicación anual\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "mascotaId se toma del path. VACUNA exige nombre; MEDICACION exige nombre y dosis; CONSULTA_VETERINARIA exige motivo; PESO exige valorPeso entre 0.01 y 300.00."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('eventoId', body.idEvento);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Listar eventos de mascota - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/eventos-clinicos?tipo=VACUNA",
+            "description": "tipo es opcional y se normaliza sin acentos, con guiones/espacios convertidos a guion bajo y en mayúsculas."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Obtener evento por ID - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/eventos-clinicos/{{eventoId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Editar evento clínico - 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/eventos-clinicos/{{eventoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"MEDICACION\",\n  \"fecha\": \"2025-01-15T12:00:00Z\",\n  \"nombre\": \"Antibiótico\",\n  \"dosis\": \"1 comprimido cada 12 horas\",\n  \"valorPeso\": null,\n  \"motivo\": null,\n  \"diagnostico\": null,\n  \"observaciones\": \"Tratamiento por 7 días\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El mascotaId del DTO no se usa al editar; el evento conserva su mascota actual."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 - Eliminar evento clínico - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/eventos-clinicos/{{eventoId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Álbumes",
+      "description": "El contrato actual mantiene mascotaId singular aunque el esquema soporte N:M.",
+      "item": [
+        {
+          "name": "01 - Crear álbum - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/albumes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Primer año\",\n  \"descripcion\": \"Fotos del primer año\",\n  \"mascotaId\": \"{{mascotaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "mascotaId es obligatorio en el body por validación del DTO; el controller lo reemplaza por el valor del path."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('albumId', body.idAlbum);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Listar álbumes de mascota - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/albumes"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Obtener álbum por ID - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/albumes/{{albumId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Editar álbum - 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Primer año actualizado\",\n  \"descripcion\": \"Descripción actualizada\",\n  \"mascotaId\": \"{{mascotaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "mascotaId es obligatorio por AlbumRequestDTO, pero el servicio de edición no cambia la asociación del álbum."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fotos",
+      "description": "La API registra metadatos y una URL; no expone carga multipart ni almacenamiento de archivos.",
+      "item": [
+        {
+          "name": "01 - Crear foto - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumId}}/fotos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlArchivo\": \"https://example.invalid/mismascotas/foto-01.jpg\",\n  \"formato\": \"image/jpeg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('fotoId', body.idFoto);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Listar fotos de álbum - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/albumes/{{albumId}}/fotos"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Obtener foto por ID - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/fotos/{{fotoId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Eliminar foto - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/fotos/{{fotoId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Badges",
+      "description": "No existe endpoint de edición de badges en el backend actual.",
+      "item": [
+        {
+          "name": "01 - Crear badge - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaId}}\",\n  \"texto\": \"Súper compañero\",\n  \"emoji\": \"🐾\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "mascotaId es obligatorio en el body por validación del DTO; el controller lo reemplaza por el valor del path."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('badgeId', body.idBadge);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Listar badges de mascota - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/badges"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Obtener badge por ID - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/badges/{{badgeId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Eliminar badge - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/badges/{{badgeId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auditoría (consulta deshabilitada)",
+      "description": "Los mappings existen, pero el controller responde 404 deliberadamente hasta definir quién puede consultar los logs y con qué alcance.",
+      "item": [
+        {
+          "name": "01 - [DESHABILITADO] Listar auditoría - 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auditoria?entidad=mascota&accion=CREATE&desde=2025-01-01T00:00:00Z&hasta=2027-12-31T23:59:59Z&page=0&size=50&sort=fechaHora,desc",
+            "description": "Parámetros opcionales: entidad, accion, desde, hasta, page (0), size (50) y sort (fechaHora,desc). accion usa TipoAccionAuditoria. La consulta está deshabilitada y actualmente responde 404."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - [DESHABILITADO] Auditoría por entidad - 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auditoria/mascota/{{mascotaId}}",
+            "description": "Path: entidad e idEntidad (UUID). La consulta está deshabilitada y actualmente responde 404."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - [DESHABILITADO] Auditoría por actor - 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/auditoria/actor/{{usuarioId}}",
+            "description": "Path: actorId (UUID). La consulta está deshabilitada y actualmente responde 404."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Limpieza",
+      "description": "Eliminaciones que deben ejecutarse después de las requests dependientes.",
+      "item": [
+        {
+          "name": "01 - Eliminar álbum - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/albumes/{{albumId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Eliminar mascota - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Logout - 204",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/logout",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Revoca el refresh token enviado. El endpoint es público y no usa el access token."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
       ]
     }
   ]
