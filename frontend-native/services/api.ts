@@ -62,6 +62,35 @@ export type MascotaResponse = {
   creadoEn: string;
 };
 
+export type RecordatorioRequest = {
+  titulo: string;
+  tipo: string;
+  fechaHoraInicio: string;
+  modalidad?: string;
+  intervaloValor?: number;
+  intervaloUnidad?: string;
+  diasSemana?: string;
+  fechaFin?: string;
+};
+
+export type RecordatorioResponse = {
+  idRecordatorio: string;
+  mascotaId: string;
+  titulo: string;
+  tipo: string;
+  fechaHoraInicio: string;
+  modalidad: string | null;
+  intervaloValor: number | null;
+  intervaloUnidad: string | null;
+  diaSemana: string | null;
+  fechaFin: string | null;
+  creadoPorId: string;
+  creadoEn: string;
+  confirmadoPorId: string | null;
+  confirmadoEn: string | null;
+  estado: string;
+};
+
 type ApiErrorBody = {
   codigo?: string;
   message?: string;
@@ -178,6 +207,53 @@ export function updatePet(id: string, data: MascotaRequest) {
 
 export function deletePet(id: string) {
   return request<void>(`/mascotas/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function createReminder(mascotaId: string, data: RecordatorioRequest) {
+  return request<RecordatorioResponse>(`/mascotas/${mascotaId}/recordatorios`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function getRemindersByPet(mascotaId: string) {
+  return request<RecordatorioResponse[]>(`/mascotas/${mascotaId}/recordatorios`);
+}
+
+export function getReminder(id: string) {
+  return request<RecordatorioResponse>(`/recordatorios/${id}`);
+}
+
+export function updateReminder(id: string, data: RecordatorioRequest) {
+  return request<RecordatorioResponse>(`/recordatorios/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export function changeReminderState(id: string, nuevoEstado: string) {
+  return request<RecordatorioResponse>(
+    `/recordatorios/${id}/estado?nuevoEstado=${encodeURIComponent(nuevoEstado)}`,
+    { method: "PATCH" },
+  );
+}
+
+export function confirmReminder(id: string) {
+  return request<RecordatorioResponse>(`/recordatorios/${id}/confirmacion`, {
+    method: "PATCH",
+  });
+}
+
+export function unconfirmReminder(id: string) {
+  return request<RecordatorioResponse>(`/recordatorios/${id}/confirmacion`, {
+    method: "DELETE",
+  });
+}
+
+export function deleteReminder(id: string) {
+  return request<void>(`/recordatorios/${id}`, {
     method: "DELETE",
   });
 }
