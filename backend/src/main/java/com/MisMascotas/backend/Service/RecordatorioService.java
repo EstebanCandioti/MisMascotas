@@ -8,11 +8,9 @@ import com.MisMascotas.backend.Entity.Mascota;
 import com.MisMascotas.backend.Entity.Recordatorio;
 import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
-import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Exception.EstadoNoConfiguradoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
 import com.MisMascotas.backend.Repository.EstadoRepository;
-import com.MisMascotas.backend.Repository.MascotaRepository;
 import com.MisMascotas.backend.Repository.RecordatorioRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -33,14 +31,13 @@ public class RecordatorioService {
 
     private final RecordatorioRepository recordatorioRepository;
     private final EstadoRepository estadoRepository;
-    private final MascotaRepository mascotaRepository;
+    private final AccesoMascotaService accesoMascotaService;
     private final EntityManager entityManager;
 
     @Auditable(entidad = "recordatorio", accion = TipoAccionAuditoria.CREATE)
     @Transactional
     public RecordatorioResponseDTO crear(RecordatorioRequestDTO request, UUID creadoPorId) {
-        Mascota mascota = buscarMascotaActiva(request.mascotaId());
-        validarAccesoMascota(mascota, creadoPorId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(request.mascotaId(), creadoPorId);
 
         Usuario usuarioRef = entityManager.getReference(Usuario.class, creadoPorId);
         Estado estadoDefault = buscarEstadoRecordatorio(ESTADO_ACTIVO);
@@ -66,8 +63,7 @@ public class RecordatorioService {
 
     @Transactional(readOnly = true)
     public List<RecordatorioResponseDTO> listarPorMascota(UUID mascotaId, UUID usuarioAutenticadoId) {
-        Mascota mascota = buscarMascotaActiva(mascotaId);
-        validarAccesoMascota(mascota, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(mascotaId, usuarioAutenticadoId);
 
         List<Recordatorio> recordatorios = recordatorioRepository.findByMascota_IdMascotaAndFechaEliminacionIsNull(mascotaId);
         return recordatorios.stream()
@@ -78,7 +74,7 @@ public class RecordatorioService {
     @Transactional(readOnly = true)
     public RecordatorioResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
         Recordatorio recordatorio = buscarRecordatorioActivo(id);
-        validarAccesoRecordatorio(recordatorio, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(recordatorio.getMascota(), usuarioAutenticadoId);
         return mapToResponse(recordatorio);
     }
 
@@ -92,7 +88,7 @@ public class RecordatorioService {
     @Transactional
     public RecordatorioResponseDTO editar(UUID id, RecordatorioRequestDTO request, UUID usuarioAutenticadoId) {
         Recordatorio recordatorio = buscarRecordatorioActivo(id);
-        validarAccesoRecordatorio(recordatorio, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(recordatorio.getMascota(), usuarioAutenticadoId);
 
         recordatorio.setTitulo(request.titulo());
         recordatorio.setTipo(normalizarTipo(request.tipo()));
@@ -112,7 +108,7 @@ public class RecordatorioService {
     @Transactional
     public RecordatorioResponseDTO cambiarEstado(UUID id, String nuevoEstado, UUID usuarioAutenticadoId) {
         Recordatorio recordatorio = buscarRecordatorioActivo(id);
-        validarAccesoRecordatorio(recordatorio, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(recordatorio.getMascota(), usuarioAutenticadoId);
 
         Estado estado = buscarEstadoRecordatorio(nuevoEstado);
 
@@ -127,7 +123,7 @@ public class RecordatorioService {
     @Transactional
     public RecordatorioResponseDTO confirmar(UUID id, UUID usuarioAutenticadoId) {
         Recordatorio recordatorio = buscarRecordatorioActivo(id);
-        validarAccesoRecordatorio(recordatorio, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(recordatorio.getMascota(), usuarioAutenticadoId);
 
         Usuario usuarioRef = entityManager.getReference(Usuario.class, usuarioAutenticadoId);
         recordatorio.setConfirmadoPor(usuarioRef);
@@ -142,7 +138,7 @@ public class RecordatorioService {
     @Transactional
     public RecordatorioResponseDTO desmarcarConfirmacion(UUID id, UUID usuarioAutenticadoId) {
         Recordatorio recordatorio = buscarRecordatorioActivo(id);
-        validarAccesoRecordatorio(recordatorio, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(recordatorio.getMascota(), usuarioAutenticadoId);
 
         recordatorio.setConfirmadoPor(null);
         recordatorio.setConfirmadoEn(null);
@@ -155,7 +151,7 @@ public class RecordatorioService {
     @Transactional
     public void eliminar(UUID id, UUID usuarioAutenticadoId) {
         Recordatorio recordatorio = buscarRecordatorioActivo(id);
-        validarAccesoRecordatorio(recordatorio, usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(recordatorio.getMascota(), usuarioAutenticadoId);
 
         recordatorio.setFechaEliminacion(Instant.now());
         recordatorioRepository.save(recordatorio);
@@ -166,21 +162,6 @@ public class RecordatorioService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Recordatorio no encontrado"));
     }
 
-    private Mascota buscarMascotaActiva(UUID id) {
-        return mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
-    }
-
-    private void validarAccesoRecordatorio(Recordatorio recordatorio, UUID usuarioAutenticadoId) {
-        validarAccesoMascota(recordatorio.getMascota(), usuarioAutenticadoId);
-    }
-
-    private void validarAccesoMascota(Mascota mascota, UUID usuarioAutenticadoId) {
-        UUID propietarioId = mascota.getPropietario() != null ? mascota.getPropietario().getIdUsuario() : null;
-        if (!usuarioAutenticadoId.equals(propietarioId)) {
-            throw new AccesoDenegadoException("No tenes permisos para realizar esta accion sobre esta mascota");
-        }
-    }
 
     private Estado buscarEstadoRecordatorio(String nombre) {
         String nombreNormalizado = normalizarEstado(nombre);

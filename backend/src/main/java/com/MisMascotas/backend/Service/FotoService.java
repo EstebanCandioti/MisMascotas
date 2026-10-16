@@ -13,10 +13,8 @@ import com.MisMascotas.backend.DTO.FotoResponseDTO;
 import com.MisMascotas.backend.Entity.Album;
 import com.MisMascotas.backend.Entity.AlbumMascota;
 import com.MisMascotas.backend.Entity.Foto;
-import com.MisMascotas.backend.Entity.Mascota;
 import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
-import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
 import com.MisMascotas.backend.Repository.AlbumMascotaRepository;
 import com.MisMascotas.backend.Repository.AlbumRepository;
@@ -32,6 +30,7 @@ public class FotoService {
     private final FotoRepository fotoRepository;
     private final AlbumRepository albumRepository;
     private final AlbumMascotaRepository albumMascotaRepository;
+    private final AccesoMascotaService accesoMascotaService;
     private final EntityManager entityManager;
 
     @Auditable(entidad = "foto", accion = TipoAccionAuditoria.CREATE)
@@ -106,18 +105,9 @@ public class FotoService {
             throw new RecursoNoEncontradoException("Album no encontrado con ID: " + album.getIdAlbum());
         }
 
-        boolean todasLasMascotasSonDelUsuario = relaciones.stream()
-                .map(AlbumMascota::getMascota)
-                .allMatch(mascota -> usuarioAutenticadoId.equals(obtenerPropietarioId(mascota)));
-
-        if (!todasLasMascotasSonDelUsuario) {
-            throw new AccesoDenegadoException("No tenes permisos para realizar esta accion sobre este album");
-        }
+        relaciones.forEach(rel -> accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId));
     }
 
-    private UUID obtenerPropietarioId(Mascota mascota) {
-        return mascota != null && mascota.getPropietario() != null ? mascota.getPropietario().getIdUsuario() : null;
-    }
 
     private FotoResponseDTO mapToResponse(Foto foto) {
         return new FotoResponseDTO(

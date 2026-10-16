@@ -13,7 +13,6 @@ import com.MisMascotas.backend.DTO.MascotaResponseDTO;
 import com.MisMascotas.backend.Entity.Mascota;
 import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
-import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Exception.LimiteMascotasAlcanzadoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
 import com.MisMascotas.backend.Repository.MascotaRepository;
@@ -29,6 +28,7 @@ public class MascotaService {
 
     private final MascotaRepository mascotaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AccesoMascotaService accesoMascotaService;
 
     @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.CREATE)
     @Transactional
@@ -57,7 +57,7 @@ public class MascotaService {
 
     @Transactional(readOnly = true)
     public List<MascotaResponseDTO> listarPorPropietario(UUID propietarioId) {
-        return mascotaRepository.findByPropietario_IdUsuarioAndFechaEliminacionIsNull(propietarioId)
+        return accesoMascotaService.obtenerMascotasAccesibles(propietarioId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -65,11 +65,7 @@ public class MascotaService {
 
     @Transactional(readOnly = true)
     public MascotaResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
-        Mascota mascota = mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
-
-        validarPropietario(mascota, usuarioAutenticadoId);
-
+        Mascota mascota = accesoMascotaService.verificarAcceso(id, usuarioAutenticadoId);
         return mapToResponse(mascota);
     }
 
@@ -88,10 +84,7 @@ public class MascotaService {
     @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.UPDATE)
     @Transactional
     public MascotaResponseDTO editar(UUID id, MascotaRequestDTO request, UUID usuarioAutenticadoId) {
-        Mascota mascota = mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
-
-        validarPropietario(mascota, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(id, usuarioAutenticadoId);
 
         mascota.setNombre(request.nombre());
         mascota.setEspecie(request.especie());
@@ -111,20 +104,10 @@ public class MascotaService {
     @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.DELETE)
     @Transactional
     public void eliminar(UUID id, UUID usuarioAutenticadoId) {
-        Mascota mascota = mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
-
-        validarPropietario(mascota, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(id, usuarioAutenticadoId);
 
         mascota.setFechaEliminacion(Instant.now());
         mascotaRepository.save(mascota);
-    }
-
-    private void validarPropietario(Mascota mascota, UUID usuarioAutenticadoId) {
-        UUID propietarioId = mascota.getPropietario() != null ? mascota.getPropietario().getIdUsuario() : null;
-        if (!usuarioAutenticadoId.equals(propietarioId)) {
-            throw new AccesoDenegadoException("No tenes permisos para realizar esta accion sobre esta mascota");
-        }
     }
 
     private void validarLimiteMascotasPlan(Usuario propietario) {

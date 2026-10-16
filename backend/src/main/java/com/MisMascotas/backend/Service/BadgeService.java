@@ -13,10 +13,8 @@ import com.MisMascotas.backend.DTO.BadgeResponseDTO;
 import com.MisMascotas.backend.Entity.Badge;
 import com.MisMascotas.backend.Entity.Mascota;
 import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
-import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
 import com.MisMascotas.backend.Repository.BadgeRepository;
-import com.MisMascotas.backend.Repository.MascotaRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,13 +23,12 @@ import lombok.RequiredArgsConstructor;
 public class BadgeService {
 
     private final BadgeRepository badgeRepository;
-    private final MascotaRepository mascotaRepository;
+    private final AccesoMascotaService accesoMascotaService;
 
     @Auditable(entidad = "badge", accion = TipoAccionAuditoria.CREATE)
     @Transactional
     public BadgeResponseDTO crear(BadgeRequestDTO request, UUID usuarioAutenticadoId) {
-        Mascota mascota = buscarMascotaActiva(request.mascotaId());
-        validarAccesoMascota(mascota, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(request.mascotaId(), usuarioAutenticadoId);
 
         Badge badge = new Badge();
         badge.setMascota(mascota);
@@ -44,8 +41,7 @@ public class BadgeService {
 
     @Transactional(readOnly = true)
     public List<BadgeResponseDTO> listarPorMascota(UUID mascotaId, UUID usuarioAutenticadoId) {
-        Mascota mascota = buscarMascotaActiva(mascotaId);
-        validarAccesoMascota(mascota, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(mascotaId, usuarioAutenticadoId);
 
         return badgeRepository.findByMascotaIdMascotaAndFechaEliminacionIsNull(mascotaId)
                 .stream()
@@ -56,7 +52,7 @@ public class BadgeService {
     @Transactional(readOnly = true)
     public BadgeResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
         Badge badge = buscarBadgeActiva(id);
-        validarAccesoMascota(badge.getMascota(), usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(badge.getMascota(), usuarioAutenticadoId);
         return mapToResponse(badge);
     }
 
@@ -74,7 +70,7 @@ public class BadgeService {
     @Transactional
     public void eliminar(UUID id, UUID usuarioAutenticadoId) {
         Badge badge = buscarBadgeActiva(id);
-        validarAccesoMascota(badge.getMascota(), usuarioAutenticadoId);
+        accesoMascotaService.verificarAcceso(badge.getMascota(), usuarioAutenticadoId);
 
         badge.setFechaEliminacion(Instant.now());
         badgeRepository.save(badge);
@@ -85,17 +81,6 @@ public class BadgeService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Badge no encontrada con ID: " + id));
     }
 
-    private Mascota buscarMascotaActiva(UUID id) {
-        return mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
-    }
-
-    private void validarAccesoMascota(Mascota mascota, UUID usuarioAutenticadoId) {
-        UUID propietarioId = mascota != null && mascota.getPropietario() != null ? mascota.getPropietario().getIdUsuario() : null;
-        if (!usuarioAutenticadoId.equals(propietarioId)) {
-            throw new AccesoDenegadoException("No tenes permisos para realizar esta accion sobre esta mascota");
-        }
-    }
 
     private BadgeResponseDTO mapToResponse(Badge badge) {
         return new BadgeResponseDTO(

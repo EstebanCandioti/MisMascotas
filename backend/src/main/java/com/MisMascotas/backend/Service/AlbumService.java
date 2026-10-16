@@ -9,12 +9,10 @@ import com.MisMascotas.backend.Entity.Foto;
 import com.MisMascotas.backend.Entity.Mascota;
 import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
-import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
 import com.MisMascotas.backend.Repository.AlbumMascotaRepository;
 import com.MisMascotas.backend.Repository.AlbumRepository;
 import com.MisMascotas.backend.Repository.FotoRepository;
-import com.MisMascotas.backend.Repository.MascotaRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,14 +29,13 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMascotaRepository albumMascotaRepository;
     private final FotoRepository fotoRepository;
-    private final MascotaRepository mascotaRepository;
+    private final AccesoMascotaService accesoMascotaService;
     private final EntityManager entityManager;
 
     @Auditable(entidad = "album", accion = TipoAccionAuditoria.CREATE)
     @Transactional
     public AlbumResponseDTO crear(AlbumRequestDTO request, UUID creadoPorId) {
-        Mascota mascota = buscarMascotaActiva(request.mascotaId());
-        validarAccesoMascota(mascota, creadoPorId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(request.mascotaId(), creadoPorId);
 
         Usuario usuarioRef = entityManager.getReference(Usuario.class, creadoPorId);
 
@@ -62,8 +59,7 @@ public class AlbumService {
 
     @Transactional(readOnly = true)
     public List<AlbumResponseDTO> listarPorMascota(UUID mascotaId, UUID usuarioAutenticadoId) {
-        Mascota mascota = buscarMascotaActiva(mascotaId);
-        validarAccesoMascota(mascota, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarAcceso(mascotaId, usuarioAutenticadoId);
 
         List<AlbumMascota> relaciones = albumMascotaRepository.findByMascotaIdActivos(mascotaId);
 
@@ -136,10 +132,6 @@ public class AlbumService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Album no encontrado con ID: " + id));
     }
 
-    private Mascota buscarMascotaActiva(UUID id) {
-        return mascotaRepository.findByIdMascotaAndFechaEliminacionIsNull(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada con ID: " + id));
-    }
 
     private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId) {
         List<AlbumMascota> relaciones = albumMascotaRepository.findAllByAlbumIdActivos(album.getIdAlbum());
@@ -147,24 +139,9 @@ public class AlbumService {
             throw new RecursoNoEncontradoException("Album no encontrado con ID: " + album.getIdAlbum());
         }
 
-        boolean todasLasMascotasSonDelUsuario = relaciones.stream()
-                .map(AlbumMascota::getMascota)
-                .allMatch(mascota -> usuarioAutenticadoId.equals(obtenerPropietarioId(mascota)));
-
-        if (!todasLasMascotasSonDelUsuario) {
-            throw new AccesoDenegadoException("No tenes permisos para realizar esta accion sobre este album");
-        }
+        relaciones.forEach(rel -> accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId));
     }
 
-    private void validarAccesoMascota(Mascota mascota, UUID usuarioAutenticadoId) {
-        if (!usuarioAutenticadoId.equals(obtenerPropietarioId(mascota))) {
-            throw new AccesoDenegadoException("No tenes permisos para realizar esta accion sobre esta mascota");
-        }
-    }
-
-    private UUID obtenerPropietarioId(Mascota mascota) {
-        return mascota != null && mascota.getPropietario() != null ? mascota.getPropietario().getIdUsuario() : null;
-    }
 
     private UUID obtenerMascotaPrincipalId(UUID albumId) {
         return albumMascotaRepository.findByAlbumIdActivo(albumId)
