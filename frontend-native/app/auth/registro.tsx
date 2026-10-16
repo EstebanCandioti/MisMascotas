@@ -12,7 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAppData } from "../../context/app-data-context";
-import { login as loginRequest, register as registerRequest } from "../../services/api";
+import { register as registerRequest } from "../../services/api";
 
 export default function RegistroScreen() {
   const router = useRouter();
@@ -34,9 +34,8 @@ export default function RegistroScreen() {
 
     setLoading(true);
     try {
-      await registerRequest(`${name.trim()} ${lastName.trim()}`, normalizedEmail, password);
-      const loginResponse = await loginRequest(normalizedEmail, password);
-      setPendingAuthToken(loginResponse.token);
+      const response = await registerRequest(`${name.trim()} ${lastName.trim()}`, normalizedEmail, password);
+      setPendingAuthToken(response.token);
       setPendingCredentials(normalizedEmail, password);
       router.push("/auth/verificar-codigo");
     } catch (error) {

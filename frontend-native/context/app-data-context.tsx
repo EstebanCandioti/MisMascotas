@@ -2,12 +2,24 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
   type PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
-import { AUTH_TOKEN_KEY, getCurrentUser, getPets, type MascotaResponse } from "../services/api";
-import { getAuthToken } from "../services/auth-storage";
+import {
+  getCurrentUser,
+  getPet,
+  getPets,
+  getRemindersByPet,
+  login,
+  logout as logoutRequest,
+  setUnauthorizedHandler,
+  type MascotaResponse,
+  type RecordatorioResponse,
+} from "../services/api";
+import { getAuthSession } from "../services/auth-storage";
+import { mapearRecordatorioVista } from "../utils/recordatorios";
 
 export type Pet = {
   id: string;
@@ -29,31 +41,35 @@ export type Pet = {
 
 export type Reminder = {
   id: string;
+  petId: string;
   title: string;
   pet: string;
   date: string;
   detail: string;
   done: boolean;
 };
+
 export type ClinicalEvent = { id: string; type: string; title: string; pet: string; detail: string; date: string };
 export type AlbumPhoto = { id: string; emoji: string; color: string; title: string; date: string };
 export type Album = { id: string; name: string; emoji: string; color: string; photos: AlbumPhoto[] };
-export type LocalUser = { id: string; name: string; email: string; password: string; esPremium?: boolean };
+export type AuthenticatedUser = { id: string; name: string; email: string; esPremium: boolean };
 
 type AppData = {
   pets: Pet[];
   setPets: (pets: Pet[]) => void;
+  petsLoading: boolean;
+  petsError: string | null;
   refreshPets: () => Promise<void>;
+  refreshPet: (id: string) => Promise<Pet>;
   reminders: Reminder[];
-  setReminders: (reminders: Reminder[]) => void;
+  remindersLoading: boolean;
+  remindersError: string | null;
+  refreshReminders: () => Promise<void>;
   events: ClinicalEvent[];
   setEvents: (events: ClinicalEvent[]) => void;
   albums: Album[];
   setAlbums: (albums: Album[]) => void;
-  users: LocalUser[];
-  currentUser: LocalUser | null;
-  setCurrentUser: (user: LocalUser | null) => void;
-  setUsers: (users: LocalUser[]) => void;
+  currentUser: AuthenticatedUser | null;
   premium: boolean;
   setPremium: (value: boolean) => void;
   notifications: boolean;
@@ -63,36 +79,19 @@ type AppData = {
   setPendingAuthToken: (token: string | null) => void;
   pendingCredentials: { email: string; password: string } | null;
   setPendingCredentials: (email: string, password: string) => void;
-  completeLogin: (token: string) => Promise<void>;
+  completeLogin: () => Promise<void>;
   resendCode: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
 type PersistedData = {
-  pets?: Pet[];
-  reminders?: Reminder[];
   events?: ClinicalEvent[];
   albums?: Album[];
-  users?: LocalUser[];
-  currentUser?: LocalUser | null;
-  premium?: boolean;
   notifications?: boolean;
 };
 
 const STORAGE_KEY = "mismascotas-demo-data-v1";
-const isWeb = typeof window !== "undefined";
 
-const initialPets: Pet[] = [
-  { id: "fido", name: "Fido", species: "Perro", breed: "Golden Retriever", age: "3 años", weight: "28,5 kg", emoji: "🐶", color: "#F2D5A0" },
-  { id: "luna", name: "Luna", species: "Gato", breed: "Siamés", age: "2 años", weight: "4,1 kg", emoji: "🐱", color: "#D9CDFC" },
-  { id: "rex", name: "Rex", species: "Perro", breed: "Bulldog", age: "5 años", weight: "22 kg", emoji: "🐶", color: "#C9E5F3" },
-];
-
-const initialReminders: Reminder[] = [
-  { id: "vacuna", title: "Vacuna antirrábica", pet: "Fido", date: "30 AGO", detail: "En 3 días", done: false },
-  { id: "control", title: "Control anual", pet: "Rex", date: "03 SEP", detail: "En 7 días", done: false },
-  { id: "pipeta", title: "Pipeta antiparasitaria", pet: "Luna", date: "27 AGO", detail: "Completado hoy", done: true },
-];
 const initialEvents: ClinicalEvent[] = [
   { id: "consulta-fido", type: "Consulta", title: "Control general", pet: "Fido", detail: "Sin hallazgos. Se recomienda control anual.", date: "20 AGO 2026" },
   { id: "vacuna-fido", type: "Vacuna", title: "Vacuna séxtuple", pet: "Fido", detail: "Aplicada correctamente.", date: "15 MAY 2026" },
@@ -101,7 +100,19 @@ const initialAlbums: Album[] = [
   { id: "fido", name: "Momentos de Fido", emoji: "🐶", color: "#F2D5A0", photos: [{ id: "1", emoji: "🐶", color: "#F2D5A0", title: "Paseo en la plaza", date: "20 AGO" }, { id: "2", emoji: "🌳", color: "#D6EBC7", title: "Tarde al aire libre", date: "14 AGO" }] },
   { id: "luna", name: "Luna en casa", emoji: "🐱", color: "#D9CDFC", photos: [{ id: "3", emoji: "🐱", color: "#D9CDFC", title: "Siesta", date: "08 AGO" }] },
 ];
-const initialUsers: LocalUser[] = [{ id: "demo", name: "Usuario Demo", email: "usuario@demo.com", password: "Demo1234" }];
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Ocurrió un error inesperado.";
+}
+
+function mapUser(profile: Awaited<ReturnType<typeof getCurrentUser>>): AuthenticatedUser {
+  return {
+    id: profile.idUsuario,
+    name: profile.nombre,
+    email: profile.email,
+    esPremium: profile.esPremium,
+  };
+}
 
 function mapPetResponse(pet: MascotaResponse): Pet {
   const emoji = pet.especie.toLowerCase().includes("gato") ? "🐱" : "🐶";
@@ -128,15 +139,24 @@ function mapPetResponse(pet: MascotaResponse): Pet {
   };
 }
 
+function mapReminderResponse(reminder: RecordatorioResponse, petName: string): Reminder {
+  const view = mapearRecordatorioVista(reminder, { id: reminder.mascotaId, nombre: petName });
+
+  return {
+    id: view.id,
+    petId: view.mascotaId,
+    title: view.titulo,
+    pet: view.mascotaNombre,
+    date: view.fechaCorta,
+    detail: `${view.tipoLegible} · ${view.fechaLegible}`,
+    done: view.completado,
+  };
+}
+
 const AppDataContext = createContext<AppData | null>(null);
 
 async function readPersistedData(): Promise<PersistedData | null> {
   try {
-    if (isWeb) {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      return saved ? (JSON.parse(saved) as PersistedData) : null;
-    }
-
     const saved = await AsyncStorage.getItem(STORAGE_KEY);
     return saved ? (JSON.parse(saved) as PersistedData) : null;
   } catch {
@@ -146,164 +166,195 @@ async function readPersistedData(): Promise<PersistedData | null> {
 
 async function writePersistedData(data: PersistedData) {
   try {
-    if (isWeb) {
-      const { currentUser: _currentUser, ...persistedData } = data;
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedData));
-      return;
-    }
-
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch {
-    // Ignora errores de persistencia para no romper el flujo de la app.
+    // Estos datos no críticos pueden continuar únicamente en memoria.
   }
 }
 
 export function AppDataProvider({ children }: PropsWithChildren) {
-  const [pets, setPets] = useState<Pet[]>(initialPets);
-  const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [petsLoading, setPetsLoading] = useState(false);
+  const [petsError, setPetsError] = useState<string | null>(null);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [remindersLoading, setRemindersLoading] = useState(false);
+  const [remindersError, setRemindersError] = useState<string | null>(null);
   const [events, setEvents] = useState<ClinicalEvent[]>(initialEvents);
   const [albums, setAlbums] = useState<Album[]>(initialAlbums);
-  const [users, setUsers] = useState<LocalUser[]>(initialUsers);
-  const [currentUser, setCurrentUser] = useState<LocalUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthenticatedUser | null>(null);
   const [premium, setPremium] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [ready, setReady] = useState(false);
   const [pendingAuthToken, setPendingAuthToken] = useState<string | null>(null);
   const [pendingCredentials, setPendingCredentialsState] = useState<{ email: string; password: string } | null>(null);
 
-  const refreshPets = async () => {
-    try {
-      const remotePets = await getPets();
-      setPets(remotePets.map(mapPetResponse));
-    } catch {
-      // Conserva las mascotas locales si el backend no está disponible.
-    }
-  };
-
-  useEffect(() => {
-    readPersistedData()
-      .then((saved) => {
-        if (saved?.pets) setPets(saved.pets);
-        if (saved?.reminders) setReminders(saved.reminders);
-        if (saved?.events) setEvents(saved.events);
-        if (saved?.albums) setAlbums(saved.albums);
-        if (saved?.users) setUsers(saved.users);
-
-        if (!isWeb && saved?.currentUser) {
-          setCurrentUser(saved.currentUser);
-        }
-
-        if (typeof saved?.premium === "boolean") setPremium(saved.premium);
-        if (typeof saved?.notifications === "boolean") setNotifications(saved.notifications);
-      })
-      .finally(() => setReady(true));
+  const clearAuthenticatedData = useCallback(() => {
+    setCurrentUser(null);
+    setPets([]);
+    setReminders([]);
+    setPremium(false);
+    setPendingAuthToken(null);
+    setPendingCredentialsState(null);
   }, []);
 
-  useEffect(() => {
-    if (!ready || !currentUser) return;
+  const loadRemindersForPets = useCallback(async (petList: Pet[]) => {
+    setRemindersLoading(true);
+    setRemindersError(null);
+    try {
+      const responses = await Promise.all(
+        petList.map(async (pet) => ({
+          pet,
+          reminders: await getRemindersByPet(pet.id),
+        })),
+      );
+      setReminders(responses.flatMap(({ pet, reminders: values }) => (
+        values.map((reminder) => mapReminderResponse(reminder, pet.name))
+      )));
+    } catch (error) {
+      setRemindersError(errorMessage(error));
+      throw error;
+    } finally {
+      setRemindersLoading(false);
+    }
+  }, []);
 
+  const refreshPets = useCallback(async () => {
+    setPetsLoading(true);
+    setPetsError(null);
+    let mappedPets: Pet[];
+    try {
+      mappedPets = (await getPets()).map(mapPetResponse);
+      setPets(mappedPets);
+    } catch (error) {
+      setPetsError(errorMessage(error));
+      throw error;
+    } finally {
+      setPetsLoading(false);
+    }
+
+    await loadRemindersForPets(mappedPets).catch(() => undefined);
+  }, [loadRemindersForPets]);
+
+  const refreshPet = useCallback(async (id: string) => {
+    const mappedPet = mapPetResponse(await getPet(id));
+    setPets((current) => {
+      const exists = current.some((pet) => pet.id === id);
+      return exists
+        ? current.map((pet) => pet.id === id ? mappedPet : pet)
+        : [...current, mappedPet];
+    });
+    return mappedPet;
+  }, []);
+
+  const refreshReminders = useCallback(async () => {
+    await loadRemindersForPets(pets);
+  }, [loadRemindersForPets, pets]);
+
+  useEffect(() => {
+    setUnauthorizedHandler(clearAuthenticatedData);
+    return () => setUnauthorizedHandler(null);
+  }, [clearAuthenticatedData]);
+
+  useEffect(() => {
     let cancelled = false;
 
-    getAuthToken(AUTH_TOKEN_KEY)
-      .then(async (token) => {
-        if (!token) return null;
-        await refreshPets();
-        return getCurrentUser(token);
-      })
-      .then((profile) => {
-        if (!profile || cancelled) return;
+    async function restore() {
+      const saved = await readPersistedData();
+      if (saved?.events) setEvents(saved.events);
+      if (saved?.albums) setAlbums(saved.albums);
+      if (typeof saved?.notifications === "boolean") setNotifications(saved.notifications);
 
-        setCurrentUser((user) => user ? {
-          ...user,
-          id: profile.idUsuario,
-          name: profile.nombre,
-          email: profile.email,
-          esPremium: profile.esPremium,
-        } : user);
-        setPremium(profile.esPremium);
-      })
-      .catch(() => {
-        // Conserva los datos locales si el servidor no está disponible.
-      });
+      const session = await getAuthSession();
+      if (!session) return;
+
+      try {
+        const profile = await getCurrentUser();
+        if (cancelled) return;
+        const user = mapUser(profile);
+        setCurrentUser(user);
+        setPremium(user.esPremium);
+        await refreshPets().catch(() => undefined);
+      } catch {
+        if (!cancelled) clearAuthenticatedData();
+      }
+    }
+
+    restore().finally(() => {
+      if (!cancelled) setReady(true);
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [ready, currentUser?.id]);
+  }, [clearAuthenticatedData, refreshPets]);
+
+  useEffect(() => {
+    if (!ready) return;
+    void writePersistedData({ events, albums, notifications });
+  }, [events, albums, notifications, ready]);
 
   const setPendingCredentials = (email: string, password: string) => {
     setPendingCredentialsState({ email, password });
   };
 
-  const completeLogin = async (token: string) => {
-    if (!pendingCredentials) return;
-
-    const userFromCredentials = users.find((user) => user.email === pendingCredentials.email);
-    const nextUser = userFromCredentials
-      ? { ...userFromCredentials, name: userFromCredentials.name || pendingCredentials.email.split("@")[0] }
-      : { id: `user-${Date.now()}`, name: pendingCredentials.email.split("@")[0], email: pendingCredentials.email, password: pendingCredentials.password };
-
-    setUsers((existing) => {
-      const alreadyExists = existing.some((user) => user.email === pendingCredentials.email);
-      return alreadyExists ? existing : [nextUser, ...existing];
-    });
-
-    setCurrentUser(nextUser);
+  const completeLogin = async () => {
+    const profile = await getCurrentUser();
+    const user = mapUser(profile);
+    setCurrentUser(user);
+    setPremium(user.esPremium);
     setPendingAuthToken(null);
     setPendingCredentialsState(null);
-
-    if (typeof token === "string" && token.trim()) {
-      try {
-        const { setAuthToken } = await import("../services/auth-storage");
-        await setAuthToken("mismascotas-auth-token-v2", token);
-
-        const profile = await getCurrentUser(token);
-        const authenticatedUser = {
-          ...nextUser,
-          id: profile.idUsuario,
-          name: profile.nombre,
-          email: profile.email,
-          esPremium: profile.esPremium,
-        };
-        setCurrentUser(authenticatedUser);
-        setPremium(profile.esPremium);
-      } catch {
-        // Conserva el usuario local si no se puede consultar el perfil.
-      }
-    }
+    await refreshPets().catch(() => undefined);
   };
 
   const resendCode = async () => {
     if (!pendingCredentials) {
-      return;
+      throw new Error("La verificación venció. Volvé a iniciar sesión.");
     }
 
-    const { login } = await import("../services/api");
     const response = await login(pendingCredentials.email, pendingCredentials.password);
     setPendingAuthToken(response.token);
   };
 
   const logout = async () => {
-    setCurrentUser(null);
-    setPendingAuthToken(null);
-    setPendingCredentialsState(null);
     try {
-      const { deleteAuthToken } = await import("../services/auth-storage");
-      await deleteAuthToken("mismascotas-auth-token-v2");
-    } catch {
-      // no-op
+      await logoutRequest();
+    } finally {
+      clearAuthenticatedData();
     }
   };
 
-  useEffect(() => {
-    if (!ready) return;
-
-    writePersistedData({ pets, reminders, events, albums, users, currentUser, premium, notifications });
-  }, [pets, reminders, events, albums, users, currentUser, premium, notifications, ready]);
-
   return (
     <AppDataContext.Provider
-      value={{ pets, setPets, refreshPets, reminders, setReminders, events, setEvents, albums, setAlbums, users, setUsers, currentUser, setCurrentUser, premium, setPremium, notifications, setNotifications, ready, pendingAuthToken, setPendingAuthToken, pendingCredentials, setPendingCredentials, completeLogin, resendCode, logout }}
+      value={{
+        pets,
+        setPets,
+        petsLoading,
+        petsError,
+        refreshPets,
+        refreshPet,
+        reminders,
+        remindersLoading,
+        remindersError,
+        refreshReminders,
+        events,
+        setEvents,
+        albums,
+        setAlbums,
+        currentUser,
+        premium,
+        setPremium,
+        notifications,
+        setNotifications,
+        ready,
+        pendingAuthToken,
+        setPendingAuthToken,
+        pendingCredentials,
+        setPendingCredentials,
+        completeLogin,
+        resendCode,
+        logout,
+      }}
     >
       {children}
     </AppDataContext.Provider>
@@ -312,10 +363,6 @@ export function AppDataProvider({ children }: PropsWithChildren) {
 
 export function useAppData() {
   const value = useContext(AppDataContext);
-
-  if (!value) {
-    throw new Error("useAppData debe usarse dentro de AppDataProvider");
-  }
-
+  if (!value) throw new Error("useAppData debe usarse dentro de AppDataProvider");
   return value;
 }

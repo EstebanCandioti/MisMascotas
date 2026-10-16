@@ -74,7 +74,7 @@ export function mapearRecordatorioVista(
 
 export function construirRequestRecordatorio(data: {
   titulo: string;
-  tipo: string;
+  tipo: TipoRecordatorio;
   fecha: string;
   hora: string;
   modalidad?: string;

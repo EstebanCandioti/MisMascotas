@@ -14,6 +14,16 @@ export default function ConfiguracionScreen() {
   const router = useRouter();
   const { currentUser, notifications, setNotifications, premium, logout } = useAppData();
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      Alert.alert("Sesión cerrada", error instanceof Error ? `${error.message} La sesión local fue eliminada.` : "La sesión local fue eliminada.");
+    } finally {
+      router.replace("/auth/login");
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -23,7 +33,7 @@ export default function ConfiguracionScreen() {
         <View style={styles.group}><SettingRow icon="card-outline" title="Plan premium" subtitle={premium ? "Plan Premium activo" : "Plan gratuito"} onPress={() => router.push("/account/plan-premium")} /><View style={styles.line} /><SettingRow icon="shield-checkmark-outline" title="Privacidad" subtitle="Datos y permisos" onPress={() => router.push("/account/privacidad")} /><View style={styles.line} /><View style={styles.switchRow}><View style={styles.rowIcon}><Ionicons name="notifications-outline" size={20} color="#7C4DFF" /></View><View style={styles.rowInfo}><Text style={styles.rowTitle}>Notificaciones</Text><Text style={styles.rowSubtitle}>Recordatorios y actividad</Text></View><Switch style={Platform.OS === "ios" ? styles.iosNotificationSwitch : undefined} value={notifications} onValueChange={setNotifications} trackColor={{ false: "#DDD7E3", true: "#B7A2FF" }} thumbColor={notifications ? "#7C4DFF" : "#FFFFFF"} /></View></View>
         <Text style={styles.groupTitle}>CUENTA</Text>
         <View style={styles.group}><SettingRow icon="help-circle-outline" title="Ayuda y soporte" subtitle="Preguntas frecuentes" onPress={() => Alert.alert("Ayuda", "Centro de ayuda simulado.")} /></View>
-        <TouchableOpacity style={styles.logout} onPress={() => { void logout(); router.replace("/auth/login"); }}><Ionicons name="log-out-outline" size={21} color="#D8515D" /><Text style={styles.logoutText}>Cerrar sesión</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.logout} onPress={() => void handleLogout()}><Ionicons name="log-out-outline" size={21} color="#D8515D" /><Text style={styles.logoutText}>Cerrar sesión</Text></TouchableOpacity>
       </ScrollView>
       <AppBottomNav activeRoute="configuracion" />
     </SafeAreaView>

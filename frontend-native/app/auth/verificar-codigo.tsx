@@ -25,15 +25,17 @@ export default function VerificarCodigoScreen() {
 
     setLoading(true);
     try {
-      const response = await verifyCode(pendingAuthToken, codigo.trim());
-      await completeLogin(response.token);
+      await verifyCode(pendingAuthToken, codigo.trim());
+      await completeLogin();
       router.replace("/home/inicio");
     } catch (error) {
       if (error instanceof ApiError && error.status === 410) {
         setCodigo("");
         Alert.alert("Código vencido", "El código venció, te enviamos uno nuevo. Revisá tu email.");
+      } else if (error instanceof ApiError && error.status === 400) {
+        Alert.alert("Código incorrecto", error.message);
       } else {
-        Alert.alert("Código incorrecto", "El código no es válido. Revisalo e intentá nuevamente.");
+        Alert.alert("No se pudo verificar", error instanceof Error ? error.message : "Intentá nuevamente.");
       }
     } finally {
       setLoading(false);
