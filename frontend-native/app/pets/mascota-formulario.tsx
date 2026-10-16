@@ -8,7 +8,7 @@ import { createPet, updatePet } from "../../services/api";
 const colors = ["#F2D5A0", "#D9CDFC", "#C9E5F3", "#D6EBC7"];
 
 function parseAge(value: string) {
-  const match = value.trim().match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
+  const match = value.trim().match(/^(\d+)\s*(.*)$/);
   if (!match) return {};
 
   const unidadIngresada = match[2].trim().toLowerCase();
@@ -28,7 +28,7 @@ function parseAge(value: string) {
   };
 
   return {
-    edadValor: Number(match[1].replace(",", ".")),
+    edadValor: Number(match[1]),
     edadUnidad: unidades[unidadIngresada] ?? "anios",
   };
 }

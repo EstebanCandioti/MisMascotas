@@ -1,4 +1,6 @@
+import { useCallback } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -7,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
 import AppBottomNav from "@/components/app-bottom-nav";
 import PetCard from "@/components/pet-card";
@@ -16,7 +18,13 @@ import { useAppData } from "../../context/app-data-context";
 
 export default function MascotasScreen() {
   const router = useRouter();
-  const { pets } = useAppData();
+  const { pets, petsLoading, petsError, refreshPets } = useAppData();
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshPets().catch(() => undefined);
+    }, [refreshPets]),
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -39,6 +47,15 @@ export default function MascotasScreen() {
         </View>
 
         <Text style={styles.sectionTitle}>Tus mascotas</Text>
+
+        {petsLoading && !pets.length ? <ActivityIndicator color="#7C4DFF" style={styles.status} /> : null}
+        {petsError ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{petsError}</Text>
+            <TouchableOpacity onPress={() => void refreshPets().catch(() => undefined)}><Text style={styles.retryText}>Reintentar</Text></TouchableOpacity>
+          </View>
+        ) : null}
+        {!petsLoading && !petsError && !pets.length ? <Text style={styles.emptyText}>Todavía no registraste mascotas.</Text> : null}
 
         {pets.map((pet) => (
           <PetCard
@@ -111,6 +128,12 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 13,
   },
+
+  status: { marginVertical: 24 },
+  errorBox: { backgroundColor: "#FFF4F4", borderRadius: 14, padding: 14, marginBottom: 12 },
+  errorText: { color: "#9F3540", fontSize: 13 },
+  retryText: { color: "#7C4DFF", fontSize: 13, fontWeight: "800", marginTop: 8 },
+  emptyText: { color: "#827A8D", fontSize: 13, textAlign: "center", marginVertical: 24 },
 
   addButton: {
     minHeight: 76,

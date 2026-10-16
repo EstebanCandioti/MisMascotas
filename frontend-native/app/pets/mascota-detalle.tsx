@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAppData } from "../../context/app-data-context";
@@ -12,12 +12,26 @@ function InfoRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap;
 export default function MascotaDetalleScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { pets, setPets } = useAppData();
+  const { pets, setPets, refreshPet } = useAppData();
   const pet = pets.find((item) => item.id === id);
   const [deleting, setDeleting] = useState(false);
+  const [loading, setLoading] = useState(Boolean(id));
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    refreshPet(id)
+      .catch((error) => setLoadError(error instanceof Error ? error.message : "No se pudo cargar la mascota."))
+      .finally(() => setLoading(false));
+  }, [id, refreshPet]);
+
+  if (loading && !pet) {
+    return <SafeAreaView style={styles.container}><View style={styles.empty}><ActivityIndicator color="#7C4DFF" /></View></SafeAreaView>;
+  }
 
   if (!pet) {
-    return <SafeAreaView style={styles.container}><View style={styles.empty}><Text style={styles.emptyTitle}>Mascota no encontrada</Text><TouchableOpacity style={styles.backButton} onPress={() => router.replace("/pets/mascotas")}><Text style={styles.backText}>Volver a mascotas</Text></TouchableOpacity></View></SafeAreaView>;
+    return <SafeAreaView style={styles.container}><View style={styles.empty}><Text style={styles.emptyTitle}>{loadError ?? "Mascota no encontrada"}</Text><TouchableOpacity style={styles.backButton} onPress={() => router.replace("/pets/mascotas")}><Text style={styles.backText}>Volver a mascotas</Text></TouchableOpacity></View></SafeAreaView>;
   }
 
   const confirmDelete = () => {
@@ -46,7 +60,7 @@ export default function MascotaDetalleScreen() {
         <Text style={styles.sectionTitle}>Información</Text>
         <View style={styles.card}><InfoRow icon="paw-outline" label="Especie" value={pet.species} /><View style={styles.line} /><InfoRow icon="calendar-outline" label="Edad" value={pet.age} /><View style={styles.line} /><InfoRow icon="fitness-outline" label="Peso" value={pet.weight} />{pet.notas ? <><View style={styles.line} /><InfoRow icon="document-text-outline" label="Notas" value={pet.notas} /></> : null}</View>
         <Text style={styles.sectionTitle}>Accesos rápidos</Text>
-        <View style={styles.actions}><TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/registrar-evento", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="medical-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Registrar evento</Text></TouchableOpacity><TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/recordatorios", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="alarm-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Crear recordatorio</Text></TouchableOpacity><TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/historial-clinico", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="document-text-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Ver historial</Text></TouchableOpacity></View>
+        <View style={styles.actions}><TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/registrar-evento", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="medical-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Registrar evento</Text></TouchableOpacity><TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/recordatorios", params: { mascota: pet.name, mascotaId: pet.id } })}><View style={styles.actionIcon}><Ionicons name="alarm-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Crear recordatorio</Text></TouchableOpacity><TouchableOpacity style={styles.action} onPress={() => router.push({ pathname: "/health/historial-clinico", params: { mascota: pet.name } })}><View style={styles.actionIcon}><Ionicons name="document-text-outline" size={22} color="#7C4DFF" /></View><Text style={styles.actionText}>Ver historial</Text></TouchableOpacity></View>
         <TouchableOpacity style={[styles.deleteButton, deleting && styles.disabled]} onPress={confirmDelete} disabled={deleting}><Ionicons name="trash-outline" size={20} color="#D8515D" /><Text style={styles.deleteText}>{deleting ? "Eliminando..." : "Eliminar mascota"}</Text></TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
