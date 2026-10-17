@@ -96,7 +96,42 @@ export default function MascotaFormularioScreen() {
         <Text style={styles.label}>Nombre</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nombre de la mascota" placeholderTextColor="#968F9E" />
         <Text style={styles.label}>Especie</Text>
-        <View style={styles.speciesRow}>{["Perro", "Gato"].map((item) => <TouchableOpacity key={item} style={[styles.species, species === item && styles.speciesActive]} onPress={() => setSpecies(item)}><Ionicons name="paw-outline" size={20} color={species === item ? "#7C4DFF" : "#8E8795"} /><Text style={[styles.speciesText, species === item && styles.speciesTextActive]}>{item}</Text></TouchableOpacity>)}</View>
+        <View style={styles.speciesRow}>
+          {["Perro", "Gato"].map((item, index) => {
+            const selected = species === item;
+
+            return (
+              <TouchableOpacity
+                key={item}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                style={[
+                  styles.species,
+                  index === 0 ? styles.firstSpecies : styles.lastSpecies,
+                  selected && styles.speciesActive,
+                ]}
+                onPress={() => setSpecies(item)}
+              >
+                <View style={styles.speciesContent}>
+                  <Ionicons
+                    style={styles.speciesIcon}
+                    name="paw-outline"
+                    size={20}
+                    color={selected ? "#7C4DFF" : "#8E8795"}
+                  />
+                  <View style={styles.speciesTextBox}>
+                    <Text
+                      maxFontSizeMultiplier={1.3}
+                      style={[styles.speciesText, selected && styles.speciesTextActive]}
+                    >
+                      {item}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
         <Text style={styles.label}>Raza (opcional)</Text>
         <TextInput style={styles.input} value={breed} onChangeText={setBreed} placeholder="Ej. Golden Retriever" placeholderTextColor="#968F9E" />
         <Text style={styles.label}>Fecha de nacimiento (opcional)</Text>
@@ -126,7 +161,13 @@ const styles = StyleSheet.create({
   color: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" }, selectedColor: { borderWidth: 2, borderColor: "#7C4DFF" },
   label: { color: "#302A3B", fontSize: 13, fontWeight: "800", marginBottom: 8 },
   input: { minHeight: 51, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E1EC", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8, color: "#292332", fontSize: 14, marginBottom: 20 },
-  speciesRow: { flexDirection: "row", gap: 10, marginBottom: 20 }, species: { flex: 1, minHeight: 54, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E1EC", borderRadius: 14, paddingHorizontal: 10, paddingVertical: 8 },
+  speciesRow: { flexDirection: "row", marginBottom: 20 },
+  species: { flexGrow: 1, flexBasis: 0, minWidth: 0, minHeight: 54, justifyContent: "center", alignItems: "center", backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6E1EC", borderRadius: 14, paddingHorizontal: 8, paddingVertical: 8 },
+  firstSpecies: { marginRight: 5 },
+  lastSpecies: { marginLeft: 5 },
+  speciesContent: { flexDirection: "row", alignItems: "center", justifyContent: "center" },
+  speciesIcon: { flexShrink: 0, marginRight: 8 },
+  speciesTextBox: { minWidth: 46 },
   speciesActive: { backgroundColor: "#F4F0FF", borderColor: "#A88BFF" }, speciesText: { color: "#817A89", fontSize: 13, fontWeight: "700" }, speciesTextActive: { color: "#7C4DFF", fontWeight: "800" },
   switchRow: { minHeight: 58, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 20 }, switchText: { flex: 1, minWidth: 0 }, switchTitle: { color: "#302A3B", fontSize: 13, fontWeight: "800", flexShrink: 1 }, switchSubtitle: { color: "#817A89", fontSize: 11, marginTop: 4, flexShrink: 1 },
   halfRow: { flexDirection: "row", flexWrap: "wrap", gap: 11 }, half: { flexGrow: 1, flexBasis: 130, minWidth: 130 },
