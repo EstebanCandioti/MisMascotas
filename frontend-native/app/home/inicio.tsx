@@ -29,7 +29,7 @@ export default function InicioScreen() {
         <View style={styles.topBar}>
           <View style={styles.brand}>
             <Ionicons name="paw-outline" size={25} color="#7C4DFF" />
-            <Text numberOfLines={1} style={styles.brandText}>Mis Mascotas</Text>
+            <Text style={styles.brandText}>Mis Mascotas</Text>
           </View>
           <TouchableOpacity style={styles.avatar} onPress={() => router.push("/account/perfil")}>
             <Text style={styles.avatarText}>{userInitials}</Text>
@@ -62,7 +62,7 @@ export default function InicioScreen() {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Próximos recordatorios</Text>
           <TouchableOpacity style={styles.headerAction} onPress={() => router.push("/health/recordatorios")}>
-            <Text numberOfLines={1} style={styles.link}>Ver todos</Text>
+            <Text style={styles.link}>Ver todos</Text>
           </TouchableOpacity>
         </View>
         {pendingReminders.slice(0, 3).map((reminder) => (
@@ -74,14 +74,14 @@ export default function InicioScreen() {
               <Text style={styles.reminderTitle}>{reminder.title}</Text>
               <Text style={styles.reminderDetail}>{reminder.pet} · {reminder.detail}</Text>
             </View>
-            <Text numberOfLines={2} style={styles.reminderDate}>{reminder.date}</Text>
+            <Text style={styles.reminderDate}>{reminder.date}</Text>
           </View>
         ))}
         {!pendingReminders.length && <Text style={styles.emptyPets}>No tenés recordatorios pendientes.</Text>}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mis mascotas</Text>
-          <TouchableOpacity style={styles.headerAction} onPress={() => router.push("/pets/mascotas")}><Text numberOfLines={1} style={styles.link}>Administrar</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.headerAction} onPress={() => router.push("/pets/mascotas")}><Text style={styles.link}>Administrar</Text></TouchableOpacity>
         </View>
         <View style={styles.petsRow}>
           {pets.slice(0, 3).map((pet) => (
@@ -117,12 +117,12 @@ const styles = StyleSheet.create({
   summaryNumber: { color: "#7C4DFF", fontSize: 22, fontWeight: "800" },
   summaryLabel: { color: "#756F80", fontSize: 12, marginTop: 3, textAlign: "center", flexShrink: 1 },
   summaryDivider: { width: 1, height: 32, backgroundColor: "#EEEAF2" },
-  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 27, marginBottom: 11, gap: 12 },
+  sectionHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginTop: 27, marginBottom: 11, gap: 12 },
   sectionTitle: { flex: 1, minWidth: 0, color: "#171321", fontSize: 19, fontWeight: "700", flexShrink: 1 },
-  headerAction: { flexShrink: 0 },
+  headerAction: { flexShrink: 0, paddingVertical: 2 },
   badge: { backgroundColor: "#EEE8FF", paddingHorizontal: 9, paddingVertical: 5, borderRadius: 99 },
   badgeText: { color: "#6844D9", fontSize: 11, fontWeight: "700" },
-  link: { color: "#7C4DFF", fontSize: 13, fontWeight: "700" },
+  link: { color: "#7C4DFF", fontSize: 13, fontWeight: "700", flexShrink: 0 },
   card: { backgroundColor: "#FFFFFF", borderRadius: 16, padding: 15, marginBottom: 12, shadowColor: "#312642", shadowOpacity: 0.05, shadowRadius: 8, elevation: 1 },
   petHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   petAvatar: { width: 38, height: 38, borderRadius: 19, justifyContent: "center", alignItems: "center", marginRight: 10 },
@@ -142,16 +142,16 @@ const styles = StyleSheet.create({
   bold: { fontWeight: "800" },
   activityTime: { color: "#96909E", fontSize: 11 },
   reminderCard: { flexDirection: "row", alignItems: "center", backgroundColor: "#7C4DFF", borderRadius: 14, padding: 14, marginBottom: 9 },
-  reminderIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.18)", justifyContent: "center", alignItems: "center", marginRight: 10 },
+  reminderIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.18)", justifyContent: "center", alignItems: "center", marginRight: 10, flexShrink: 0 },
   reminderInfo: { flex: 1, minWidth: 0 },
   reminderTitle: { color: "#FFFFFF", fontSize: 13, fontWeight: "800" },
   reminderDetail: { color: "#E9DFFF", fontSize: 11, marginTop: 3 },
-  reminderDate: { color: "#FFFFFF", fontSize: 11, fontWeight: "800", flexShrink: 1, marginLeft: 8, textAlign: "right" },
+  reminderDate: { maxWidth: "34%", color: "#FFFFFF", fontSize: 11, fontWeight: "800", flexShrink: 0, marginLeft: 8, textAlign: "right" },
   petsRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   petCard: { flexGrow: 1, flexBasis: 90, minWidth: 90, backgroundColor: "#FFFFFF", borderRadius: 15, padding: 9, alignItems: "center", shadowColor: "#312642", shadowOpacity: 0.05, shadowRadius: 7, elevation: 1 },
   petLargeAvatar: { width: 53, height: 53, borderRadius: 27, justifyContent: "center", alignItems: "center" },
   emoji: { fontSize: 25 },
-  petCardName: { color: "#282331", fontSize: 13, fontWeight: "800", marginTop: 7 },
-  petBreed: { color: "#8B8593", fontSize: 9, marginTop: 2, textAlign: "center" },
+  petCardName: { width: "100%", color: "#282331", fontSize: 13, fontWeight: "800", marginTop: 7, textAlign: "center", flexShrink: 1 },
+  petBreed: { width: "100%", color: "#8B8593", fontSize: 9, marginTop: 2, textAlign: "center", flexShrink: 1 },
   emptyPets: { width: "100%", color: "#8B8593", fontSize: 13, paddingVertical: 18, flexShrink: 1 },
 });

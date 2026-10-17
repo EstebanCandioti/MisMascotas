@@ -36,7 +36,11 @@ function NavItem({ label, icon, route, activeRoute }: NavItemProps) {
         color={active ? "#7C4DFF" : "#9A94A4"}
       />
 
-      <Text numberOfLines={2} style={[styles.label, active && styles.activeLabel]}>
+      <Text
+        numberOfLines={1}
+        maxFontSizeMultiplier={1.1}
+        style={[styles.label, active && styles.activeLabel]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -120,7 +124,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: "600",
     lineHeight: 11,
-    minHeight: 22,
+    minHeight: 11,
     textAlign: "center",
     flexShrink: 1,
   },
