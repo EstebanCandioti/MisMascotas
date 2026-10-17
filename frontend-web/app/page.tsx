@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Bell, PawPrint, ShieldCheck } from "lucide-react";
 
 import { AuthScreen } from "@/components/auth/auth-screen";
@@ -18,14 +18,22 @@ import { pets } from "@/data/pets";
 import { downloadJson } from "@/services/export-service";
 import type { AppView, PetId } from "@/types/app";
 import type { ActionKind } from "@/types/actions";
+import { useAuth } from "@/features/auth/auth-context";
 
 export default function App() {
-  const [logged, setLogged] = useState(false);
+  const { status, user, logout } = useAuth();
   const [view, setView] = useState<AppView>("home");
   const [pet, setPet] = useState<PetId>("fido");
   const [shared, setShared] = useState(false);
   const [action, setAction] = useState<ActionKind | null>(null);
   const [toast, setToast] = useState("");
+  const userName = user?.nombre ?? "Usuario";
+  const userInitials = userName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "US";
 
   const notify = (message: string) => {
     setToast(message);
@@ -37,33 +45,32 @@ export default function App() {
   };
   const exportData = () => {
     downloadJson("mis-mascotas-datos.json", {
-      usuario: "Usuario Demo",
+      usuario: user ?? { nombre: userName },
       mascotas: Object.values(pets),
       exportado: new Date().toISOString(),
     });
     notify("Tus datos se descargaron correctamente");
   };
 
-  const content = useMemo(() => {
-    switch (view) {
-      case "home": return <HomeView go={setView} selectPet={selectPet} />;
-      case "pets": return <PetsView shared={shared} setShared={setShared} selectPet={selectPet} open={setAction} />;
-      case "profile": return <ProfileView id={pet} back={() => setView("pets")} go={setView} open={setAction} />;
-      case "reminders": return <RemindersView open={setAction} />;
-      case "albums": return <AlbumsView open={setAction} />;
-      case "calendar": return <CalendarView />;
-      case "shared": return <SharedView open={setAction} notify={notify} />;
-      case "settings": return <SettingsView logout={() => setLogged(false)} open={setAction} exportData={exportData} />;
-    }
-  }, [pet, shared, view]);
+  let content: ReactNode;
+  switch (view) {
+    case "home": content = <HomeView go={setView} selectPet={selectPet} userName={userName} />; break;
+    case "pets": content = <PetsView shared={shared} setShared={setShared} selectPet={selectPet} open={setAction} />; break;
+    case "profile": content = <ProfileView id={pet} back={() => setView("pets")} go={setView} open={setAction} />; break;
+    case "reminders": content = <RemindersView open={setAction} />; break;
+    case "albums": content = <AlbumsView open={setAction} />; break;
+    case "calendar": content = <CalendarView />; break;
+    case "shared": content = <SharedView open={setAction} notify={notify} />; break;
+    case "settings": content = <SettingsView user={user} logout={() => void logout()} open={setAction} exportData={exportData} />; break;
+  }
 
-  if (!logged) return <AuthScreen onLogin={() => setLogged(true)} />;
+  if (status !== "authenticated") return <AuthScreen />;
 
   return (
     <main className="app-shell">
       <aside className="desktop-sidebar">
         <div className="side-logo"><PawPrint /> <b>Mis Mascotas</b></div>
-        <div className="side-user"><span>US</span><div><b>Usuario Demo</b><small>Plan Premium</small></div></div>
+        <div className="side-user"><span>{userInitials}</span><div><b>{userName}</b><small>{user?.esPremium ? "Plan Premium" : "Plan gratuito"}</small></div></div>
         <nav aria-label="Navegación principal">
           {navigationItems.map(([id, label, Icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}><Icon />{label}</button>)}
         </nav>

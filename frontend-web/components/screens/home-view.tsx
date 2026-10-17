@@ -10,9 +10,10 @@ import type { AppView, PetId } from "@/types/app";
 type HomeViewProps = {
   go: (view: AppView) => void;
   selectPet: (id: PetId) => void;
+  userName: string;
 };
 
-export function HomeView({ go, selectPet }: HomeViewProps) {
+export function HomeView({ go, selectPet, userName }: HomeViewProps) {
   const [completed, setCompleted] = useState<string[]>([]);
 
   const toggle = (id: string) => {
@@ -53,7 +54,7 @@ export function HomeView({ go, selectPet }: HomeViewProps) {
         <div>
           <span className="eyebrow">Jueves, 27 de agosto</span>
           <h1>
-            Hola, Usuario <span>👋</span>
+            Hola, {userName} <span>👋</span>
           </h1>
           <p>Todo el cuidado de tus mascotas, en un solo lugar.</p>
         </div>

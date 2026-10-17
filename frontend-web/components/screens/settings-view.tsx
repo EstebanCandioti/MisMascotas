@@ -1,17 +1,21 @@
 import { Bell, ChevronRight, Crown, Download, FileText, LogOut, Mail, ShieldCheck } from "lucide-react";
 
 import { Card, Header } from "@/components/layout/app-navigation";
+import type { UserProfile } from "@/features/auth/types";
 import type { ActionKind } from "@/types/actions";
 
-type SettingsViewProps = { logout: () => void; open: (kind: ActionKind) => void; exportData: () => void };
+type SettingsViewProps = { user: UserProfile | null; logout: () => void; open: (kind: ActionKind) => void; exportData: () => void };
 
-export function SettingsView({ logout, open, exportData }: SettingsViewProps) {
+export function SettingsView({ user, logout, open, exportData }: SettingsViewProps) {
+  const name = user?.nombre ?? "Usuario";
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "US";
+
   return (
     <>
       <Header title="Configuración" subtitle="Cuenta y preferencias" />
       <section className="settings-profile">
-        <div className="avatar-user large">US</div>
-        <div><h2>Usuario Demo</h2><p>usuario@demo.com</p><span><Crown /> Plan Premium</span></div>
+        <div className="avatar-user large">{initials}</div>
+        <div><h2>{name}</h2><p>{user?.email ?? "Cargando perfil…"}</p><span><Crown /> {user?.esPremium ? "Plan Premium" : "Plan gratuito"}</span></div>
       </section>
       <div className="settings-list">
         <Card>

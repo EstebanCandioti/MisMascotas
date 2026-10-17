@@ -162,6 +162,41 @@ p {
   flex-direction: column;
   gap: 18px;
 }
+.auth-loading {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.auth-error {
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #a72f2f;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.auth-code-input input {
+  letter-spacing: 0.3em;
+  font-size: 20px;
+  font-weight: 800;
+}
+.auth-back {
+  border: 0;
+  background: transparent;
+  color: var(--violet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.auth-back svg {
+  width: 16px;
+  height: 16px;
+}
 .auth-card label {
   font-size: 13px;
   font-weight: 750;
