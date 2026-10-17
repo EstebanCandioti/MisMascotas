@@ -72,32 +72,20 @@ export function mapearRecordatorioVista(
   };
 }
 
-export function construirRequestRecordatorio(data: {
+export function construirRequestRecordatorioUnico(data: {
   titulo: string;
   tipo: TipoRecordatorio;
-  fecha: string;
-  hora: string;
-  modalidad?: string;
-  intervaloValor?: string;
-  intervaloUnidad?: string;
-  diasSemana?: string;
-  fechaFin?: string;
+  fechaHoraInicio: Date;
 }): RecordatorioRequest {
-  const intervaloValor = data.intervaloValor?.trim()
-    ? Number.parseInt(data.intervaloValor.trim(), 10)
-    : undefined;
+  if (Number.isNaN(data.fechaHoraInicio.getTime())) {
+    throw new Error("La fecha y hora seleccionadas no son válidas.");
+  }
 
   return {
     titulo: data.titulo.trim(),
     tipo: data.tipo,
-    fechaHoraInicio: crearIsoDesdeFechaHora(data.fecha, data.hora),
-    modalidad: data.modalidad || "unica",
-    intervaloValor: Number.isFinite(intervaloValor) ? intervaloValor : undefined,
-    intervaloUnidad: data.intervaloUnidad?.trim() || undefined,
-    diasSemana: data.diasSemana?.trim() || undefined,
-    fechaFin: data.fechaFin?.trim()
-      ? crearIsoDesdeFechaHora(data.fechaFin.trim(), "23:59")
-      : undefined,
+    fechaHoraInicio: data.fechaHoraInicio.toISOString(),
+    modalidad: "unica",
   };
 }
 
@@ -125,11 +113,6 @@ export function esRecordatorioDeHoy(recordatorio: RecordatorioResponse): boolean
     && fecha.getFullYear() === hoy.getFullYear()
     && fecha.getMonth() === hoy.getMonth()
     && fecha.getDate() === hoy.getDate();
-}
-
-function crearIsoDesdeFechaHora(fecha: string, hora: string): string {
-  const horaNormalizada = hora.trim() || "09:00";
-  return new Date(`${fecha.trim()}T${horaNormalizada}:00`).toISOString();
 }
 
 function formatearFechaHora(iso: string): string {

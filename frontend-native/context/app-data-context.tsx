@@ -65,6 +65,7 @@ type AppData = {
   remindersLoading: boolean;
   remindersError: string | null;
   refreshReminders: () => Promise<void>;
+  addCreatedReminder: (reminder: RecordatorioResponse, petName: string) => void;
   events: ClinicalEvent[];
   setEvents: (events: ClinicalEvent[]) => void;
   albums: Album[];
@@ -242,6 +243,15 @@ export function AppDataProvider({ children }: PropsWithChildren) {
     await loadRemindersForPets(pets);
   }, [loadRemindersForPets, pets]);
 
+  const addCreatedReminder = useCallback((reminder: RecordatorioResponse, petName: string) => {
+    const mappedReminder = mapReminderResponse(reminder, petName);
+    setReminders((current) => [
+      mappedReminder,
+      ...current.filter((item) => item.id !== mappedReminder.id),
+    ]);
+    setRemindersError(null);
+  }, []);
+
   useEffect(() => {
     setUnauthorizedHandler(clearAuthenticatedData);
     return () => setUnauthorizedHandler(null);
@@ -330,6 +340,7 @@ export function AppDataProvider({ children }: PropsWithChildren) {
         remindersLoading,
         remindersError,
         refreshReminders,
+        addCreatedReminder,
         events,
         setEvents,
         albums,
