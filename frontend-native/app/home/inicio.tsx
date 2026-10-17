@@ -28,7 +28,7 @@ export default function InicioScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <View style={styles.brand}>
-            <Ionicons name="paw-outline" size={25} color="#7C4DFF" />
+            <Ionicons style={styles.brandIcon} name="paw-outline" size={25} color="#7C4DFF" />
             <Text maxFontSizeMultiplier={1.2} style={styles.brandText}>Mis Mascotas</Text>
           </View>
           <TouchableOpacity style={styles.avatar} onPress={() => router.push("/account/perfil")}>
@@ -79,9 +79,9 @@ export default function InicioScreen() {
         ))}
         {!pendingReminders.length && <Text style={styles.emptyPets}>No tenés recordatorios pendientes.</Text>}
 
-        <View style={[styles.sectionHeader, styles.petsSectionHeader]}>
-          <Text style={styles.sectionTitle}>Mis mascotas</Text>
-          <TouchableOpacity style={styles.headerAction} onPress={() => router.push("/pets/mascotas")}><Text maxFontSizeMultiplier={1.2} style={styles.link}>Administrar</Text></TouchableOpacity>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, styles.petsSectionTitle]}>Mis mascotas</Text>
+          <TouchableOpacity style={[styles.headerAction, styles.petsHeaderAction]} onPress={() => router.push("/pets/mascotas")}><Text maxFontSizeMultiplier={1.2} style={styles.link}>Administrar</Text></TouchableOpacity>
         </View>
         <View style={styles.petsRow}>
           {pets.slice(0, 3).map((pet) => (
@@ -102,10 +102,11 @@ export default function InicioScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAF9FC" },
-  content: { padding: 20, paddingBottom: 36 },
-  topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  brand: { flexDirection: "row", alignItems: "center", gap: 7 },
-  brandText: { color: "#7C4DFF", fontSize: 16, fontWeight: "700" },
+  content: { width: "100%", padding: 20, paddingBottom: 36 },
+  topBar: { width: "100%", flexDirection: "row", alignItems: "center" },
+  brand: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", paddingRight: 12 },
+  brandIcon: { flexShrink: 0, marginRight: 7 },
+  brandText: { minWidth: 118, color: "#7C4DFF", fontSize: 16, fontWeight: "700", flexShrink: 0 },
   avatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#7C4DFF", justifyContent: "center", alignItems: "center", flexShrink: 0 },
   avatarText: { color: "#FFFFFF", fontSize: 12, fontWeight: "800" },
   welcome: { marginTop: 30 },
@@ -117,10 +118,11 @@ const styles = StyleSheet.create({
   summaryNumber: { color: "#7C4DFF", fontSize: 22, fontWeight: "800" },
   summaryLabel: { color: "#756F80", fontSize: 12, marginTop: 3, textAlign: "center", flexShrink: 1 },
   summaryDivider: { width: 1, height: 32, backgroundColor: "#EEEAF2" },
-  sectionHeader: { flexDirection: "row", alignItems: "flex-start", marginTop: 27, marginBottom: 11, gap: 12 },
-  petsSectionHeader: { gap: 4 },
+  sectionHeader: { width: "100%", flexDirection: "row", alignItems: "flex-start", marginTop: 27, marginBottom: 11 },
   sectionTitle: { flex: 1, minWidth: 0, color: "#171321", fontSize: 19, fontWeight: "700", flexShrink: 1 },
-  headerAction: { flexShrink: 0, paddingVertical: 2 },
+  petsSectionTitle: { minWidth: 125, paddingRight: 8 },
+  headerAction: { flexShrink: 0, marginLeft: 12, paddingVertical: 2, alignItems: "flex-end" },
+  petsHeaderAction: { minWidth: 88, marginLeft: 0 },
   badge: { backgroundColor: "#EEE8FF", paddingHorizontal: 9, paddingVertical: 5, borderRadius: 99 },
   badgeText: { color: "#6844D9", fontSize: 11, fontWeight: "700" },
   link: { color: "#7C4DFF", fontSize: 13, fontWeight: "700", flexShrink: 0 },
