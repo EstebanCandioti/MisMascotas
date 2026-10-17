@@ -29,7 +29,7 @@ export default function InicioScreen() {
         <View style={styles.topBar}>
           <View style={styles.brand}>
             <Ionicons name="paw-outline" size={25} color="#7C4DFF" />
-            <Text style={styles.brandText}>Mis Mascotas</Text>
+            <Text numberOfLines={1} maxFontSizeMultiplier={1.2} style={styles.brandText}>Mis Mascotas</Text>
           </View>
           <TouchableOpacity style={styles.avatar} onPress={() => router.push("/account/perfil")}>
             <Text style={styles.avatarText}>{userInitials}</Text>
@@ -79,7 +79,7 @@ export default function InicioScreen() {
         ))}
         {!pendingReminders.length && <Text style={styles.emptyPets}>No tenés recordatorios pendientes.</Text>}
 
-        <View style={styles.sectionHeader}>
+        <View style={[styles.sectionHeader, styles.petsSectionHeader]}>
           <Text style={styles.sectionTitle}>Mis mascotas</Text>
           <TouchableOpacity style={styles.headerAction} onPress={() => router.push("/pets/mascotas")}><Text style={styles.link}>Administrar</Text></TouchableOpacity>
         </View>
@@ -104,8 +104,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAF9FC" },
   content: { padding: 20, paddingBottom: 36 },
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  brand: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 7, marginRight: 12 },
-  brandText: { color: "#7C4DFF", fontSize: 16, fontWeight: "700", flexShrink: 1 },
+  brand: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 7, marginRight: 8 },
+  brandText: { color: "#7C4DFF", fontSize: 16, fontWeight: "700", flexShrink: 0 },
   avatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#7C4DFF", justifyContent: "center", alignItems: "center", flexShrink: 0 },
   avatarText: { color: "#FFFFFF", fontSize: 12, fontWeight: "800" },
   welcome: { marginTop: 30 },
@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
   summaryLabel: { color: "#756F80", fontSize: 12, marginTop: 3, textAlign: "center", flexShrink: 1 },
   summaryDivider: { width: 1, height: 32, backgroundColor: "#EEEAF2" },
   sectionHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginTop: 27, marginBottom: 11, gap: 12 },
+  petsSectionHeader: { gap: 4 },
   sectionTitle: { flex: 1, minWidth: 0, color: "#171321", fontSize: 19, fontWeight: "700", flexShrink: 1 },
   headerAction: { flexShrink: 0, paddingVertical: 2 },
   badge: { backgroundColor: "#EEE8FF", paddingHorizontal: 9, paddingVertical: 5, borderRadius: 99 },
