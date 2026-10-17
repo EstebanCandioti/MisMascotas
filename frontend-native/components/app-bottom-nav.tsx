@@ -38,7 +38,7 @@ function NavItem({ label, icon, route, activeRoute }: NavItemProps) {
 
       <Text
         numberOfLines={1}
-        maxFontSizeMultiplier={1.1}
+        maxFontSizeMultiplier={1}
         style={[styles.label, active && styles.activeLabel]}
       >
         {label}
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     lineHeight: 11,
     minHeight: 11,
+    width: "100%",
     textAlign: "center",
-    flexShrink: 1,
   },
 
   activeLabel: {
