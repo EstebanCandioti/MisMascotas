@@ -373,7 +373,6 @@ export default function RecordatoriosScreen() {
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-              <View style={styles.sheetHandle} />
               <Text style={styles.sheetTitle}>Nuevo recordatorio</Text>
 
               {petsLoading ? (
@@ -608,7 +607,6 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(25,18,35,0.35)" },
   sheet: { maxHeight: "92%", backgroundColor: "#FFFFFF", borderTopLeftRadius: 26, borderTopRightRadius: 26, overflow: "hidden" },
   sheetContent: { padding: 21, paddingBottom: 34 },
-  sheetHandle: { width: 38, height: 4, borderRadius: 2, alignSelf: "center", backgroundColor: "#D9D4DF", marginBottom: 17 },
   sheetTitle: { width: "100%", color: "#201B29", fontSize: 21, lineHeight: 28, fontWeight: "800", marginBottom: 21 },
   label: { width: "100%", color: "#302A3B", fontSize: 13, lineHeight: 18, fontWeight: "800", marginBottom: 8, marginTop: 2 },
   input: { minHeight: 51, borderWidth: 1, borderColor: "#E6E1EC", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8, color: "#201B29", fontSize: 14 },
