@@ -36,7 +36,7 @@ function NavItem({ label, icon, route, activeRoute }: NavItemProps) {
         color={active ? "#7C4DFF" : "#9A94A4"}
       />
 
-      <Text style={[styles.label, active && styles.activeLabel]}>
+      <Text numberOfLines={2} style={[styles.label, active && styles.activeLabel]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -108,15 +108,21 @@ const styles = StyleSheet.create({
 
   item: {
     flex: 1,
+    minWidth: 0,
     alignItems: "center",
     justifyContent: "center",
     gap: 3,
+    paddingHorizontal: 1,
   },
 
   label: {
     color: "#9A94A4",
     fontSize: 8,
     fontWeight: "600",
+    lineHeight: 11,
+    minHeight: 22,
+    textAlign: "center",
+    flexShrink: 1,
   },
 
   activeLabel: {

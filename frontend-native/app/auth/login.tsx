@@ -1,7 +1,9 @@
 import { useCallback, useState } from "react";
 import {
   Alert,
-  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppData } from "../../context/app-data-context";
 import { login as loginRequest } from "../../services/api";
 
@@ -53,7 +56,12 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <KeyboardAvoidingView style={styles.keyboardView} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.logo}>
           <Ionicons name="paw-outline" size={28} color="#7C4DFF" />
           <Text style={styles.logoText}>Mis Mascotas</Text>
@@ -126,14 +134,16 @@ export default function LoginScreen() {
         <Text style={styles.terms}>
           Al continuar, aceptás los Términos y la Política de Privacidad.
         </Text>
-      </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { flex: 1, paddingHorizontal: 39, paddingTop: 22 },
+  keyboardView: { flex: 1 },
+  content: { flexGrow: 1, paddingHorizontal: 39, paddingTop: 22, paddingBottom: 30 },
 
   logo: { flexDirection: "row", alignItems: "center", gap: 8 },
   logoText: { color: "#7C4DFF", fontSize: 16, fontWeight: "700" },
@@ -161,7 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 9,
   },
   inputBox: {
-    height: 51,
+    minHeight: 51,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
@@ -169,9 +179,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: "#FCFAFD",
     paddingHorizontal: 15,
+    paddingVertical: 6,
     marginBottom: 19,
   },
-  inputField: { flex: 1, height: "100%", justifyContent: "center" },
+  inputField: { flex: 1, minWidth: 0, minHeight: 39, justifyContent: "center" },
   placeholderOverlay: {
     position: "absolute",
     top: 0,
@@ -187,6 +198,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     color: "#171321",
     fontSize: 14,
     fontWeight: "600",
@@ -195,13 +207,15 @@ const styles = StyleSheet.create({
   showPassword: { color: "#7C4DFF", fontSize: 13, fontWeight: "700" },
 
   button: {
-    height: 51,
+    minHeight: 51,
     backgroundColor: "#7C4DFF",
     borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   buttonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "800" },
 

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import {
   Alert,
-  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppData } from "../../context/app-data-context";
 import { register as registerRequest } from "../../services/api";
 
@@ -47,8 +49,10 @@ export default function RegistroScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView style={styles.keyboardView} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.logo}>
@@ -163,12 +167,14 @@ export default function RegistroScreen() {
           Al continuar, aceptás los Términos y la Política de Privacidad.
         </Text>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
+  keyboardView: { flex: 1 },
   content: {
     flexGrow: 1,
     paddingHorizontal: 39,
@@ -196,7 +202,7 @@ const styles = StyleSheet.create({
 
   form: { marginTop: 33 },
   namesRow: { flexDirection: "row", gap: 12 },
-  halfField: { flex: 1 },
+  halfField: { flex: 1, minWidth: 0 },
 
   label: {
     color: "#171321",
@@ -205,7 +211,7 @@ const styles = StyleSheet.create({
     marginBottom: 9,
   },
   inputBox: {
-    height: 51,
+    minHeight: 51,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
@@ -213,10 +219,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: "#FCFAFD",
     paddingHorizontal: 15,
+    paddingVertical: 6,
     marginBottom: 19,
   },
   input: {
     flex: 1,
+    minWidth: 0,
     color: "#171321",
     fontSize: 14,
     fontWeight: "600",
@@ -224,13 +232,15 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    height: 51,
+    minHeight: 51,
     backgroundColor: "#7C4DFF",
     borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   buttonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "800" },
 

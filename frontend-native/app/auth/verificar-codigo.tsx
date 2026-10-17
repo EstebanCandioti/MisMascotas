@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppData } from "../../context/app-data-context";
 import { ApiError, verifyCode } from "../../services/api";
 
@@ -62,7 +63,8 @@ export default function VerificarCodigoScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <KeyboardAvoidingView style={styles.keyboardView} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.logo}>
           <Ionicons name="paw-outline" size={28} color="#7C4DFF" />
           <Text style={styles.logoText}>Mis Mascotas</Text>
@@ -100,14 +102,16 @@ export default function VerificarCodigoScreen() {
         <TouchableOpacity onPress={cancelVerification}>
           <Text style={styles.backText}>Volver al inicio de sesión</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { flex: 1, paddingHorizontal: 39, paddingTop: 22 },
+  keyboardView: { flex: 1 },
+  content: { flexGrow: 1, paddingHorizontal: 39, paddingTop: 22, paddingBottom: 30 },
   logo: { flexDirection: "row", alignItems: "center", gap: 8 },
   logoText: { color: "#7C4DFF", fontSize: 16, fontWeight: "700" },
   header: { marginTop: 48 },
@@ -116,8 +120,8 @@ const styles = StyleSheet.create({
   subtitle: { color: "#756F80", fontSize: 16, marginTop: 13, lineHeight: 23 },
   form: { marginTop: 33 },
   label: { color: "#171321", fontSize: 13, fontWeight: "700", marginBottom: 9 },
-  codeInput: { height: 56, borderWidth: 1, borderColor: "#E6E1EC", borderRadius: 14, backgroundColor: "#FCFAFD", paddingHorizontal: 15, color: "#171321", fontSize: 24, fontWeight: "700", letterSpacing: 8, textAlign: "center", marginBottom: 19 },
-  button: { height: 51, backgroundColor: "#7C4DFF", borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  codeInput: { minHeight: 56, borderWidth: 1, borderColor: "#E6E1EC", borderRadius: 14, backgroundColor: "#FCFAFD", paddingHorizontal: 15, paddingVertical: 8, color: "#171321", fontSize: 24, fontWeight: "700", letterSpacing: 8, textAlign: "center", marginBottom: 19 },
+  button: { minHeight: 51, backgroundColor: "#7C4DFF", borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingHorizontal: 16, paddingVertical: 12 },
   buttonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "800" },
   resendText: { color: "#7C4DFF", fontSize: 14, fontWeight: "800", textAlign: "center", marginTop: 18 },
   backText: { color: "#7C4DFF", fontSize: 14, fontWeight: "800", textAlign: "center", marginTop: 27 },

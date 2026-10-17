@@ -42,12 +42,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#EEE8FF",
+    flexShrink: 0,
   },
 
   title: {
     color: "#171321",
     fontSize: 24,
     fontWeight: "800",
+    flexShrink: 1,
   },
 
   subtitle: {
@@ -60,5 +62,6 @@ const styles = StyleSheet.create({
   textContent: {
     flex: 1,
     flexShrink: 1,
+    minWidth: 0,
   },
 });
