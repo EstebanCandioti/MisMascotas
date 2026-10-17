@@ -8,11 +8,10 @@ import { useAppData } from "../../context/app-data-context";
 
 export default function AlbumesScreen() {
   const router = useRouter();
-  const { albums, setAlbums } = useAppData();
+  const { albums } = useAppData();
 
   const createAlbum = () => {
-    setAlbums([...albums, { id: `album-${Date.now()}`, name: "Nuevo álbum", emoji: "📷", color: "#C9E5F3", photos: [] }]);
-    Alert.alert("Álbum creado", "Se agregó un álbum de ejemplo.");
+    Alert.alert("Función no disponible", "Los álbumes estarán disponibles cuando su servicio esté conectado.");
   };
 
   return (
@@ -28,6 +27,7 @@ export default function AlbumesScreen() {
             <Ionicons name="chevron-forward" size={21} color="#9A94A4" />
           </TouchableOpacity>
         ))}
+        {!albums.length && <Text style={styles.empty}>Todavía no hay álbumes para mostrar.</Text>}
         <TouchableOpacity style={styles.addButton} onPress={createAlbum}><Ionicons name="add" size={23} color="#FFFFFF" /><Text style={styles.addText}>Crear álbum</Text></TouchableOpacity>
       </ScrollView>
       <AppBottomNav activeRoute="albumes" />
@@ -42,4 +42,5 @@ const styles = StyleSheet.create({
   album: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: 17, padding: 13, marginBottom: 12, shadowColor: "#312642", shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
   cover: { width: 59, height: 59, borderRadius: 14, justifyContent: "center", alignItems: "center", marginRight: 13 }, emoji: { fontSize: 29 }, info: { flex: 1 }, albumName: { color: "#201B29", fontSize: 15, fontWeight: "800" }, albumCount: { color: "#837C8D", fontSize: 12, marginTop: 4 },
   addButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, height: 51, borderRadius: 14, backgroundColor: "#7C4DFF", marginTop: 10 }, addText: { color: "#FFFFFF", fontSize: 15, fontWeight: "800" },
+  empty: { color: "#837C8D", fontSize: 13, textAlign: "center", paddingVertical: 22 },
 });

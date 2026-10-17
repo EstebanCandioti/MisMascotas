@@ -92,7 +92,7 @@ export default function MascotaFormularioScreen() {
         <Text style={styles.avatarLabel}>Elegí un color para su avatar</Text>
         <View style={styles.colorRow}>{colors.map((item) => <TouchableOpacity key={item} onPress={() => setColor(item)} style={[styles.color, { backgroundColor: item }, color === item && styles.selectedColor]}>{color === item && <Ionicons name="checkmark" size={17} color="#4A3A63" />}</TouchableOpacity>)}</View>
         <Text style={styles.label}>Nombre</Text>
-        <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Ej. Fido" placeholderTextColor="#968F9E" />
+        <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nombre de la mascota" placeholderTextColor="#968F9E" />
         <Text style={styles.label}>Especie</Text>
         <View style={styles.speciesRow}>{["Perro", "Gato"].map((item) => <TouchableOpacity key={item} style={[styles.species, species === item && styles.speciesActive]} onPress={() => setSpecies(item)}><Ionicons name="paw-outline" size={20} color={species === item ? "#7C4DFF" : "#8E8795"} /><Text style={[styles.speciesText, species === item && styles.speciesTextActive]}>{item}</Text></TouchableOpacity>)}</View>
         <Text style={styles.label}>Raza (opcional)</Text>

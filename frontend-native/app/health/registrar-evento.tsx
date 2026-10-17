@@ -13,15 +13,18 @@ const types = [
 
 export default function RegistrarEventoScreen() {
   const router = useRouter();
-  const { mascota = "Fido" } = useLocalSearchParams<{ mascota?: string }>();
+  const { mascota = "" } = useLocalSearchParams<{ mascota?: string }>();
   const { events, setEvents } = useAppData();
   const [type, setType] = useState("Consulta");
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const eventDate = new Date();
+  const eventDateLabel = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", year: "numeric" }).format(eventDate);
+  const eventDateShort = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "short", year: "numeric" }).format(eventDate).toUpperCase();
 
   const saveEvent = () => {
     if (!title.trim()) { Alert.alert("Falta el título", "Ingresá el nombre del evento clínico."); return; }
-    setEvents([{ id: `event-${Date.now()}`, type, title: title.trim(), pet: mascota, detail: notes.trim() || "Sin observaciones adicionales.", date: "27 AGO 2026" }, ...events]);
+    setEvents([{ id: `event-${Date.now()}`, type, title: title.trim(), pet: mascota, detail: notes.trim() || "Sin observaciones adicionales.", date: eventDateShort }, ...events]);
     Alert.alert("Evento registrado", `${type}: ${title} se guardó localmente para ${mascota}.`, [{ text: "Ver historial", onPress: () => router.replace({ pathname: "/health/historial-clinico", params: { mascota } }) }]);
   };
 
@@ -32,8 +35,8 @@ export default function RegistrarEventoScreen() {
         <View style={styles.petBanner}><Ionicons name="paw-outline" size={21} color="#7C4DFF" /><Text style={styles.petText}>Evento para <Text style={styles.petName}>{mascota}</Text></Text></View>
         <Text style={styles.label}>Tipo de evento</Text>
         <View style={styles.typeGrid}>{types.map((item) => <TouchableOpacity key={item.id} style={[styles.type, type === item.id && styles.typeActive]} onPress={() => setType(item.id)}><Ionicons name={item.icon} size={21} color={type === item.id ? "#7C4DFF" : "#8E8795"} /><Text style={[styles.typeText, type === item.id && styles.typeTextActive]}>{item.id}</Text></TouchableOpacity>)}</View>
-        <Text style={styles.label}>Título</Text><TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder={type === "Vacuna" ? "Ej. Vacuna antirrábica" : "Ej. Control general"} placeholderTextColor="#968F9E" />
-        <Text style={styles.label}>Fecha</Text><View style={styles.dateInput}><Ionicons name="calendar-outline" size={20} color="#7C4DFF" /><Text style={styles.dateText}>27 de agosto de 2026</Text></View>
+        <Text style={styles.label}>Título</Text><TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="Título del evento" placeholderTextColor="#968F9E" />
+        <Text style={styles.label}>Fecha</Text><View style={styles.dateInput}><Ionicons name="calendar-outline" size={20} color="#7C4DFF" /><Text style={styles.dateText}>{eventDateLabel}</Text></View>
         <Text style={styles.label}>Notas (opcional)</Text><TextInput style={[styles.input, styles.notes]} value={notes} onChangeText={setNotes} multiline textAlignVertical="top" placeholder="Agregá indicaciones, dosis u observaciones." placeholderTextColor="#968F9E" />
         <TouchableOpacity style={styles.saveButton} onPress={saveEvent}><Ionicons name="checkmark-circle-outline" size={21} color="#FFFFFF" /><Text style={styles.saveText}>Guardar evento</Text></TouchableOpacity>
       </ScrollView>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -12,34 +11,17 @@ import { useRouter } from "expo-router";
 import AppBottomNav from "@/components/app-bottom-nav";
 import { useAppData } from "../../context/app-data-context";
 
-type TaskProps = {
-  title: string;
-  detail: string;
-  time: string;
-};
-
-function Task({ title, detail, time }: TaskProps) {
-  const [completed, setCompleted] = useState(false);
-
-  return (
-    <TouchableOpacity style={styles.task} onPress={() => setCompleted(!completed)}>
-      <View style={[styles.check, completed && styles.checkCompleted]}>
-        {completed && <Ionicons name="checkmark" size={15} color="#FFFFFF" />}
-      </View>
-      <View style={styles.taskInfo}>
-        <Text style={[styles.taskTitle, completed && styles.completedText]}>{title}</Text>
-        <Text style={styles.taskDetail}>{detail}</Text>
-      </View>
-      <Text style={styles.taskTime}>{time}</Text>
-    </TouchableOpacity>
-  );
-}
-
 export default function InicioScreen() {
   const router = useRouter();
-  const { currentUser, pets } = useAppData();
+  const { currentUser, pets, reminders } = useAppData();
   const userName = currentUser?.name ?? "Usuario";
   const userInitials = userName.slice(0, 2).toUpperCase();
+  const pendingReminders = reminders.filter((reminder) => !reminder.done);
+  const today = new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date()).toUpperCase();
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -55,7 +37,7 @@ export default function InicioScreen() {
         </View>
 
         <View style={styles.welcome}>
-          <Text style={styles.eyebrow}>JUEVES, 27 DE AGOSTO</Text>
+          <Text style={styles.eyebrow}>{today}</Text>
           <Text style={styles.title}>Hola, {userName} 👋</Text>
           <Text style={styles.subtitle}>Todo el cuidado de tus mascotas, en un solo lugar.</Text>
         </View>
@@ -67,50 +49,13 @@ export default function InicioScreen() {
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryNumber}>2</Text>
+            <Text style={styles.summaryNumber}>{pendingReminders.length}</Text>
             <Text style={styles.summaryLabel}>Próximos</Text>
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryNumber}>1</Text>
+            <Text style={styles.summaryNumber}>0</Text>
             <Text style={styles.summaryLabel}>Compartido</Text>
-          </View>
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Hoy</Text>
-          <View style={styles.badge}><Text style={styles.badgeText}>3 pendientes</Text></View>
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.petHeader}>
-            <View style={[styles.petAvatar, { backgroundColor: "#F2D5A0" }]}><Text>🐶</Text></View>
-            <View><Text style={styles.petName}>Fido</Text><Text style={styles.petType}>Salud preventiva</Text></View>
-          </View>
-          <Task title="Selamectina 18 mg" detail="Aplicar pipeta antiparasitaria" time="20:00" />
-          <Task title="Comprimido antigarrapatas" detail="Con la comida" time="21:00" />
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.petHeader}>
-            <View style={[styles.petAvatar, { backgroundColor: "#D9CDFC" }]}><Text>🐱</Text></View>
-            <View><Text style={styles.petName}>Luna</Text><Text style={styles.petType}>Cuidado diario</Text></View>
-          </View>
-          <Task title="Pipeta antiparasitaria" detail="Recordatorio mensual" time="Hoy" />
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Actividad reciente</Text>
-          <Text style={styles.link}>Ver todo</Text>
-        </View>
-        <View style={styles.card}>
-          <View style={styles.activity}>
-            <View style={[styles.activityIcon, { backgroundColor: "#EEE8FF" }]}><Ionicons name="medical-outline" size={20} color="#7C4DFF" /></View>
-            <Text style={styles.activityText}><Text style={styles.bold}>Laura</Text> marcó que le dio Amoxicilina a Fido{"\n"}<Text style={styles.activityTime}>Hace 25 min</Text></Text>
-          </View>
-          <View style={styles.activity}>
-            <View style={[styles.activityIcon, { backgroundColor: "#E2F3FC" }]}><Ionicons name="heart-outline" size={20} color="#2789B9" /></View>
-            <Text style={styles.activityText}>Registraste una consulta de Luna{"\n"}<Text style={styles.activityTime}>Ayer, 18:40</Text></Text>
           </View>
         </View>
 
@@ -120,26 +65,19 @@ export default function InicioScreen() {
             <Text style={styles.link}>Ver todos</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.reminderCard}>
-          <View style={styles.reminderIcon}>
-            <Ionicons name="medical-outline" size={21} color="#FFFFFF" />
+        {pendingReminders.slice(0, 3).map((reminder) => (
+          <View key={reminder.id} style={styles.reminderCard}>
+            <View style={styles.reminderIcon}>
+              <Ionicons name="alarm-outline" size={21} color="#FFFFFF" />
+            </View>
+            <View style={styles.reminderInfo}>
+              <Text style={styles.reminderTitle}>{reminder.title}</Text>
+              <Text style={styles.reminderDetail}>{reminder.pet} · {reminder.detail}</Text>
+            </View>
+            <Text style={styles.reminderDate}>{reminder.date}</Text>
           </View>
-          <View style={styles.reminderInfo}>
-            <Text style={styles.reminderTitle}>Vacuna antirrábica</Text>
-            <Text style={styles.reminderDetail}>Fido · En 3 días</Text>
-          </View>
-          <Text style={styles.reminderDate}>30 AGO</Text>
-        </View>
-        <View style={styles.reminderCard}>
-          <View style={styles.reminderIcon}>
-            <Ionicons name="heart-outline" size={21} color="#FFFFFF" />
-          </View>
-          <View style={styles.reminderInfo}>
-            <Text style={styles.reminderTitle}>Control anual</Text>
-            <Text style={styles.reminderDetail}>Rex · En 7 días</Text>
-          </View>
-          <Text style={styles.reminderDate}>03 SEP</Text>
-        </View>
+        ))}
+        {!pendingReminders.length && <Text style={styles.emptyPets}>No tenés recordatorios pendientes.</Text>}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Mis mascotas</Text>

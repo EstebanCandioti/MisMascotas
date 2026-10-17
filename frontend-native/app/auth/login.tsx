@@ -74,7 +74,7 @@ export default function LoginScreen() {
             <View style={styles.inputField}>
               {!email && (
                 <View pointerEvents="none" style={styles.placeholderOverlay}>
-                  <Text style={styles.emailPlaceholder}>usuario@demo.com</Text>
+                  <Text style={styles.emailPlaceholder}>correo@ejemplo.com</Text>
                 </View>
               )}
               <TextInput

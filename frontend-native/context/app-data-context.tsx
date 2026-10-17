@@ -90,16 +90,8 @@ type PersistedData = {
   notifications?: boolean;
 };
 
-const STORAGE_KEY = "mismascotas-demo-data-v1";
-
-const initialEvents: ClinicalEvent[] = [
-  { id: "consulta-fido", type: "Consulta", title: "Control general", pet: "Fido", detail: "Sin hallazgos. Se recomienda control anual.", date: "20 AGO 2026" },
-  { id: "vacuna-fido", type: "Vacuna", title: "Vacuna séxtuple", pet: "Fido", detail: "Aplicada correctamente.", date: "15 MAY 2026" },
-];
-const initialAlbums: Album[] = [
-  { id: "fido", name: "Momentos de Fido", emoji: "🐶", color: "#F2D5A0", photos: [{ id: "1", emoji: "🐶", color: "#F2D5A0", title: "Paseo en la plaza", date: "20 AGO" }, { id: "2", emoji: "🌳", color: "#D6EBC7", title: "Tarde al aire libre", date: "14 AGO" }] },
-  { id: "luna", name: "Luna en casa", emoji: "🐱", color: "#D9CDFC", photos: [{ id: "3", emoji: "🐱", color: "#D9CDFC", title: "Siesta", date: "08 AGO" }] },
-];
+const STORAGE_KEY = "mismascotas-local-data-v2";
+const LEGACY_DEMO_STORAGE_KEY = "mismascotas-demo-data-v1";
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Ocurrió un error inesperado.";
@@ -179,8 +171,8 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [remindersLoading, setRemindersLoading] = useState(false);
   const [remindersError, setRemindersError] = useState<string | null>(null);
-  const [events, setEvents] = useState<ClinicalEvent[]>(initialEvents);
-  const [albums, setAlbums] = useState<Album[]>(initialAlbums);
+  const [events, setEvents] = useState<ClinicalEvent[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser | null>(null);
   const [premium, setPremium] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -259,6 +251,7 @@ export function AppDataProvider({ children }: PropsWithChildren) {
     let cancelled = false;
 
     async function restore() {
+      await AsyncStorage.removeItem(LEGACY_DEMO_STORAGE_KEY).catch(() => undefined);
       const saved = await readPersistedData();
       if (saved?.events) setEvents(saved.events);
       if (saved?.albums) setAlbums(saved.albums);

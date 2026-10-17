@@ -86,7 +86,7 @@ export default function RegistroScreen() {
                   style={styles.input}
                   value={lastName}
                   onChangeText={setLastName}
-                  placeholder="Demo"
+                  placeholder="Apellido"
                   placeholderTextColor="#7A7486"
                 />
               </View>
@@ -100,7 +100,7 @@ export default function RegistroScreen() {
               style={styles.input}
               value={email}
               onChangeText={setEmail}
-              placeholder="usuario@demo.com"
+              placeholder="correo@ejemplo.com"
               placeholderTextColor="#7A7486"
               keyboardType="email-address"
               autoCapitalize="none"

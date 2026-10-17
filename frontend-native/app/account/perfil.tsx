@@ -37,22 +37,14 @@ export default function PerfilScreen() {
           <View style={styles.divider} />
           <View style={styles.summaryItem}><Text style={styles.summaryNumber}>{events.length}</Text><Text style={styles.summaryText}>Eventos</Text></View>
           <View style={styles.divider} />
-          <View style={styles.summaryItem}><Text style={styles.summaryNumber}>4</Text><Text style={styles.summaryText}>Badges</Text></View>
+          <View style={styles.summaryItem}><Text style={styles.summaryNumber}>0</Text><Text style={styles.summaryText}>Badges</Text></View>
         </View>
 
         <View style={styles.headerRow}><Text style={styles.sectionTitle}>Mis badges</Text><TouchableOpacity onPress={() => router.push("/account/badges")}><Text style={styles.link}>Ver todos</Text></TouchableOpacity></View>
-        <View style={styles.badges}>
-          <View style={styles.badge}><Text style={styles.badgeEmoji}>🏆</Text><Text style={styles.badgeText}>Primer registro</Text></View>
-          <View style={styles.badge}><Text style={styles.badgeEmoji}>💜</Text><Text style={styles.badgeText}>Cuidador atento</Text></View>
-          <View style={styles.badge}><Text style={styles.badgeEmoji}>📅</Text><Text style={styles.badgeText}>Siempre a tiempo</Text></View>
-        </View>
+        <Text style={styles.empty}>Todavía no hay badges para mostrar.</Text>
 
         <Text style={styles.sectionTitle}>Actividad reciente</Text>
-        <View style={styles.card}>
-          <View style={styles.activity}><View style={styles.activityIcon}><Ionicons name="medical-outline" size={20} color="#7C4DFF" /></View><View><Text style={styles.activityTitle}>Registraste una consulta de Luna</Text><Text style={styles.activityDate}>Ayer, 18:40</Text></View></View>
-          <View style={styles.line} />
-          <View style={styles.activity}><View style={styles.activityIcon}><Ionicons name="checkmark-done-outline" size={20} color="#7C4DFF" /></View><View><Text style={styles.activityTitle}>Confirmaste un recordatorio</Text><Text style={styles.activityDate}>Hace 2 días</Text></View></View>
-        </View>
+        <Text style={styles.empty}>Todavía no hay actividad para mostrar.</Text>
 
         <TouchableOpacity style={styles.passwordButton} onPress={() => Alert.alert("Contraseña", "Esta acción se conectará al backend más adelante.")}><Ionicons name="key-outline" size={20} color="#7C4DFF" /><Text style={styles.passwordText}>Cambiar contraseña</Text><Ionicons name="chevron-forward" size={20} color="#A29BAA" /></TouchableOpacity>
       </ScrollView>
@@ -69,4 +61,5 @@ const styles = StyleSheet.create({
   badges: { flexDirection: "row", gap: 10, marginBottom: 29 }, badge: { flex: 1, alignItems: "center", paddingVertical: 13, backgroundColor: "#FFFFFF", borderRadius: 16 }, badgeEmoji: { fontSize: 24 }, badgeText: { color: "#58505F", fontSize: 9, fontWeight: "700", marginTop: 7, textAlign: "center" },
   card: { backgroundColor: "#FFFFFF", borderRadius: 17, paddingHorizontal: 14, marginBottom: 25 }, activity: { flexDirection: "row", alignItems: "center", minHeight: 72 }, activityIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: "#EEE8FF", alignItems: "center", justifyContent: "center", marginRight: 11 }, activityTitle: { color: "#322B3A", fontSize: 13, fontWeight: "700" }, activityDate: { color: "#8E8795", fontSize: 11, marginTop: 4 }, line: { height: 1, backgroundColor: "#F0EDF3", marginLeft: 49 },
   passwordButton: { height: 55, flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", borderRadius: 16, paddingHorizontal: 15, gap: 11 }, passwordText: { flex: 1, color: "#332C3B", fontSize: 14, fontWeight: "800" },
+  empty: { color: "#8E8795", fontSize: 13, textAlign: "center", paddingVertical: 18, marginBottom: 18 },
 });
