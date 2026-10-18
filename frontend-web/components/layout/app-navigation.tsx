@@ -1,7 +1,6 @@
 import type { PropsWithChildren, ReactNode } from "react";
 import { Album, CalendarDays, ChevronLeft, Home, PawPrint, Settings, UserPlus } from "lucide-react";
-import { pets } from "@/data/pets";
-import type { AppView, PetId } from "@/types/app";
+import type { AppView } from "@/types/app";
 
 export const navigationItems = [
   ["home", "Inicio", Home],
@@ -11,11 +10,6 @@ export const navigationItems = [
   ["shared", "Cuidadores", UserPlus],
   ["settings", "Configuración", Settings],
 ] as const;
-
-export function PetAvatar({ id, size = "md" }: { id: PetId; size?: "sm" | "md" | "lg" }) {
-  const pet = pets[id];
-  return <div className={`pet-avatar ${size}`} style={{ background: pet.color }} aria-label={`${pet.name}, ${pet.species}`}>{pet.emoji}</div>;
-}
 
 export function BottomNav({ view, go }: { view: AppView; go: (view: AppView) => void }) {
   return <nav className="bottom-nav" aria-label="Navegación principal">{navigationItems.map(([id, label, Icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => go(id)} aria-label={label}><Icon /><span>{label}</span></button>)}</nav>;
@@ -27,4 +21,25 @@ export function Header({ title, subtitle, onBack, action }: { title: string; sub
 
 export function Card({ children, className = "" }: PropsWithChildren<{ className?: string }>) {
   return <section className={`card ${className}`}>{children}</section>;
+}
+
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
+  return (
+    <Card className="empty-state">
+      <span className="empty-state-icon">{icon}</span>
+      <h2>{title}</h2>
+      <p>{description}</p>
+      {action}
+    </Card>
+  );
 }

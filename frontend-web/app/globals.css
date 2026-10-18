@@ -1403,30 +1403,6 @@ p {
   outline-offset: 1px;
   background: #faf8ff;
 }
-.fido-event {
-  background: #7955f8 !important;
-  color: #fff;
-}
-.luna-event {
-  background: #ee6f9f !important;
-  color: #fff;
-}
-.rex-event {
-  background: #2ca6a4 !important;
-  color: #fff;
-}
-.filter-pills .fido-filter:not(.active) {
-  border-color: #b7a7ff;
-  color: #6749dc;
-}
-.filter-pills .luna-filter:not(.active) {
-  border-color: #f4aac5;
-  color: #d95487;
-}
-.filter-pills .rex-filter:not(.active) {
-  border-color: #88cfcd;
-  color: #188985;
-}
 .week-card {
   padding: 16px;
 }
@@ -1553,11 +1529,6 @@ p {
   font-size: 9px;
   margin-top: 3px;
 }
-.event-card > span.fido-event,
-.event-card > span.luna-event,
-.event-card > span.rex-event {
-  color: #fff;
-}
 .days button.today {
   background: var(--violet);
   color: #fff;
@@ -1588,6 +1559,67 @@ p {
 }
 .event-card b {
   font-size: 12px;
+}
+
+.empty-state {
+  min-height: 210px;
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  border-style: dashed;
+}
+.empty-state-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  color: var(--violet);
+  background: var(--violet-soft);
+}
+.empty-state-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.empty-state h2 {
+  margin: 4px 0 0;
+  font-size: 17px;
+}
+.empty-state p {
+  max-width: 330px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.empty-state .secondary-action {
+  margin-top: 8px;
+}
+.integration-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.integration-links button {
+  min-height: 70px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 750;
+}
+.integration-links svg {
+  width: 18px;
+  color: var(--violet);
 }
 .event-card small {
   font-size: 9px;

@@ -1,49 +1,53 @@
-# Mis Mascotas — Frontend React + TypeScript
+# Mis Mascotas — Frontend Web
 
-MVP frontend mobile-first basado en los mockups de Figma del proyecto académico PP2.
+Frontend mobile-first en React y TypeScript para el proyecto académico PP2.
 
 ## Requisitos
 
 - Node.js 22 o superior
 - npm
-- Visual Studio Code
+- Backend Spring Boot disponible
 
-## Ejecutar en Visual Studio Code
+## Configuración
 
-1. Descomprimir la carpeta.
-2. Abrir la carpeta `mis-mascotas-frontend` en Visual Studio Code.
-3. Abrir una terminal integrada.
-4. Ejecutar `npm install`.
-5. Ejecutar `npm run dev`.
-6. Abrir la dirección local indicada por la terminal.
+Copiar `.env.example` a `.env.local` cuando se necesite sobrescribir la URL local:
 
-El comando `npm run dev` es compatible con PowerShell, CMD, Windows, macOS y Linux. Para generar una compilación desde Windows sin Git Bash, usar `npm run build:windows`.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
 
-Si `npm install` informa vulnerabilidades de paquetes transitivos, no ejecutar `npm audit fix --force`: puede instalar versiones incompatibles. Para levantar la demostración local no es necesario.
+`NEXT_PUBLIC_API_URL` es la única configuración de conexión con la API.
 
-## Cuenta demostrativa
+## Ejecución en Windows
 
-- Correo: `usuario@demo.com`
-- Contraseña: `Demo1234`
+```powershell
+npm ci
+npm run dev:windows
+```
 
-## Funcionalidades incluidas
+Para validar una compilación sin depender de Bash:
 
-- Login y registro demostrativos.
-- Dashboard responsive.
-- Mascotas propias y cuidado compartido.
-- Perfil y edición de mascota.
-- Registro de eventos clínicos.
-- Historial y evolución.
-- Creación de recordatorios.
-- Marcado de cuidados completados.
-- Calendario.
-- Álbumes.
-- Invitación y gestión de cuidadores.
-- Configuración de notificaciones y seguridad.
-- Exportación local de datos en JSON.
+```powershell
+npm run build:windows
+```
 
-## Integración con Spring Boot
+## Estado de integración
 
-La versión entregada usa estado local para poder demostrarse sin servidor. Los formularios están preparados para reemplazar su callback de guardado por solicitudes HTTP al backend Spring Boot. Se recomienda crear una capa `services/` con un cliente HTTP y configurar la URL de la API mediante una variable de entorno.
+Actualmente están conectados al backend:
 
-No se incluyen `node_modules` ni archivos compilados. Se regeneran mediante `npm install` y `npm run build`.
+- Registro e inicio de sesión.
+- Verificación de código en dos pasos.
+- Persistencia y restauración de sesión mediante `sessionStorage`.
+- Renovación coordinada de access y refresh tokens.
+- Cierre de sesión.
+- Perfil del usuario autenticado mediante `GET /usuario/me`.
+
+Los módulos de mascotas, eventos clínicos, recordatorios, calendario, álbumes y cuidado compartido muestran estados vacíos. No contienen datos simulados ni operaciones que aparenten persistencia. Cada módulo debe integrarse con su contrato real antes de habilitar altas, ediciones o acciones de dominio.
+
+## Arquitectura
+
+- `lib/`: infraestructura transversal de configuración, HTTP, errores y almacenamiento técnico de sesión.
+- `features/`: lógica específica de cada dominio.
+- `components/screens/`: pantallas y estados de presentación.
+
+No se incluyen `node_modules` ni artefactos compilados en Git.

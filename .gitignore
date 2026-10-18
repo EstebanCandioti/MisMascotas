@@ -41,6 +41,7 @@ Thumbs.db
 **/.cache/
 **/.npm/
 **/.pnpm-store/
+**/.wrangler/registry/
 
 # React Native / Expo
 **/.expo/
