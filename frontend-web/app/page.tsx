@@ -13,11 +13,13 @@ import { RemindersView } from "@/components/screens/reminders-view";
 import { SettingsView } from "@/components/screens/settings-view";
 import { SharedView } from "@/components/screens/shared-view";
 import { useAuth } from "@/features/auth/auth-context";
+import { usePets } from "@/features/pets/use-pets";
 import type { AppView } from "@/types/app";
 
 export default function App() {
   const { status, user, logout } = useAuth();
   const [view, setView] = useState<AppView>("home");
+  const petsController = usePets(status === "authenticated");
   const userName = user?.nombre ?? "Usuario";
   const userInitials = userName
     .split(/\s+/)
@@ -28,8 +30,8 @@ export default function App() {
 
   let content: ReactNode;
   switch (view) {
-    case "home": content = <HomeView go={setView} userName={userName} />; break;
-    case "pets": content = <PetsView />; break;
+    case "home": content = <HomeView go={setView} userName={userName} controller={petsController} />; break;
+    case "pets": content = <PetsView controller={petsController} />; break;
     case "reminders": content = <RemindersView />; break;
     case "albums": content = <AlbumsView />; break;
     case "calendar": content = <CalendarView />; break;
@@ -47,14 +49,14 @@ export default function App() {
         <nav aria-label="Navegación principal">
           {navigationItems.map(([id, label, Icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}><Icon />{label}</button>)}
         </nav>
-        <div className="side-tip"><Database /><b>Integración en curso</b><p>Los módulos de dominio todavía no cargan datos.</p></div>
+        <div className="side-tip"><Database /><b>Datos sincronizados</b><p>Tus mascotas se cargan desde tu cuenta.</p></div>
       </aside>
       <section className="phone-frame">
         <div className="screen-content">{content}</div>
         <BottomNav view={view} go={setView} />
       </section>
       <aside className="desktop-context">
-        <div className="context-card"><Database /><h2>Preparado para integrar</h2><p>Auth usa el backend real. Los demás módulos muestran estados vacíos hasta conectar sus endpoints.</p></div>
+        <div className="context-card"><Database /><h2>Mascotas conectadas</h2><p>Consultá y administrá tus mascotas con información sincronizada.</p></div>
       </aside>
     </main>
   );
