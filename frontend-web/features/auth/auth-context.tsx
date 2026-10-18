@@ -27,6 +27,7 @@ import type {
   UserProfile,
 } from "@/features/auth/types";
 import { configureApiAuth } from "@/lib/api/api-client";
+import { ApiError } from "@/lib/api/api-error";
 import {
   clearPreAuth,
   clearSession,
@@ -68,6 +69,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const applyRefreshedSession = useCallback(async (refreshToken: string) => {
     const session = await refreshAuthSession(refreshToken);
+
+    // El logout puede ejecutarse mientras el backend está rotando el token.
+    // Si la sesión original ya no es la vigente, no resucitarla con la respuesta tardía.
+    if (readSession()?.refreshToken !== refreshToken) {
+      try {
+        await logoutSession(session.refreshToken);
+      } catch {
+        // La limpieza local ya ocurrió; la revocación remota es best effort.
+      }
+      throw new ApiError("La sesión fue cerrada.", { kind: "session-expired" });
+    }
+
     saveSession(session);
     setStatus("authenticated");
     return session;

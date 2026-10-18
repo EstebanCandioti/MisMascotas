@@ -52,7 +52,9 @@ async function refreshSession(): Promise<StoredAuthSession> {
 
   refreshInFlight = authBridge.refreshSession(session.refreshToken)
     .catch((cause: unknown) => {
-      authBridge?.onSessionExpired();
+      // Un logout puede limpiar la sesión mientras el refresh está en vuelo.
+      // En ese caso no debemos convertir una salida voluntaria en “sesión vencida”.
+      if (authBridge?.getSession()) authBridge.onSessionExpired();
       throw new ApiError("Tu sesión venció. Iniciá sesión nuevamente.", {
         kind: "session-expired",
         cause,
@@ -119,6 +121,7 @@ async function execute<T>(
   alreadyRetried: boolean,
 ): Promise<T> {
   const headers = new Headers(options.headers);
+  let accessTokenUsed: string | null = null;
   headers.set("Accept", "application/json");
 
   if (options.body !== undefined) {
@@ -128,7 +131,8 @@ async function execute<T>(
   if (options.bearerToken) {
     headers.set("Authorization", `Bearer ${options.bearerToken}`);
   } else if (options.authenticated) {
-    headers.set("Authorization", `Bearer ${await resolveAccessToken()}`);
+    accessTokenUsed = await resolveAccessToken();
+    headers.set("Authorization", `Bearer ${accessTokenUsed}`);
   }
 
   let response: Response;
@@ -146,7 +150,10 @@ async function execute<T>(
   }
 
   if (response.status === 401 && options.authenticated && !alreadyRetried) {
-    await refreshSession();
+    const currentAccessToken = authBridge?.getSession()?.accessToken;
+    if (!accessTokenUsed || !currentAccessToken || currentAccessToken === accessTokenUsed) {
+      await refreshSession();
+    }
     return execute<T>(path, options, true);
   }
 
