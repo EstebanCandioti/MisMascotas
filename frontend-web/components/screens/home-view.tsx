@@ -1,18 +1,17 @@
 import { Album, Bell, CalendarDays, PawPrint, Plus, Users } from "lucide-react";
+import Link from "next/link";
 
 import { EmptyState } from "@/components/layout/app-navigation";
 import { PetAvatar } from "@/features/pets/pet-presentation";
 import type { PetsController } from "@/features/pets/use-pets";
 import { getApiErrorMessage } from "@/lib/api/api-error";
-import type { AppView } from "@/types/app";
 
 type HomeViewProps = {
-  go: (view: AppView) => void;
   userName: string;
   controller: PetsController;
 };
 
-export function HomeView({ go, userName, controller }: HomeViewProps) {
+export function HomeView({ userName, controller }: HomeViewProps) {
   const initials = userName
     .split(/\s+/)
     .filter(Boolean)
@@ -28,7 +27,7 @@ export function HomeView({ go, userName, controller }: HomeViewProps) {
           <h1>Hola, {userName} <span>👋</span></h1>
           <p>Todo el cuidado de tus mascotas, en un solo lugar.</p>
         </div>
-        <button className="avatar-user" onClick={() => go("settings")} aria-label="Abrir configuración">{initials}</button>
+        <Link className="avatar-user" href="/perfil" aria-label="Abrir perfil">{initials}</Link>
       </div>
 
       <div className="quick-summary">
@@ -38,7 +37,7 @@ export function HomeView({ go, userName, controller }: HomeViewProps) {
       </div>
 
       <section className="section">
-        <div className="section-title"><h2>Mis mascotas</h2>{controller.pets.length > 0 && <button onClick={() => go("pets")}>Administrar</button>}</div>
+        <div className="section-title"><h2>Mis mascotas</h2>{controller.pets.length > 0 && <Link href="/mascotas">Administrar</Link>}</div>
         {(controller.status === "idle" || controller.status === "loading") && (
           <EmptyState icon={<span className="pet-loader" />} title="Cargando mascotas" description="Estamos preparando tu información." />
         )}
@@ -55,29 +54,29 @@ export function HomeView({ go, userName, controller }: HomeViewProps) {
             icon={<PawPrint />}
             title="Todavía no cargaste mascotas"
             description="Agregá la primera para verla también en tu inicio."
-            action={<button className="secondary-action" onClick={() => go("pets")}>Agregar mascota</button>}
+            action={<Link className="secondary-action" href="/mascotas">Agregar mascota</Link>}
           />
         )}
         {controller.status === "success" && controller.pets.length > 0 && (
           <div className="pet-row">
             {controller.pets.map((pet) => (
-              <button key={pet.idMascota} onClick={() => go("pets")}>
+              <Link key={pet.idMascota} href={`/mascotas/${encodeURIComponent(pet.idMascota)}`}>
                 <PetAvatar pet={pet} />
                 <strong>{pet.nombre}</strong>
                 <span>{pet.raza || pet.especie}</span>
-              </button>
+              </Link>
             ))}
-            <button className="add-pet" onClick={() => go("pets")}>
+            <Link className="add-pet" href="/mascotas">
               <Plus /><strong>Agregar</strong><span>Nueva mascota</span>
-            </button>
+            </Link>
           </div>
         )}
 
         <div className="integration-links">
-          <button onClick={() => go("reminders")}><Bell /><span>Recordatorios</span></button>
-          <button onClick={() => go("calendar")}><CalendarDays /><span>Calendario</span></button>
-          <button onClick={() => go("albums")}><Album /><span>Álbumes</span></button>
-          <button onClick={() => go("shared")}><Users /><span>Cuidadores</span></button>
+          <Link href="/recordatorios"><Bell /><span>Recordatorios</span></Link>
+          <Link href="/eventos"><CalendarDays /><span>Eventos</span></Link>
+          <Link href="/albumes"><Album /><span>Álbumes</span></Link>
+          <Link href="/cuidadores"><Users /><span>Cuidadores</span></Link>
         </div>
       </section>
     </>

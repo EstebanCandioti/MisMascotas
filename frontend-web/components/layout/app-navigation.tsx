@@ -1,18 +1,30 @@
+"use client";
+
 import type { PropsWithChildren, ReactNode } from "react";
-import { Album, CalendarDays, ChevronLeft, Home, PawPrint, Settings, UserPlus } from "lucide-react";
-import type { AppView } from "@/types/app";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Album, Bell, CalendarDays, ChevronLeft, Home, PawPrint, Settings, UserRound } from "lucide-react";
 
 export const navigationItems = [
-  ["home", "Inicio", Home],
-  ["pets", "Mascotas", PawPrint],
-  ["albums", "Álbumes", Album],
-  ["calendar", "Calendario", CalendarDays],
-  ["shared", "Cuidadores", UserPlus],
-  ["settings", "Configuración", Settings],
+  { href: "/inicio", label: "Inicio", Icon: Home },
+  { href: "/mascotas", label: "Mascotas", Icon: PawPrint },
+  { href: "/recordatorios", label: "Recordatorios", Icon: Bell },
+  { href: "/eventos", label: "Eventos", Icon: CalendarDays },
+  { href: "/albumes", label: "Álbumes", Icon: Album },
+  { href: "/perfil", label: "Perfil", Icon: UserRound },
+  { href: "/configuracion", label: "Configuración", Icon: Settings },
 ] as const;
 
-export function BottomNav({ view, go }: { view: AppView; go: (view: AppView) => void }) {
-  return <nav className="bottom-nav" aria-label="Navegación principal">{navigationItems.map(([id, label, Icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => go(id)} aria-label={label}><Icon /><span>{label}</span></button>)}</nav>;
+const bottomNavigationItems = navigationItems.filter(({ href }) =>
+  ["/inicio", "/mascotas", "/perfil", "/configuracion"].includes(href),
+);
+
+export function BottomNav() {
+  const pathname = usePathname();
+  return <nav className="bottom-nav" aria-label="Navegación principal">{bottomNavigationItems.map(({ href, label, Icon }) => {
+    const active = pathname === href || pathname.startsWith(`${href}/`);
+    return <Link key={href} className={active ? "active" : ""} href={href} aria-label={label} aria-current={active ? "page" : undefined}><Icon /><span>{label}</span></Link>;
+  })}</nav>;
 }
 
 export function Header({ title, subtitle, onBack, action }: { title: string; subtitle?: string; onBack?: () => void; action?: ReactNode }) {
