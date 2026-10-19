@@ -1368,7 +1368,7 @@ p {
   text-align: right;
 }
 .reminder-confirmation-compact .reminder-confirm-button {
-  flex-direction: row;
+  flex-direction: row-reverse;
 }
 .reminder-confirm-button:disabled {
   opacity: 0.55;
@@ -1416,9 +1416,14 @@ p {
   color: var(--violet);
 }
 .home-reminder-list .card > div:not(.reminder-confirmation) {
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
+}
+.home-reminder-list .reminder-confirmation {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 .home-reminder-list strong {
   overflow: hidden;
