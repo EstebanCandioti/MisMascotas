@@ -1534,6 +1534,9 @@ p {
 .state-editor .secondary-action {
   padding: 0 14px;
 }
+.state-editor-hint {
+  margin-top: 9px;
+}
 .detail-modal .reminder-confirmation {
   align-items: flex-start;
   margin-top: 16px;

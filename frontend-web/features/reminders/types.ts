@@ -12,6 +12,10 @@ export const reminderStates = ["ACTIVO", "INACTIVO", "COMPLETADO"] as const;
 
 export type ReminderState = (typeof reminderStates)[number];
 
+export const manageableReminderStates = ["ACTIVO", "INACTIVO"] as const;
+
+export type ManageableReminderState = (typeof manageableReminderStates)[number];
+
 export type ReminderResponse = {
   idRecordatorio: string;
   mascotaId: string;
