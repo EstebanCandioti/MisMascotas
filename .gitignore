@@ -10,6 +10,9 @@ Thumbs.db
 .env.*
 .env.local
 .env.*.local
+!.env.example
+!.env.web-testing.example
+!frontend-web/.env.example
 
 # IDE / editors
 .idea/

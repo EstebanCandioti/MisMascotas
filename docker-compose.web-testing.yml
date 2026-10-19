@@ -1,0 +1,74 @@
+name: mismascotas-web-testing
+
+services:
+  db-web-testing:
+    image: postgres:17.6
+    restart: unless-stopped
+    env_file:
+      - ./.env.web-testing
+    volumes:
+      - web_testing_db:/var/lib/postgresql/data
+      - ./DB/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./DB/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - web-testing
+
+  backend-web-testing:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./.env.web-testing
+    depends_on:
+      db-web-testing:
+        condition: service_healthy
+    ports:
+      - "${WEB_TESTING_BACKEND_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -S --spider http://127.0.0.1:8080/ 2>&1 | grep -q 'HTTP/1.1 401'"]
+      interval: 5s
+      timeout: 5s
+      retries: 18
+      start_period: 20s
+    networks:
+      - web-testing
+
+  frontend-web-testing:
+    build:
+      context: ./frontend-web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:${WEB_TESTING_BACKEND_PORT:-8080}
+    restart: unless-stopped
+    depends_on:
+      backend-web-testing:
+        condition: service_healthy
+    ports:
+      - "${WEB_TESTING_FRONTEND_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 5s
+      timeout: 5s
+      retries: 18
+      start_period: 15s
+    networks:
+      - web-testing
+
+volumes:
+  web_testing_db:
+    name: mismascotas_web_testing_db
+
+networks:
+  web-testing:
+    name: mismascotas_web_testing_network
