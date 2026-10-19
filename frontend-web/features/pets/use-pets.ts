@@ -18,6 +18,7 @@ export type PetsController = {
   error: ApiError | null;
   reload: () => Promise<void>;
   loadPet: (id: string) => Promise<Pet>;
+  refreshPet: (id: string) => Promise<Pet>;
   createPet: (request: PetRequest) => Promise<Pet>;
   updatePet: (id: string, request: PetRequest) => Promise<Pet>;
   deletePet: (id: string) => Promise<void>;
@@ -65,6 +66,12 @@ export function usePets(enabled: boolean): PetsController {
 
   const loadPet = useCallback((id: string) => getPetRequest(id), []);
 
+  const refreshPet = useCallback(async (id: string) => {
+    const updated = await getPetRequest(id);
+    setPets((current) => current.map((pet) => pet.idMascota === id ? updated : pet));
+    return updated;
+  }, []);
+
   const createPet = useCallback(async (request: PetRequest) => {
     const created = await createPetRequest(request);
     setPets((current) => [...current, created]);
@@ -83,5 +90,5 @@ export function usePets(enabled: boolean): PetsController {
     setPets((current) => current.filter((pet) => pet.idMascota !== id));
   }, []);
 
-  return { pets, status, error, reload, loadPet, createPet, updatePet, deletePet };
+  return { pets, status, error, reload, loadPet, refreshPet, createPet, updatePet, deletePet };
 }

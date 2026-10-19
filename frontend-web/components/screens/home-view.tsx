@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Album, Bell, CalendarDays, PawPrint, Plus, Users } from "lucide-react";
+import { Activity, Album, Bell, CalendarDays, PawPrint, Plus, Users } from "lucide-react";
 import Link from "next/link";
 
 import { Card, EmptyState } from "@/components/layout/app-navigation";
+import { clinicalEventDateLabel, clinicalEventSummary } from "@/features/clinical-events/mappers";
+import type { ClinicalEventsController } from "@/features/clinical-events/use-clinical-events";
 import { PetAvatar } from "@/features/pets/pet-presentation";
 import type { PetsController } from "@/features/pets/use-pets";
 import { reminderDateLabel } from "@/features/reminders/mappers";
@@ -16,9 +18,10 @@ type HomeViewProps = {
   userName: string;
   controller: PetsController;
   remindersController: RemindersController;
+  clinicalEventsController: ClinicalEventsController;
 };
 
-export function HomeView({ userName, controller, remindersController }: HomeViewProps) {
+export function HomeView({ userName, controller, remindersController, clinicalEventsController }: HomeViewProps) {
   const [currentTime, setCurrentTime] = useState<number | null>(null);
   const initials = userName
     .split(/\s+/)
@@ -56,7 +59,7 @@ export function HomeView({ userName, controller, remindersController }: HomeView
       <div className="quick-summary">
         <div><strong>{controller.status === "success" ? controller.pets.length : "—"}</strong><span>Mascotas</span></div>
         <div><strong>{remindersController.status === "success" && currentTime !== null ? upcomingReminders.length : "—"}</strong><span>Próximos</span></div>
-        <div><strong>—</strong><span>Compartido</span></div>
+        <div><strong>{clinicalEventsController.status === "success" ? clinicalEventsController.events.length : "—"}</strong><span>Eventos clínicos</span></div>
       </div>
 
       <section className="section">
@@ -104,6 +107,12 @@ export function HomeView({ userName, controller, remindersController }: HomeView
             {upcomingReminders.slice(0, 3).map((reminder) => <Card key={reminder.idRecordatorio}><Bell /><div><strong>{reminder.titulo}</strong><span>{reminder.mascotaNombre} · {reminderDateLabel(reminder.fechaHoraInicio)}</span></div><ReminderConfirmationButton reminder={reminder} controller={remindersController} compact /></Card>)}
           </div>
         )}
+
+        <div className="section-title home-reminders-title"><h2>Actividad clínica reciente</h2><Link href="/eventos">Ver historiales</Link></div>
+        {(clinicalEventsController.status === "idle" || clinicalEventsController.status === "loading") && <Card className="home-reminder-status">Cargando actividad clínica…</Card>}
+        {clinicalEventsController.status === "error" && <Card className="home-reminder-status"><span>No pudimos cargar la actividad clínica.</span><button onClick={() => void clinicalEventsController.reload()}>Reintentar</button></Card>}
+        {clinicalEventsController.status === "success" && clinicalEventsController.events.length === 0 && <Card className="home-reminder-status"><span>Todavía no hay eventos clínicos.</span><Link href="/eventos">Abrir historiales</Link></Card>}
+        {clinicalEventsController.status === "success" && clinicalEventsController.events.length > 0 && <div className="home-reminder-list">{clinicalEventsController.events.slice(0, 3).map((event) => <Card key={event.idEvento}><Activity /><div><strong>{clinicalEventSummary(event)}</strong><span>{event.mascotaNombre} · {clinicalEventDateLabel(event.fecha)}</span></div></Card>)}</div>}
 
         <div className="integration-links">
           <Link href="/recordatorios"><Bell /><span>Recordatorios</span></Link>

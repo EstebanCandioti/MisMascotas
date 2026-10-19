@@ -1115,6 +1115,70 @@ p {
 .pet-detail-actions svg {
   width: 17px;
 }
+.clinical-history {
+  width: min(900px, 100%);
+  margin: 28px auto 0;
+  scroll-margin-top: 20px;
+}
+.clinical-history .section-title button svg {
+  width: 15px;
+  height: 15px;
+}
+.clinical-event-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.clinical-event-list .card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 17px;
+}
+.clinical-event-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--violet);
+  background: var(--violet-soft);
+}
+.clinical-event-icon.peso {
+  color: #417e63;
+  background: #e3f5eb;
+}
+.clinical-event-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.clinical-event-heading h3 {
+  font-size: 13px;
+}
+.clinical-event-heading time {
+  color: var(--muted);
+  font-size: 9px;
+  white-space: nowrap;
+}
+.clinical-event-list strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+}
+.clinical-event-list p,
+.clinical-event-list small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+  margin-top: 5px;
+}
+.clinical-pet-list {
+  padding-top: 18px;
+}
 .danger-action {
   border: 1px solid #f1bcbc;
   background: #fff1f1;
@@ -2167,6 +2231,13 @@ p {
   }
   .profile-info-grid {
     grid-template-columns: 1fr;
+  }
+  .clinical-event-list {
+    grid-template-columns: 1fr;
+  }
+  .clinical-event-heading {
+    flex-direction: column;
+    gap: 3px;
   }
   .home-reminder-list {
     grid-template-columns: 1fr;
