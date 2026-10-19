@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { createClinicalEvent as createClinicalEventRequest, listClinicalEventsByPet } from "@/features/clinical-events/api";
+import {
+  createClinicalEvent as createClinicalEventRequest,
+  deleteClinicalEvent as deleteClinicalEventRequest,
+  getClinicalEvent as getClinicalEventRequest,
+  listClinicalEventsByPet,
+  updateClinicalEvent as updateClinicalEventRequest,
+} from "@/features/clinical-events/api";
 import { enrichClinicalEvent, sortClinicalEvents } from "@/features/clinical-events/mappers";
-import type { ClinicalEvent, ClinicalEventRequest, ClinicalEventsStatus } from "@/features/clinical-events/types";
+import type { ClinicalEvent, ClinicalEventRequest, ClinicalEventsStatus, ClinicalEventType } from "@/features/clinical-events/types";
 import type { PetsController } from "@/features/pets/use-pets";
 import { type ApiError, normalizeApiError } from "@/lib/api/api-error";
 
@@ -13,7 +19,11 @@ export type ClinicalEventsController = {
   status: ClinicalEventsStatus;
   error: ApiError | null;
   reload: () => Promise<void>;
+  listEventsByPet: (petId: string, type?: ClinicalEventType) => Promise<ClinicalEvent[]>;
   createEvent: (request: ClinicalEventRequest) => Promise<ClinicalEvent>;
+  getEvent: (id: string) => Promise<ClinicalEvent>;
+  updateEvent: (id: string, request: ClinicalEventRequest) => Promise<ClinicalEvent>;
+  deleteEvent: (id: string) => Promise<void>;
 };
 
 export function useClinicalEvents(enabled: boolean, petsController: PetsController): ClinicalEventsController {
@@ -86,5 +96,31 @@ export function useClinicalEvents(enabled: boolean, petsController: PetsControll
     return created;
   }, [refreshPet]);
 
-  return { events, status, error, reload, createEvent };
+  const replaceEvent = useCallback((response: Awaited<ReturnType<typeof getClinicalEventRequest>>) => {
+    const updated = enrichClinicalEvent(response, petsRef.current);
+    setEvents((current) => sortClinicalEvents(current.map((event) => event.idEvento === updated.idEvento ? updated : event)));
+    return updated;
+  }, []);
+
+  const listEventsByPet = useCallback(async (petId: string, type?: ClinicalEventType) => {
+    const responses = await listClinicalEventsByPet(petId, type);
+    return sortClinicalEvents(responses.map((event) => enrichClinicalEvent(event, petsRef.current)));
+  }, []);
+
+  const getEvent = useCallback(async (id: string) => replaceEvent(await getClinicalEventRequest(id)), [replaceEvent]);
+
+  const updateEvent = useCallback(async (id: string, request: ClinicalEventRequest) => {
+    const updated = replaceEvent(await updateClinicalEventRequest(id, request));
+    void refreshPet(updated.mascotaId).catch(() => undefined);
+    return updated;
+  }, [refreshPet, replaceEvent]);
+
+  const deleteEvent = useCallback(async (id: string) => {
+    const existing = events.find((event) => event.idEvento === id);
+    await deleteClinicalEventRequest(id);
+    setEvents((current) => current.filter((event) => event.idEvento !== id));
+    if (existing) void refreshPet(existing.mascotaId).catch(() => undefined);
+  }, [events, refreshPet]);
+
+  return { events, status, error, reload, listEventsByPet, createEvent, getEvent, updateEvent, deleteEvent };
 }

@@ -5,11 +5,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   confirmReminder as confirmReminderRequest,
   createReminder as createReminderRequest,
+  deleteReminder as deleteReminderRequest,
+  getReminder as getReminderRequest,
   listRemindersByPet,
   unconfirmReminder as unconfirmReminderRequest,
+  updateReminder as updateReminderRequest,
+  updateReminderState as updateReminderStateRequest,
 } from "@/features/reminders/api";
 import { enrichReminder, sortReminders } from "@/features/reminders/mappers";
-import type { Reminder, ReminderRequest, RemindersStatus } from "@/features/reminders/types";
+import type { Reminder, ReminderRequest, ReminderState, RemindersStatus } from "@/features/reminders/types";
 import type { PetsController } from "@/features/pets/use-pets";
 import { type ApiError, normalizeApiError } from "@/lib/api/api-error";
 
@@ -19,8 +23,12 @@ export type RemindersController = {
   error: ApiError | null;
   reload: () => Promise<void>;
   createReminder: (request: ReminderRequest) => Promise<Reminder>;
+  getReminder: (id: string) => Promise<Reminder>;
+  updateReminder: (id: string, request: ReminderRequest) => Promise<Reminder>;
+  updateReminderState: (id: string, state: ReminderState) => Promise<Reminder>;
   confirmReminder: (id: string) => Promise<Reminder>;
   unconfirmReminder: (id: string) => Promise<Reminder>;
+  deleteReminder: (id: string) => Promise<void>;
 };
 
 export function useReminders(enabled: boolean, petsController: PetsController): RemindersController {
@@ -85,8 +93,15 @@ export function useReminders(enabled: boolean, petsController: PetsController): 
     return updated;
   }, [pets]);
 
+  const getReminder = useCallback(async (id: string) => replaceReminder(await getReminderRequest(id)), [replaceReminder]);
+  const updateReminder = useCallback(async (id: string, request: ReminderRequest) => replaceReminder(await updateReminderRequest(id, request)), [replaceReminder]);
+  const updateReminderState = useCallback(async (id: string, state: ReminderState) => replaceReminder(await updateReminderStateRequest(id, state)), [replaceReminder]);
   const confirmReminder = useCallback(async (id: string) => replaceReminder(await confirmReminderRequest(id)), [replaceReminder]);
   const unconfirmReminder = useCallback(async (id: string) => replaceReminder(await unconfirmReminderRequest(id)), [replaceReminder]);
+  const deleteReminder = useCallback(async (id: string) => {
+    await deleteReminderRequest(id);
+    setReminders((current) => current.filter((item) => item.idRecordatorio !== id));
+  }, []);
 
-  return { reminders, status, error, reload, createReminder, confirmReminder, unconfirmReminder };
+  return { reminders, status, error, reload, createReminder, getReminder, updateReminder, updateReminderState, confirmReminder, unconfirmReminder, deleteReminder };
 }

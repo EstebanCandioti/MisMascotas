@@ -8,6 +8,7 @@ import { Card, EmptyState, Header } from "@/components/layout/app-navigation";
 import type { PetsController } from "@/features/pets/use-pets";
 import { isReminderConfirmed, reminderDateLabel, reminderTypeLabel } from "@/features/reminders/mappers";
 import { ReminderConfirmationButton } from "@/features/reminders/reminder-confirmation-button";
+import { ReminderDetailDialog } from "@/features/reminders/reminder-detail-dialog";
 import { ReminderFormDialog } from "@/features/reminders/reminder-form-dialog";
 import type { ReminderRequest } from "@/features/reminders/types";
 import type { RemindersController } from "@/features/reminders/use-reminders";
@@ -15,6 +16,7 @@ import { getApiErrorMessage } from "@/lib/api/api-error";
 
 export function RemindersView({ controller, petsController }: { controller: RemindersController; petsController: PetsController }) {
   const [creating, setCreating] = useState(false);
+  const [selectedReminderId, setSelectedReminderId] = useState<string | null>(null);
 
   const createReminder = async (request: ReminderRequest) => {
     await controller.createReminder(request);
@@ -35,7 +37,7 @@ export function RemindersView({ controller, petsController }: { controller: Remi
             return (
               <Card key={reminder.idRecordatorio} className={confirmed ? "reminder-confirmed" : ""}>
                 <Bell />
-                <div><h3>{reminder.titulo}</h3><p>{reminder.mascotaNombre} · {reminderTypeLabel(reminder.tipo)}</p><small>{reminderDateLabel(reminder.fechaHoraInicio)}</small></div>
+                <div><h3>{reminder.titulo}</h3><p>{reminder.mascotaNombre} · {reminderTypeLabel(reminder.tipo)}</p><small>{reminderDateLabel(reminder.fechaHoraInicio)}</small><button className="text-action" type="button" onClick={() => setSelectedReminderId(reminder.idRecordatorio)}>Ver detalle y gestionar</button></div>
                 <ReminderConfirmationButton reminder={reminder} controller={controller} />
               </Card>
             );
@@ -44,6 +46,7 @@ export function RemindersView({ controller, petsController }: { controller: Remi
       )}
       {controller.status === "success" && petsController.pets.length > 0 && <button className="fab" onClick={() => setCreating(true)} aria-label="Crear recordatorio"><Plus /></button>}
       {creating && <ReminderFormDialog pets={petsController.pets} onClose={() => setCreating(false)} onSave={createReminder} />}
+      {selectedReminderId && <ReminderDetailDialog reminderId={selectedReminderId} pets={petsController.pets} controller={controller} onClose={() => setSelectedReminderId(null)} />}
     </>
   );
 }

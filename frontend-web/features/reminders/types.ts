@@ -8,6 +8,10 @@ export const reminderTypes = [
 
 export type ReminderType = (typeof reminderTypes)[number];
 
+export const reminderStates = ["ACTIVO", "INACTIVO", "COMPLETADO"] as const;
+
+export type ReminderState = (typeof reminderStates)[number];
+
 export type ReminderResponse = {
   idRecordatorio: string;
   mascotaId: string;
@@ -23,7 +27,7 @@ export type ReminderResponse = {
   creadoEn: string;
   confirmadoPorId: string | null;
   confirmadoEn: string | null;
-  estado: string | null;
+  estado: ReminderState | null;
 };
 
 export type Reminder = ReminderResponse & {

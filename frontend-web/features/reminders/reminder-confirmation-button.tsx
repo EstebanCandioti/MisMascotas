@@ -12,9 +12,10 @@ type ReminderConfirmationButtonProps = {
   reminder: Reminder;
   controller: RemindersController;
   compact?: boolean;
+  onChanged?: (reminder: Reminder) => void;
 };
 
-export function ReminderConfirmationButton({ reminder, controller, compact = false }: ReminderConfirmationButtonProps) {
+export function ReminderConfirmationButton({ reminder, controller, compact = false, onChanged }: ReminderConfirmationButtonProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const confirmed = isReminderConfirmed(reminder);
@@ -24,8 +25,10 @@ export function ReminderConfirmationButton({ reminder, controller, compact = fal
     setPending(true);
     setError("");
     try {
-      if (confirmed) await controller.unconfirmReminder(reminder.idRecordatorio);
-      else await controller.confirmReminder(reminder.idRecordatorio);
+      const updated = confirmed
+        ? await controller.unconfirmReminder(reminder.idRecordatorio)
+        : await controller.confirmReminder(reminder.idRecordatorio);
+      onChanged?.(updated);
     } catch (caught) {
       setError(getApiErrorMessage(caught));
     } finally {

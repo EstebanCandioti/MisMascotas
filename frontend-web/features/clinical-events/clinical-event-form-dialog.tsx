@@ -2,12 +2,13 @@
 
 import { type FormEvent, useState } from "react";
 
-import type { ClinicalEventRequest, ClinicalEventType } from "@/features/clinical-events/types";
+import type { ClinicalEvent, ClinicalEventRequest, ClinicalEventType } from "@/features/clinical-events/types";
 import { getApiErrorMessage } from "@/lib/api/api-error";
 
 type ClinicalEventFormDialogProps = {
   petId: string;
   petName: string;
+  clinicalEvent?: ClinicalEvent;
   onClose: () => void;
   onSave: (request: ClinicalEventRequest) => Promise<void>;
 };
@@ -41,16 +42,28 @@ function argentinaToday(): string {
   return `${value.year}-${value.month}-${value.day}`;
 }
 
+function instantToLocalFields(instant?: string): { date: string; time: string } {
+  const value = instant ? new Date(instant) : null;
+  if (!value || Number.isNaN(value.getTime())) return { date: "", time: "" };
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  const hour = String(value.getHours()).padStart(2, "0");
+  const minute = String(value.getMinutes()).padStart(2, "0");
+  return { date: `${value.getFullYear()}-${month}-${day}`, time: `${hour}:${minute}` };
+}
+
 function optionalText(values: FormData, name: string): string | undefined {
   const value = String(values.get(name) ?? "").trim();
   return value || undefined;
 }
 
-export function ClinicalEventFormDialog({ petId, petName, onClose, onSave }: ClinicalEventFormDialogProps) {
-  const [type, setType] = useState<ClinicalEventType>("VACUNA");
+export function ClinicalEventFormDialog({ petId, petName, clinicalEvent, onClose, onSave }: ClinicalEventFormDialogProps) {
+  const [type, setType] = useState<ClinicalEventType>(clinicalEvent?.tipo ?? "VACUNA");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const today = argentinaToday();
+  const editing = Boolean(clinicalEvent);
+  const initialDateTime = instantToLocalFields(clinicalEvent?.fecha);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -102,18 +115,18 @@ export function ClinicalEventFormDialog({ petId, petName, onClose, onSave }: Cli
   return (
     <div className="modal-backdrop" onMouseDown={() => !submitting && onClose()}>
       <section className="modal" role="dialog" aria-modal="true" aria-labelledby="clinical-event-form-title" onMouseDown={(event) => event.stopPropagation()}>
-        <header><div><span className="eyebrow">HISTORIAL DE {petName}</span><h2 id="clinical-event-form-title">Registrar evento clínico</h2></div><button className="icon-btn" type="button" onClick={onClose} disabled={submitting} aria-label="Cerrar">×</button></header>
+        <header><div><span className="eyebrow">HISTORIAL DE {petName}</span><h2 id="clinical-event-form-title">{editing ? "Editar evento clínico" : "Registrar evento clínico"}</h2></div><button className="icon-btn" type="button" onClick={onClose} disabled={submitting} aria-label="Cerrar">×</button></header>
         <form className="modal-form" onSubmit={submit}>
           <label>Tipo<select name="tipo" value={type} onChange={(event) => setType(event.target.value as ClinicalEventType)}>{typeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-          <div className="form-row"><label>Fecha<input name="fecha" type="date" max={today} required /></label><label>Hora<input name="hora" type="time" required /></label></div>
-          {type === "VACUNA" && <label>Nombre de la vacuna<input name="nombre" required maxLength={255} placeholder="Ej. Antirrábica" /></label>}
-          {type === "MEDICACION" && <><label>Nombre de la medicación<input name="nombre" required maxLength={255} placeholder="Ej. Antibiótico" /></label><label>Dosis<input name="dosis" required maxLength={100} placeholder="Ej. 1 comprimido cada 12 horas" /></label></>}
-          {type === "CONSULTA_VETERINARIA" && <><label>Motivo<input name="motivo" required maxLength={255} placeholder="Motivo de la consulta" /></label><label>Diagnóstico<input name="diagnostico" maxLength={255} placeholder="Opcional" /></label></>}
-          {type === "PESO" && <label>Peso (kg)<input name="valorPeso" type="number" min="0.01" max="300" step="0.01" required placeholder="Ej. 12,50" /></label>}
-          {type !== "PESO" && <label>Observaciones<textarea name="observaciones" maxLength={255} placeholder="Opcional" /></label>}
+          <div className="form-row"><label>Fecha<input name="fecha" type="date" max={today} defaultValue={initialDateTime.date} required /></label><label>Hora<input name="hora" type="time" defaultValue={initialDateTime.time} required /></label></div>
+          {type === "VACUNA" && <label>Nombre de la vacuna<input name="nombre" required maxLength={255} defaultValue={clinicalEvent?.nombre ?? ""} placeholder="Ej. Antirrábica" /></label>}
+          {type === "MEDICACION" && <><label>Nombre de la medicación<input name="nombre" required maxLength={255} defaultValue={clinicalEvent?.nombre ?? ""} placeholder="Ej. Antibiótico" /></label><label>Dosis<input name="dosis" required maxLength={100} defaultValue={clinicalEvent?.dosis ?? ""} placeholder="Ej. 1 comprimido cada 12 horas" /></label></>}
+          {type === "CONSULTA_VETERINARIA" && <><label>Motivo<input name="motivo" required maxLength={255} defaultValue={clinicalEvent?.motivo ?? ""} placeholder="Motivo de la consulta" /></label><label>Diagnóstico<input name="diagnostico" maxLength={255} defaultValue={clinicalEvent?.diagnostico ?? ""} placeholder="Opcional" /></label></>}
+          {type === "PESO" && <label>Peso (kg)<input name="valorPeso" type="number" min="0.01" max="300" step="0.01" defaultValue={clinicalEvent?.valorPeso ?? ""} required placeholder="Ej. 12,50" /></label>}
+          {type !== "PESO" && <label>Observaciones<textarea name="observaciones" maxLength={255} defaultValue={clinicalEvent?.observaciones ?? ""} placeholder="Opcional" /></label>}
           <p className="form-hint">La carga de adjuntos todavía no está disponible.</p>
           {error && <p className="auth-error" role="alert">{error}</p>}
-          <div className="modal-actions"><button type="button" onClick={onClose} disabled={submitting}>Cancelar</button><button className="primary" type="submit" disabled={submitting}>{submitting ? "Guardando…" : "Registrar evento"}</button></div>
+          <div className="modal-actions"><button type="button" onClick={onClose} disabled={submitting}>Cancelar</button><button className="primary" type="submit" disabled={submitting}>{submitting ? "Guardando…" : editing ? "Guardar cambios" : "Registrar evento"}</button></div>
         </form>
       </section>
     </div>

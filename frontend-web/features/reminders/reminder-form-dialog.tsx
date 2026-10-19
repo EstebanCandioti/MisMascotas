@@ -3,11 +3,12 @@
 import { type FormEvent, useState } from "react";
 
 import type { Pet } from "@/features/pets/types";
-import type { ReminderRequest, ReminderType } from "@/features/reminders/types";
+import type { Reminder, ReminderRequest, ReminderType } from "@/features/reminders/types";
 import { getApiErrorMessage } from "@/lib/api/api-error";
 
 type ReminderFormDialogProps = {
   pets: Pet[];
+  reminder?: Reminder;
   onClose: () => void;
   onSave: (request: ReminderRequest) => Promise<void>;
 };
@@ -27,6 +28,16 @@ function localToday(): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+function instantToLocalFields(instant?: string): { date: string; time: string } {
+  const value = instant ? new Date(instant) : null;
+  if (!value || Number.isNaN(value.getTime())) return { date: "", time: "" };
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  const hour = String(value.getHours()).padStart(2, "0");
+  const minute = String(value.getMinutes()).padStart(2, "0");
+  return { date: `${value.getFullYear()}-${month}-${day}`, time: `${hour}:${minute}` };
+}
+
 function localSelectionToInstant(dateValue: string, timeValue: string): string | null {
   const dateParts = dateValue.split("-").map(Number);
   const timeParts = timeValue.split(":").map(Number);
@@ -39,9 +50,12 @@ function localSelectionToInstant(dateValue: string, timeValue: string): string |
   return localDate.toISOString();
 }
 
-export function ReminderFormDialog({ pets, onClose, onSave }: ReminderFormDialogProps) {
+export function ReminderFormDialog({ pets, reminder, onClose, onSave }: ReminderFormDialogProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const editing = Boolean(reminder);
+  const initialDateTime = instantToLocalFields(reminder?.fechaHoraInicio);
+  const selectedPet = pets.find((pet) => pet.idMascota === reminder?.mascotaId);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,8 +77,8 @@ export function ReminderFormDialog({ pets, onClose, onSave }: ReminderFormDialog
       setError("Seleccioná un tipo de recordatorio válido.");
       return;
     }
-    if (!instant || Date.parse(instant) <= Date.now()) {
-      setError("Elegí una fecha y hora futuras válidas.");
+    if (!instant || (!editing && Date.parse(instant) <= Date.now())) {
+      setError(editing ? "Elegí una fecha y hora válidas." : "Elegí una fecha y hora futuras válidas.");
       return;
     }
 
@@ -92,18 +106,18 @@ export function ReminderFormDialog({ pets, onClose, onSave }: ReminderFormDialog
   return (
     <div className="modal-backdrop" onMouseDown={() => !submitting && onClose()}>
       <section className="modal" role="dialog" aria-modal="true" aria-labelledby="reminder-form-title" onMouseDown={(event) => event.stopPropagation()}>
-        <header><div><span className="eyebrow">RECORDATORIO ÚNICO</span><h2 id="reminder-form-title">Nuevo recordatorio</h2></div><button className="icon-btn" type="button" onClick={onClose} disabled={submitting} aria-label="Cerrar">×</button></header>
+        <header><div><span className="eyebrow">RECORDATORIO ÚNICO</span><h2 id="reminder-form-title">{editing ? "Editar recordatorio" : "Nuevo recordatorio"}</h2></div><button className="icon-btn" type="button" onClick={onClose} disabled={submitting} aria-label="Cerrar">×</button></header>
         <form className="modal-form" onSubmit={submit}>
-          <label>Mascota<select name="mascotaId" required defaultValue={pets[0]?.idMascota}>{pets.map((pet) => <option key={pet.idMascota} value={pet.idMascota}>{pet.nombre}</option>)}</select></label>
-          <label>Título<input name="titulo" required maxLength={150} placeholder="Ej. Aplicar vacuna anual" /></label>
-          <label>Tipo<select name="tipo" required defaultValue="VISITA_VETERINARIO">{typeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+          {editing ? <label>Mascota<input value={selectedPet?.nombre ?? reminder?.mascotaNombre ?? "Mascota"} readOnly aria-readonly="true" /><input name="mascotaId" type="hidden" value={reminder?.mascotaId} /></label> : <label>Mascota<select name="mascotaId" required defaultValue={pets[0]?.idMascota}>{pets.map((pet) => <option key={pet.idMascota} value={pet.idMascota}>{pet.nombre}</option>)}</select></label>}
+          <label>Título<input name="titulo" required maxLength={150} defaultValue={reminder?.titulo} placeholder="Ej. Aplicar vacuna anual" /></label>
+          <label>Tipo<select name="tipo" required defaultValue={reminder?.tipo ?? "VISITA_VETERINARIO"}>{typeOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
           <label>Modalidad<input value="Único" readOnly aria-readonly="true" /></label>
           <div className="form-row">
-            <label>Fecha<input name="fecha" type="date" min={localToday()} required /></label>
-            <label>Hora<input name="hora" type="time" required /></label>
+            <label>Fecha<input name="fecha" type="date" min={editing ? undefined : localToday()} defaultValue={initialDateTime.date} required /></label>
+            <label>Hora<input name="hora" type="time" defaultValue={initialDateTime.time} required /></label>
           </div>
           {error && <p className="auth-error" role="alert">{error}</p>}
-          <div className="modal-actions"><button type="button" onClick={onClose} disabled={submitting}>Cancelar</button><button className="primary" type="submit" disabled={submitting}>{submitting ? "Guardando…" : "Crear recordatorio"}</button></div>
+          <div className="modal-actions"><button type="button" onClick={onClose} disabled={submitting}>Cancelar</button><button className="primary" type="submit" disabled={submitting}>{submitting ? "Guardando…" : editing ? "Guardar cambios" : "Crear recordatorio"}</button></div>
         </form>
       </section>
     </div>
