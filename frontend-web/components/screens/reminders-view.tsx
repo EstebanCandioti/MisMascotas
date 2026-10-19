@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, CheckCircle2, Circle, Plus } from "lucide-react";
+import { Bell, Plus } from "lucide-react";
 
 import { Card, EmptyState, Header } from "@/components/layout/app-navigation";
 import type { PetsController } from "@/features/pets/use-pets";
-import { reminderDateLabel, reminderTypeLabel } from "@/features/reminders/mappers";
+import { isReminderConfirmed, reminderDateLabel, reminderTypeLabel } from "@/features/reminders/mappers";
+import { ReminderConfirmationButton } from "@/features/reminders/reminder-confirmation-button";
 import { ReminderFormDialog } from "@/features/reminders/reminder-form-dialog";
 import type { ReminderRequest } from "@/features/reminders/types";
 import type { RemindersController } from "@/features/reminders/use-reminders";
@@ -14,25 +15,10 @@ import { getApiErrorMessage } from "@/lib/api/api-error";
 
 export function RemindersView({ controller, petsController }: { controller: RemindersController; petsController: PetsController }) {
   const [creating, setCreating] = useState(false);
-  const [pendingId, setPendingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState("");
 
   const createReminder = async (request: ReminderRequest) => {
     await controller.createReminder(request);
     setCreating(false);
-  };
-
-  const toggleConfirmation = async (id: string, confirmed: boolean) => {
-    setPendingId(id);
-    setActionError("");
-    try {
-      if (confirmed) await controller.unconfirmReminder(id);
-      else await controller.confirmReminder(id);
-    } catch (caught) {
-      setActionError(getApiErrorMessage(caught));
-    } finally {
-      setPendingId(null);
-    }
   };
 
   return (
@@ -42,18 +28,15 @@ export function RemindersView({ controller, petsController }: { controller: Remi
       {controller.status === "error" && <EmptyState icon={<Bell />} title="No pudimos cargar los recordatorios" description={controller.error ? getApiErrorMessage(controller.error) : "Intentá nuevamente."} action={<button className="secondary-action" onClick={() => void controller.reload()}>Reintentar</button>} />}
       {controller.status === "success" && petsController.pets.length === 0 && <EmptyState icon={<Bell />} title="Primero agregá una mascota" description="Los recordatorios deben estar asociados a una mascota real." action={<Link className="secondary-action" href="/mascotas">Ir a Mascotas</Link>} />}
       {controller.status === "success" && petsController.pets.length > 0 && controller.reminders.length === 0 && <EmptyState icon={<Bell />} title="Sin recordatorios" description="Creá un recordatorio único para el próximo cuidado." action={<button className="secondary-action" onClick={() => setCreating(true)}>Crear recordatorio</button>} />}
-      {actionError && <p className="auth-error reminder-action-error" role="alert">{actionError}</p>}
       {controller.status === "success" && controller.reminders.length > 0 && (
         <div className="reminders reminder-list">
           {controller.reminders.map((reminder) => {
-            const confirmed = reminder.confirmadoEn !== null;
+            const confirmed = isReminderConfirmed(reminder);
             return (
               <Card key={reminder.idRecordatorio} className={confirmed ? "reminder-confirmed" : ""}>
                 <Bell />
                 <div><h3>{reminder.titulo}</h3><p>{reminder.mascotaNombre} · {reminderTypeLabel(reminder.tipo)}</p><small>{reminderDateLabel(reminder.fechaHoraInicio)}</small></div>
-                <button className="reminder-confirm-button" type="button" disabled={pendingId === reminder.idRecordatorio} onClick={() => void toggleConfirmation(reminder.idRecordatorio, confirmed)} aria-label={confirmed ? `Desconfirmar ${reminder.titulo}` : `Confirmar ${reminder.titulo}`}>
-                  {confirmed ? <CheckCircle2 /> : <Circle />}<span>{pendingId === reminder.idRecordatorio ? "Guardando…" : confirmed ? "Confirmado" : "Confirmar"}</span>
-                </button>
+                <ReminderConfirmationButton reminder={reminder} controller={controller} />
               </Card>
             );
           })}

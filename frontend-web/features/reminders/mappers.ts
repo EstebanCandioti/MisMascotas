@@ -38,3 +38,7 @@ export function reminderDateLabel(instant: string): string {
     timeStyle: "short",
   }).format(date);
 }
+
+export function isReminderConfirmed(reminder: Pick<ReminderResponse, "confirmadoEn" | "confirmadoPorId">): boolean {
+  return reminder.confirmadoEn !== null || reminder.confirmadoPorId !== null;
+}

@@ -8,6 +8,7 @@ import { Card, EmptyState } from "@/components/layout/app-navigation";
 import { PetAvatar } from "@/features/pets/pet-presentation";
 import type { PetsController } from "@/features/pets/use-pets";
 import { reminderDateLabel } from "@/features/reminders/mappers";
+import { ReminderConfirmationButton } from "@/features/reminders/reminder-confirmation-button";
 import type { RemindersController } from "@/features/reminders/use-reminders";
 import { getApiErrorMessage } from "@/lib/api/api-error";
 
@@ -100,7 +101,7 @@ export function HomeView({ userName, controller, remindersController }: HomeView
         {remindersController.status === "success" && upcomingReminders.length === 0 && <Card className="home-reminder-status"><span>No hay próximos recordatorios.</span><Link href="/recordatorios">Crear uno</Link></Card>}
         {remindersController.status === "success" && upcomingReminders.length > 0 && (
           <div className="home-reminder-list">
-            {upcomingReminders.slice(0, 3).map((reminder) => <Card key={reminder.idRecordatorio}><Bell /><div><strong>{reminder.titulo}</strong><span>{reminder.mascotaNombre} · {reminderDateLabel(reminder.fechaHoraInicio)}</span></div></Card>)}
+            {upcomingReminders.slice(0, 3).map((reminder) => <Card key={reminder.idRecordatorio}><Bell /><div><strong>{reminder.titulo}</strong><span>{reminder.mascotaNombre} · {reminderDateLabel(reminder.fechaHoraInicio)}</span></div><ReminderConfirmationButton reminder={reminder} controller={remindersController} compact /></Card>)}
           </div>
         )}
 
