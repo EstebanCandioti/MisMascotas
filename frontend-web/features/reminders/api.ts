@@ -1,4 +1,4 @@
-import type { ManageableReminderState, ReminderRequest, ReminderResponse } from "@/features/reminders/types";
+import type { ReminderRequest, ReminderResponse, ReminderState } from "@/features/reminders/types";
 import { apiRequest } from "@/lib/api/api-client";
 
 export function listRemindersByPet(petId: string): Promise<ReminderResponse[]> {
@@ -25,7 +25,7 @@ export function updateReminder(id: string, request: ReminderRequest): Promise<Re
   });
 }
 
-export function updateReminderState(id: string, state: ManageableReminderState): Promise<ReminderResponse> {
+export function updateReminderState(id: string, state: ReminderState): Promise<ReminderResponse> {
   return apiRequest(`/recordatorios/${encodeURIComponent(id)}/estado?nuevoEstado=${encodeURIComponent(state)}`, {
     method: "PATCH",
     authenticated: true,

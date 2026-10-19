@@ -1179,13 +1179,15 @@ p {
 .clinical-pet-list {
   padding-top: 18px;
 }
-.clinical-filters {
+.clinical-filters,
+.reminder-filters {
   display: flex;
   gap: 7px;
   overflow-x: auto;
   padding: 0 0 12px;
 }
-.clinical-filters button {
+.clinical-filters button,
+.reminder-filters button {
   flex: 0 0 auto;
   border: 1px solid var(--line);
   border-radius: 99px;
@@ -1195,10 +1197,30 @@ p {
   font-size: 10px;
   font-weight: 800;
 }
-.clinical-filters button.active {
+.clinical-filters button.active,
+.reminder-filters button.active {
   border-color: var(--violet);
   background: var(--violet-soft);
   color: var(--violet);
+}
+.reminder-filters {
+  padding-top: 18px;
+}
+.reminder-filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.reminder-filters button span {
+  min-width: 18px;
+  border-radius: 99px;
+  background: #f1eef5;
+  padding: 2px 5px;
+  font-size: 9px;
+  text-align: center;
+}
+.reminder-filters button.active span {
+  background: #fff;
 }
 .danger-action {
   border: 1px solid #f1bcbc;
@@ -1533,9 +1555,6 @@ p {
 }
 .state-editor .secondary-action {
   padding: 0 14px;
-}
-.state-editor-hint {
-  margin-top: 9px;
 }
 .detail-modal .reminder-confirmation {
   align-items: flex-start;

@@ -5,7 +5,7 @@ import { Pencil, Trash2 } from "lucide-react";
 
 import { isReminderConfirmed, reminderDateLabel, reminderTypeLabel } from "@/features/reminders/mappers";
 import { ReminderFormDialog } from "@/features/reminders/reminder-form-dialog";
-import { manageableReminderStates, type ManageableReminderState, type Reminder, type ReminderRequest, type ReminderState } from "@/features/reminders/types";
+import { reminderStates, type Reminder, type ReminderRequest, type ReminderState } from "@/features/reminders/types";
 import type { RemindersController } from "@/features/reminders/use-reminders";
 import type { Pet } from "@/features/pets/types";
 import { getApiErrorMessage } from "@/lib/api/api-error";
@@ -30,7 +30,7 @@ export function ReminderDetailDialog({ reminderId, pets, controller, onClose }: 
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [state, setState] = useState<ManageableReminderState>("ACTIVO");
+  const [state, setState] = useState<ReminderState>("ACTIVO");
   const [changingState, setChangingState] = useState(false);
   const { getReminder } = controller;
 
@@ -40,7 +40,7 @@ export function ReminderDetailDialog({ reminderId, pets, controller, onClose }: 
       .then((loaded) => {
         if (!active) return;
         setReminder(loaded);
-        setState(loaded.estado === "INACTIVO" ? "INACTIVO" : "ACTIVO");
+        setState(loaded.estado ?? "ACTIVO");
       })
       .catch((caught) => active && setError(getApiErrorMessage(caught)))
       .finally(() => active && setLoading(false));
@@ -54,7 +54,7 @@ export function ReminderDetailDialog({ reminderId, pets, controller, onClose }: 
   };
 
   const changeState = async () => {
-    if (!reminder || reminder.estado === "COMPLETADO" || state === reminder.estado) return;
+    if (!reminder || state === reminder.estado) return;
     setChangingState(true);
     setError("");
     try {
@@ -98,11 +98,10 @@ export function ReminderDetailDialog({ reminderId, pets, controller, onClose }: 
               <div><dt>Estado</dt><dd>{reminder.estado ? stateLabels[reminder.estado] : "Sin estado"}</dd></div>
               <div><dt>Confirmación</dt><dd>{isReminderConfirmed(reminder) ? "Confirmado" : "Pendiente"}</dd></div>
             </dl>
-            {reminder.estado !== "COMPLETADO" && <div className="state-editor">
-              <label>Estado<select value={state} onChange={(event) => setState(event.target.value as ManageableReminderState)} disabled={changingState}>{manageableReminderStates.map((value) => <option key={value} value={value}>{stateLabels[value]}</option>)}</select></label>
+            <div className="state-editor">
+              <label>Estado<select value={state} onChange={(event) => setState(event.target.value as ReminderState)} disabled={changingState}>{reminderStates.map((value) => <option key={value} value={value}>{stateLabels[value]}</option>)}</select></label>
               <button className="secondary-action" type="button" onClick={() => void changeState()} disabled={changingState || state === reminder.estado}>{changingState ? "Guardando…" : "Cambiar estado"}</button>
-            </div>}
-            <p className="form-hint state-editor-hint">El estado “Completado” se asigna al marcar el recordatorio como completado.</p>
+            </div>
             {reminder.modalidad.toLowerCase() !== "unica" && <p className="form-hint">La recurrencia todavía no se edita desde Web.</p>}
             {error && <p className="auth-error reminder-action-error" role="alert">{error}</p>}
             <div className="detail-actions">

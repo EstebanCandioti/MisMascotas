@@ -31,7 +31,7 @@ export function HomeView({ userName, controller, remindersController, clinicalEv
     .join("") || "US";
   const upcomingReminders = currentTime === null
     ? []
-    : remindersController.reminders.filter((reminder) => Date.parse(reminder.fechaHoraInicio) >= currentTime);
+    : remindersController.reminders.filter((reminder) => reminder.estado === "ACTIVO" && Date.parse(reminder.fechaHoraInicio) >= currentTime);
 
   useEffect(() => {
     let active = true;
