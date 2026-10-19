@@ -24,6 +24,7 @@ function formatDate(value: string): string {
 
 export function AlbumDetailView({ id, controller, pets }: { id: string; controller: AlbumsController; pets: Pet[] }) {
   const router = useRouter();
+  const requestAlbum = controller.getAlbum;
   const [album, setAlbum] = useState<Album | null>(() => controller.albums.find((item) => item.idAlbum === id) ?? null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +46,7 @@ export function AlbumDetailView({ id, controller, pets }: { id: string; controll
     setError("");
     setPhotosError("");
     const [albumResult, photosResult] = await Promise.allSettled([
-      controller.getAlbum(id),
+      requestAlbum(id),
       listPhotosByAlbum(id),
     ]);
     if (albumResult.status === "fulfilled") setAlbum(albumResult.value);
@@ -53,7 +54,7 @@ export function AlbumDetailView({ id, controller, pets }: { id: string; controll
     if (photosResult.status === "fulfilled") setPhotos(photosResult.value);
     else setPhotosError(getApiErrorMessage(photosResult.reason));
     setLoading(false);
-  }, [controller, id]);
+  }, [id, requestAlbum]);
 
   useEffect(() => {
     let active = true;
