@@ -1672,19 +1672,26 @@ p {
 }
 .album-list {
   padding: 18px 0;
+  display: grid;
+  gap: 10px;
 }
-.album-card-button {
+.album-card-button,
+.album-card-link {
   display: block;
   width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
   text-align: left;
+  color: inherit;
+  text-decoration: none;
 }
-.album-card-button .card {
+.album-card-button .card,
+.album-card-link .card {
   transition: 0.18s ease;
 }
-.album-card-button:hover .card {
+.album-card-button:hover .card,
+.album-card-link:hover .card {
   border-color: var(--violet);
   transform: translateY(-2px);
   box-shadow: 0 12px 28px #5d3ee815;
@@ -1775,6 +1782,152 @@ p {
 .album-list small {
   color: var(--muted);
   font-size: 9px;
+}
+.album-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+.album-toolbar label {
+  min-width: min(320px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+.album-toolbar select {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  padding: 0 12px;
+  color: var(--ink);
+}
+.album-toolbar .secondary-action,
+.album-section-heading .secondary-action,
+.empty-state .secondary-action {
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.album-toolbar svg,
+.album-section-heading svg {
+  width: 17px;
+}
+.album-inline-error {
+  margin-top: 14px;
+}
+.album-inline-error button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+}
+.album-art svg {
+  width: 28px;
+  color: var(--violet);
+}
+.album-detail-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 24px;
+  align-items: start;
+  margin-top: 18px;
+}
+.album-detail-card > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.album-detail-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.album-detail-card strong {
+  font-size: 12px;
+}
+.album-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 28px 0 12px;
+}
+.album-section-heading h2 {
+  font-size: 18px;
+}
+.album-section-heading p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.album-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.album-photo-grid button {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--violet-soft);
+  padding: 0;
+}
+.album-photo-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+.album-photo-grid button:hover img {
+  transform: scale(1.04);
+}
+.album-photo-grid span {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  border-radius: 99px;
+  background: #211b2dcc;
+  padding: 5px 8px;
+  color: #fff;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.storage-notice {
+  margin-top: 16px;
+  border: 1px solid #ded6ff;
+  border-radius: 12px;
+  background: var(--violet-soft);
+  padding: 11px 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.photo-detail-modal > img {
+  width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+  margin-top: 16px;
+  border-radius: 14px;
+  background: var(--violet-soft);
+}
+.photo-detail-modal a {
+  color: var(--violet);
 }
 .calendar-tabs {
   grid-template-columns: repeat(3, 1fr);
@@ -2410,6 +2563,31 @@ p {
   }
   .home-reminder-list {
     grid-template-columns: 1fr;
+  }
+  .album-toolbar,
+  .album-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .album-toolbar .secondary-action,
+  .album-section-heading .secondary-action {
+    width: 100%;
+  }
+  .album-list .card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .album-list .card > strong,
+  .album-list .card > small {
+    grid-column: 2;
+  }
+  .album-detail-card {
+    grid-template-columns: 1fr 1fr;
+  }
+  .album-detail-card > div:first-child {
+    grid-column: 1 / -1;
+  }
+  .album-photo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .reminders .card {
     grid-template-columns: auto minmax(0, 1fr);

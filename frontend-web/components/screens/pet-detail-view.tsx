@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Weight } from "lucide-react";
+import { Album, Pencil, Trash2, Weight } from "lucide-react";
 
 import { Card, EmptyState, Header } from "@/components/layout/app-navigation";
 import { ClinicalHistory } from "@/features/clinical-events/clinical-history";
@@ -101,6 +101,9 @@ export function PetDetailView({ id, controller, clinicalEventsController }: { id
         {pet.notas && <Card><div className="pet-detail-field"><span>Notas</span><p>{pet.notas}</p></div></Card>}
       </div>
       <ClinicalHistory petId={pet.idMascota} petName={pet.nombre} controller={clinicalEventsController} />
+      <div className="integration-links">
+        <Link href={`/albumes?mascotaId=${pet.idMascota}`}><Album /> Ver álbumes de {pet.nombre}</Link>
+      </div>
       <div className="pet-detail-actions"><button className="secondary-action" onClick={() => setEditing(true)}><Pencil /> Editar mascota</button><button className="danger-action" onClick={() => { setDeleteError(""); setConfirmDelete(true); }}><Trash2 /> Eliminar mascota</button></div>
       {editing && <PetFormDialog pet={pet} onClose={() => setEditing(false)} onSave={updatePet} />}
       {confirmDelete && <div className="modal-backdrop" onMouseDown={() => !deleting && setConfirmDelete(false)}><section className="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-pet-title" onMouseDown={(event) => event.stopPropagation()}><header><div><span className="eyebrow">CONFIRMAR ACCIÓN</span><h2 id="delete-pet-title">Eliminar a {pet.nombre}</h2></div></header><p>Esta acción quitará la mascota de tu listado.</p>{deleteError && <p className="auth-error" role="alert">{deleteError}</p>}<div className="modal-actions"><button type="button" onClick={() => setConfirmDelete(false)} disabled={deleting}>Cancelar</button><button className="danger-action" type="button" onClick={() => void removePet()} disabled={deleting}>{deleting ? "Eliminando…" : "Eliminar"}</button></div></section></div>}
