@@ -101,7 +101,7 @@ export function PetDetailView({ id, controller, clinicalEventsController }: { id
         {pet.notas && <Card><div className="pet-detail-field"><span>Notas</span><p>{pet.notas}</p></div></Card>}
       </div>
       <ClinicalHistory petId={pet.idMascota} petName={pet.nombre} controller={clinicalEventsController} />
-      <div className="integration-links">
+      <div className="integration-links pet-album-access">
         <Link href={`/albumes?mascotaId=${pet.idMascota}`}><Album /> Ver álbumes de {pet.nombre}</Link>
       </div>
       <div className="pet-detail-actions"><button className="secondary-action" onClick={() => setEditing(true)}><Pencil /> Editar mascota</button><button className="danger-action" onClick={() => { setDeleteError(""); setConfirmDelete(true); }}><Trash2 /> Eliminar mascota</button></div>

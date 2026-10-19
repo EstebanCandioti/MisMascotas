@@ -2207,6 +2207,11 @@ p {
   gap: 10px;
   margin-top: 14px;
 }
+.pet-album-access {
+  width: min(900px, 100%);
+  grid-template-columns: 1fr;
+  margin-inline: auto;
+}
 .integration-links button,
 .integration-links a {
   min-height: 70px;
