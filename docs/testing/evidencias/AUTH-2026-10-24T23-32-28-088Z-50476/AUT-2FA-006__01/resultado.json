@@ -1,0 +1,20 @@
+{
+  "id_ejecucion": "AUTH-2026-10-24T23-32-28-088Z-50476__AUT-2FA-006__01",
+  "id_caso": "AUT-2FA-006",
+  "resultado": "Bloqueada",
+  "estado_ejecutor_original": "BLOQUEADO",
+  "fecha_hora": "2026-10-24T20:32:43.018-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-2FA-006",
+    "estado": "BLOQUEADO",
+    "verificaciones": 1,
+    "pendientes": 0,
+    "fallos": [
+      "AUT-2FA-006 | BLOQUEADO: BLOQUEADO: el backend no ofrece endpoint ni contrato de reenvío de registro."
+    ]
+  },
+  "observaciones": "Falta endpoint y contrato de reenvío de verificación de registro. UI sin probar.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

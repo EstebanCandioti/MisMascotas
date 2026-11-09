@@ -1,0 +1,25 @@
+{
+  "id_caso": "ECL-ELI-001",
+  "inicio": "2026-10-25T01:19:19.591Z",
+  "resultado": "Bloqueada",
+  "motivo": "El catálogo mantiene Pendiente de permisos para eliminación permitida y su semántica. No se ejecuta el borrado mientras siga pendiente.",
+  "capa": "Contrato pendiente; sin ejecución funcional",
+  "datos": {
+    "usuarios": [],
+    "mascotas": [],
+    "eventos": []
+  },
+  "comprobaciones": [],
+  "solicitudes": [],
+  "acciones_selenium": [],
+  "capturas": [],
+  "sql": {},
+  "limites": [],
+  "fin": "2026-10-25T01:19:19.591Z",
+  "id_ejecucion": "ECL-SELENIUM-PERMISOS-20261025T011912682Z-582d26__ECL-ELI-001__01",
+  "fecha_hora": "2026-10-24T22:19:19.591-03:00",
+  "esperado_catalogo": "Evento deja de aparecer en vista activa y queda trazabilidad exigida",
+  "escenario": "Eliminar evento permitido",
+  "fundamento": "Pendiente de permisos",
+  "ficha": "../entorno.json"
+}

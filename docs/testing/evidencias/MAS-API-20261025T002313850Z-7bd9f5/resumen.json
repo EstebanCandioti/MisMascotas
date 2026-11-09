@@ -1,0 +1,86 @@
+{
+  "id_corrida": "MAS-API-20261025T002313850Z-7bd9f5",
+  "tanda": "api",
+  "resultados": [
+    {
+      "id": "MAS-REG-001",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-REG-001__01/resultado.json"
+    },
+    {
+      "id": "MAS-REG-002",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-REG-002__01/resultado.json"
+    },
+    {
+      "id": "MAS-REG-003",
+      "resultado": "Fallida",
+      "evidencia": "MAS-REG-003__01/resultado.json"
+    },
+    {
+      "id": "MAS-REG-004",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-REG-004__01/resultado.json"
+    },
+    {
+      "id": "MAS-REG-005",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-REG-005__01/resultado.json"
+    },
+    {
+      "id": "MAS-LIS-001",
+      "resultado": "Bloqueada",
+      "evidencia": "MAS-LIS-001__01/resultado.json"
+    },
+    {
+      "id": "MAS-LIS-003",
+      "resultado": "Bloqueada",
+      "evidencia": "MAS-LIS-003__01/resultado.json"
+    },
+    {
+      "id": "MAS-LIS-004",
+      "resultado": "Bloqueada",
+      "evidencia": "MAS-LIS-004__01/resultado.json"
+    },
+    {
+      "id": "MAS-DET-001",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-DET-001__01/resultado.json"
+    },
+    {
+      "id": "MAS-DET-002",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-DET-002__01/resultado.json"
+    },
+    {
+      "id": "MAS-EDI-001",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-EDI-001__01/resultado.json"
+    },
+    {
+      "id": "MAS-EDI-002",
+      "resultado": "Bloqueada",
+      "evidencia": "MAS-EDI-002__01/resultado.json"
+    },
+    {
+      "id": "MAS-EDI-003",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-EDI-003__01/resultado.json"
+    },
+    {
+      "id": "MAS-EDI-004",
+      "resultado": "Fallida",
+      "evidencia": "MAS-EDI-004__01/resultado.json"
+    },
+    {
+      "id": "MAS-ELI-003",
+      "resultado": "Bloqueada",
+      "evidencia": "MAS-ELI-003__01/resultado.json"
+    },
+    {
+      "id": "MAS-ELI-004",
+      "resultado": "Bloqueada",
+      "evidencia": "MAS-ELI-004__01/resultado.json"
+    }
+  ]
+}

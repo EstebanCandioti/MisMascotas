@@ -1,0 +1,10 @@
+**
+!DB/
+!DB/01-init.sql
+!DB/02-seed.sql
+!DB/qa/
+!DB/qa/restablecer-seed.sql
+!docker/
+!docker/qa-db/
+!docker/qa-db/Dockerfile
+!docker/qa-db/03-seed-qa.sh

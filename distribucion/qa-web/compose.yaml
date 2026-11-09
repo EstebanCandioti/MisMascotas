@@ -1,0 +1,66 @@
+name: mismascotas-qa
+
+services:
+  db:
+    image: estebancandioti/mismascotas-db-qa:qa-2026.10.25-01@sha256:e660f3924b5a95b59bdc5514cf548a9c6c00cde504e8eccd7908527ded3e42b1
+    restart: unless-stopped
+    env_file: ./configuracion-qa.env
+    volumes:
+      - datos_qa:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "test -f \"$$PGDATA/.mismascotas-qa-seed\" && pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 18
+      start_period: 15s
+
+  mailpit:
+    image: axllent/mailpit:v1.31.5
+    restart: unless-stopped
+    environment:
+      MP_DATABASE: /tmp/mailpit.db
+      MP_MAX_MESSAGES: "500"
+    ports:
+      - "127.0.0.1:8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+  backend:
+    image: estebancandioti/mismascotas-backend:qa-2026.10.25-01@sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4
+    restart: unless-stopped
+    env_file: ./configuracion-qa.env
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -S --spider http://127.0.0.1:8080/ 2>&1 | grep -q 'HTTP/1.1 401'"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
+  web:
+    image: estebancandioti/mismascotas-web:qa-2026.10.25-01@sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 18
+      start_period: 15s
+
+volumes:
+  datos_qa:

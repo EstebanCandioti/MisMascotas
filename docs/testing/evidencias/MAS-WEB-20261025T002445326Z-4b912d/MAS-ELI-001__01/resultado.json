@@ -1,0 +1,317 @@
+{
+  "id_caso": "MAS-ELI-001",
+  "inicio": "2026-10-25T00:24:48.224Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.mas.0e78682d979e447d8d4f83ce79cba80e@mismascotas.test",
+        "idUsuario": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+        "plan": "Free"
+      }
+    ],
+    "mascotas": [
+      "83ec3964-720c-49e5-9ef1-01c7d581063d"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Confirmación identifica la mascota y todavía no envía DELETE",
+      "cumple": true,
+      "esperado": "Mascota identificada; 0 DELETE antes de confirmar",
+      "observado": {
+        "texto": "CONFIRMAR ACCIÓN\nEliminar a QA MAS-ELI-001\n\nEsta acción quitará la mascota de tu listado.\n\nCancelar\nEliminar",
+        "borrados": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Confirmar elimina del listado y deniega detalle activo",
+      "cumple": true,
+      "esperado": "1 DELETE, detalle 404 y ausencia del listado",
+      "observado": {
+        "borrados": 1,
+        "detalle": 404,
+        "lista": []
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "SQL: fila retenida con fecha de eliminación e historial conservado",
+      "cumple": true,
+      "esperado": "Fila lógica y eventos intactos",
+      "observado": {
+        "mascota": {
+          "id_mascota": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+          "propietario_id": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA MAS-ELI-001",
+          "peso_actual": 10,
+          "raza": null,
+          "fecha_eliminacion": "2026-10-25T00:24:49.725979+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T00:24:48.749354+00:00",
+          "actualizado_en": "2026-10-25T00:24:49.729848+00:00",
+          "foto_perfil": null
+        },
+        "eventos": [
+          {
+            "id_evento": "b3e620e8-f4e5-432b-b78a-b4e1197429d2",
+            "mascota_id": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+            "registrado_por_id": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+            "id_cliente": null,
+            "diagnostico": null,
+            "dosis": null,
+            "motivo": null,
+            "observaciones": "Peso ficticio QA",
+            "tipo": "PESO",
+            "valor_peso": 10,
+            "nombre": null,
+            "fecha_eliminacion": null,
+            "fecha": "2026-10-25T00:23:48.754+00:00",
+            "creado_en": "2026-10-25T00:24:48.760608+00:00",
+            "actualizado_en": "2026-10-25T00:24:48.760608+00:00"
+          }
+        ]
+      },
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "preparación",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA MAS-ELI-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+        "propietarioId": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+        "nombre": "QA MAS-ELI-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:24:48.749354176Z"
+      }
+    },
+    {
+      "fase": "preparación",
+      "metodo": "POST",
+      "ruta": "/mascotas/83ec3964-720c-49e5-9ef1-01c7d581063d/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-10-25T00:23:48.754Z",
+        "valorPeso": 10,
+        "observaciones": "Peso ficticio QA"
+      },
+      "http": 201,
+      "respuesta": {
+        "idEvento": "b3e620e8-f4e5-432b-b78a-b4e1197429d2",
+        "mascotaId": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+        "registradoPorId": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+        "registradoPorNombre": "QA Mascotas MAS-ELI-001",
+        "tipo": "PESO",
+        "fecha": "2026-10-25T00:23:48.754Z",
+        "nombre": null,
+        "dosis": null,
+        "valorPeso": 10,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": "Peso ficticio QA",
+        "creadoEn": "2026-10-25T00:24:48.760607959Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/83ec3964-720c-49e5-9ef1-01c7d581063d/eventos-clinicos",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": [
+        {
+          "idEvento": "b3e620e8-f4e5-432b-b78a-b4e1197429d2",
+          "mascotaId": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+          "registradoPorId": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+          "registradoPorNombre": "QA Mascotas MAS-ELI-001",
+          "tipo": "PESO",
+          "fecha": "2026-10-25T00:23:48.754Z",
+          "nombre": null,
+          "dosis": null,
+          "valorPeso": 10,
+          "motivo": null,
+          "diagnostico": null,
+          "observaciones": "Peso ficticio QA",
+          "creadoEn": "2026-10-25T00:24:48.760608Z"
+        }
+      ]
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/83ec3964-720c-49e5-9ef1-01c7d581063d",
+      "cuerpo": null,
+      "http": 404,
+      "respuesta": {
+        "codigo": "RECURSO_NO_ENCONTRADO",
+        "mensaje": "Mascota no encontrada con ID: 83ec3964-720c-49e5-9ef1-01c7d581063d",
+        "timestamp": "2026-10-25T00:24:49.759245136Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    }
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+          "propietario_id": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA MAS-ELI-001",
+          "peso_actual": 10,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T00:24:48.749354+00:00",
+          "actualizado_en": "2026-10-25T00:24:48.765797+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "b3e620e8-f4e5-432b-b78a-b4e1197429d2",
+          "mascota_id": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+          "registrado_por_id": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": "Peso ficticio QA",
+          "tipo": "PESO",
+          "valor_peso": 10,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-25T00:23:48.754+00:00",
+          "creado_en": "2026-10-25T00:24:48.760608+00:00",
+          "actualizado_en": "2026-10-25T00:24:48.760608+00:00"
+        }
+      ],
+      "recordatorios": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+          "propietario_id": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA MAS-ELI-001",
+          "peso_actual": 10,
+          "raza": null,
+          "fecha_eliminacion": "2026-10-25T00:24:49.725979+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T00:24:48.749354+00:00",
+          "actualizado_en": "2026-10-25T00:24:49.729848+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "b3e620e8-f4e5-432b-b78a-b4e1197429d2",
+          "mascota_id": "83ec3964-720c-49e5-9ef1-01c7d581063d",
+          "registrado_por_id": "6adcb8cb-7143-4117-9211-4710ff84c7e0",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": "Peso ficticio QA",
+          "tipo": "PESO",
+          "valor_peso": 10,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-25T00:23:48.754+00:00",
+          "creado_en": "2026-10-25T00:24:48.760608+00:00",
+          "actualizado_en": "2026-10-25T00:24:48.760608+00:00"
+        }
+      ],
+      "recordatorios": []
+    }
+  },
+  "limites": [],
+  "capturas": [
+    "antes.png",
+    "confirmacion.png",
+    "despues.png"
+  ],
+  "fin": "2026-10-25T00:24:50.052Z",
+  "capa": "Web + API + SQL",
+  "id_ejecucion": "MAS-WEB-20261025T002445326Z-4b912d__MAS-ELI-001__01",
+  "esperado_catalogo": "Mascota queda eliminada lógicamente y no accesible en flujos activos",
+  "escenario": "Confirmación de borrado",
+  "fecha_hora": "2026-10-24T21:24:50.052-03:00",
+  "ficha": "../entorno.json",
+  "versiones": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.325838952Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "contenedor_id": "f8120c5e0b2b51617183fabe2ae9551b1c69f9b1ffd8f3374937b0d5df1c3f3b",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:52.420525904Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.545241728Z"
+    },
+    "frontend-web-testing": {
+      "imagen_id": "sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630",
+      "contenedor_id": "8de82e36aa48cbdccaddbf1d1b9b30fcc1f9e597db40bd7a81d6f0ffd70747df",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-25T00:14:19.528533211Z"
+    }
+  }
+}

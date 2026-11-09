@@ -1,0 +1,19 @@
+{
+  "inicio": "2026-10-24T23:32:04.810Z",
+  "fin": "2026-10-24T23:32:05.277Z",
+  "alcance": "API Auth; no certifica interfaz ni integridad SQL completa.",
+  "error_general": false,
+  "errores_ejecucion": 2,
+  "resultados": [
+    {
+      "id": "AUT-REG-001",
+      "estado": "ERROR_EJECUCION",
+      "verificaciones": 0,
+      "pendientes": 0,
+      "fallos": [
+        "Error de red o script; revisar ejecución local.",
+        "Error de red o script; revisar ejecución local."
+      ]
+    }
+  ]
+}

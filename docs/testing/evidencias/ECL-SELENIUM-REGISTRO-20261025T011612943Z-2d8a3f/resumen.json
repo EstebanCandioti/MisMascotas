@@ -1,0 +1,30 @@
+{
+  "id_corrida": "ECL-SELENIUM-REGISTRO-20261025T011612943Z-2d8a3f",
+  "tanda": "registro",
+  "resultados": [
+    {
+      "id": "ECL-REG-001",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-REG-001__01/resultado.json"
+    },
+    {
+      "id": "ECL-REG-002",
+      "resultado": "Fallida",
+      "motivo": "",
+      "evidencia": "ECL-REG-002__01/resultado.json"
+    },
+    {
+      "id": "ECL-REG-003",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-REG-003__01/resultado.json"
+    },
+    {
+      "id": "ECL-REG-004",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-REG-004__01/resultado.json"
+    }
+  ]
+}

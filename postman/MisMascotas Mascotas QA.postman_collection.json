@@ -1,0 +1,1281 @@
+{
+  "info": {
+    "_postman_id": "0684ee1c-d1fe-4e3f-90f1-51244ada657a",
+    "name": "MisMascotas - Mascotas QA (19 casos CSV)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "19 casos MAS existentes. 2FA por Mailpit. Scripts compartidos con el ejecutor API/SQL/UI. No implementa funciones del producto. Ver docs/testing/mascotas_postman.md."
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "mailpitUrl",
+      "value": "http://localhost:8025",
+      "type": "string"
+    },
+    {
+      "key": "qa_premium_email",
+      "value": "qa.premium@mismascotas.test",
+      "type": "string"
+    },
+    {
+      "key": "qa_premium_password",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "/* Casos compartidos entre Postman y el ejecutor QA. No modifica el producto. */",
+          "function crearPruebasMascotas(adaptador) {",
+          "    const bloqueos = {",
+          "        'MAS-LIS-001': 'Listado combinado propio/compartido: faltan la aceptación de invitaciones y el acceso compartido en AccesoMascotaService.',",
+          "        'MAS-LIS-003': 'Falta el flujo de invitación pendiente y aceptación. No se simula con una mascota ajena.',",
+          "        'MAS-LIS-004': 'Falta revocar accesos compartidos y refrescar permisos de un colaborador con pantalla abierta.',",
+          "        'MAS-EDI-002': 'Faltan los perfiles Familia/Cuidador y sus accesos aceptados. Un tercero sin acceso no representa este caso.',",
+          "        'MAS-ELI-003': 'Faltan los perfiles Familia/Cuidador y sus accesos aceptados para intentar el borrado.',",
+          "        'MAS-ELI-004': 'Faltan cuentas vinculadas por acceso compartido y política implementada de pérdida de acceso tras borrar.'",
+          "    };",
+          "    const idsUI = ['MAS-LIS-002', 'MAS-ELI-001', 'MAS-ELI-002'];",
+          "    const clave = 'QaMascotas2026!';",
+          "    const esperar = ms => new Promise(resolve => setTimeout(resolve, ms));",
+          "    const basePet = nombre => ({ nombre, especie: 'Perro', raza: null, fechaNacimiento: null,",
+          "        fechaAproximada: false, edadValor: null, edadUnidad: null, fotoPerfil: null,",
+          "        pesoActual: null, notas: 'Datos ficticios de QA Mascotas' });",
+          "    const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);",
+          "    function mismaMascota(a, b) {",
+          "        if (!a || !b) return false;",
+          "        const { creadoEn: fechaA, ...datosA } = a;",
+          "        const { creadoEn: fechaB, ...datosB } = b;",
+          "        // Java emite nanosegundos y PostgreSQL conserva microsegundos redondeados.",
+          "        // La fecha técnica no define la identidad ni los datos editables.",
+          "        return igual(datosA, datosB) && Math.abs(Date.parse(fechaA) - Date.parse(fechaB)) <= 1;",
+          "    }",
+          "    function comprobar(c, nombre, condicion, esperado, observado, defecto = '') {",
+          "        c.resultado.comprobaciones.push({ nombre, cumple: Boolean(condicion), esperado, observado, defecto: condicion ? '' : defecto });",
+          "        if (adaptador.comprobacion) adaptador.comprobacion(nombre, Boolean(condicion));",
+          "        return Boolean(condicion);",
+          "    }",
+          "    function bloquear(motivo) { const e = new Error(motivo); e.bloqueo = true; throw e; }",
+          "    const requerir = (condicion, motivo) => { if (!condicion) bloquear(motivo); };",
+          "    async function http(c, metodo, ruta, cuerpo, token, fase = 'verificación') {",
+          "        const r = await adaptador.http(metodo, ruta, cuerpo, token);",
+          "        if (!ruta.startsWith('/auth') && !ruta.startsWith('/api/v1')) {",
+          "            c.resultado.solicitudes.push({ fase, metodo, ruta, cuerpo: cuerpo ?? null,",
+          "                http: r.status, respuesta: r.body });",
+          "        }",
+          "        return r;",
+          "    }",
+          "    async function correos(email) {",
+          "        const r = await adaptador.mail('/api/v1/search?query=' + encodeURIComponent('to:' + email) + '&limit=500');",
+          "        requerir(r.status === 200 && Array.isArray(r.body.messages), 'Mailpit no está disponible o devuelve un formato inesperado.');",
+          "        return r.body.messages;",
+          "    }",
+          "    async function actor(c, premium = false) {",
+          "        const sufijo = adaptador.uuid().replace(/-/g, '');",
+          "        const u = { email: 'qa.mas.' + sufijo + '@mismascotas.test', nombre: 'QA Mascotas ' + c.id, password: clave };",
+          "        if (premium) {",
+          "            u.email = adaptador.premium?.email;",
+          "            u.password = adaptador.premium?.password;",
+          "            requerir(u.email && u.password, 'Falta configurar la cuenta Premium QA documentada.');",
+          "        }",
+          "        const anteriores = (await correos(u.email)).map(m => m.ID);",
+          "        const inicio = Date.now();",
+          "        const r = await adaptador.http('POST', premium ? '/auth/login' : '/auth/register', u);",
+          "        requerir(r.status === 200 && typeof r.body.token === 'string', 'No se pudo preparar la autenticación del actor QA.');",
+          "        const limite = Date.now() + 30000;",
+          "        let codigo;",
+          "        while (!codigo && Date.now() < limite) {",
+          "            for (const m of await correos(u.email)) {",
+          "                if (anteriores.includes(m.ID)) continue;",
+          "                const d = await adaptador.mail('/api/v1/message/' + encodeURIComponent(m.ID));",
+          "                if (d.status !== 200 || !(d.body.To || []).some(t => t.Address.toLowerCase() === u.email.toLowerCase())) continue;",
+          "                if (Date.parse(d.body.Date || m.Created) < inicio - 2000) continue;",
+          "                codigo = String(d.body.Text || '').match(/Tu codigo de verificacion es:\\s*(\\d{6})(?!\\d)/)?.[1];",
+          "                if (codigo) break;",
+          "            }",
+          "            if (!codigo) await esperar(400);",
+          "        }",
+          "        requerir(codigo, 'No llegó un código 2FA nuevo al destinatario QA.');",
+          "        const s = await adaptador.http('POST', '/auth/verificar-codigo', { codigo }, r.body.token);",
+          "        requerir(s.status === 200 && s.body.accessToken && s.body.refreshToken, 'No se pudo completar 2FA del actor QA.');",
+          "        c.sesiones.push(s.body.refreshToken);",
+          "        const perfil = await adaptador.http('GET', '/usuario/me', undefined, s.body.accessToken);",
+          "        requerir(perfil.status === 200 && perfil.body.email === u.email, 'La sesión QA no corresponde al actor esperado.');",
+          "        requerir(perfil.body.esPremium === premium, 'El plan real del fixture no coincide con el plan requerido.');",
+          "        const dato = { email: u.email, idUsuario: perfil.body.idUsuario, plan: premium ? 'Premium' : 'Free' };",
+          "        c.resultado.datos.usuarios.push(dato);",
+          "        return { ...dato, nombre: perfil.body.nombre, sesion: s.body };",
+          "    }",
+          "    async function listar(c, u = c.actor) {",
+          "        const r = await http(c, 'GET', '/mascotas', undefined, u.sesion.accessToken);",
+          "        requerir(r.status === 200 && Array.isArray(r.body), 'No se pudo consultar el listado del actor QA.');",
+          "        return r.body;",
+          "    }",
+          "    async function fixturePet(c, cambios = {}) {",
+          "        const r = await http(c, 'POST', '/mascotas', { ...basePet('QA ' + c.id), ...cambios }, c.actor.sesion.accessToken, 'preparación');",
+          "        requerir(r.status === 201 && r.body.idMascota, 'No se pudo preparar una mascota propia para el caso.');",
+          "        c.creadas.push(r.body.idMascota);",
+          "        c.resultado.datos.mascotas.push(r.body.idMascota);",
+          "        return r.body;",
+          "    }",
+          "    async function fixtureHistoria(c) {",
+          "        const r = await http(c, 'POST', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos',",
+          "            { tipo: 'PESO', fecha: new Date(Date.now() - 60000).toISOString(), valorPeso: 10, observaciones: 'Peso ficticio QA' },",
+          "            c.actor.sesion.accessToken, 'preparación');",
+          "        requerir(r.status === 201, 'No se pudo preparar el historial clínico de la mascota QA.');",
+          "        c.historiaInicial = (await http(c, 'GET', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos', undefined, c.actor.sesion.accessToken)).body;",
+          "    }",
+          "    async function observar(c, etapa) {",
+          "        if (adaptador.observar) {",
+          "            c.resultado.sql[etapa] = await adaptador.observar(c.actor.idUsuario);",
+          "            return c.resultado.sql[etapa];",
+          "        }",
+          "        c.resultado.limites.push('La ejecución en Postman no observa SQL. Repetir con el ejecutor para certificar persistencia.');",
+          "        return null;",
+          "    }",
+          "    async function preparar(id) {",
+          "        const c = { id, sesiones: [], creadas: [], resultado: { id_caso: id, inicio: new Date().toISOString(),",
+          "            resultado: 'No ejecutada', motivo: '', datos: { usuarios: [], mascotas: [] }, comprobaciones: [],",
+          "            solicitudes: [], sql: {}, limites: [] } };",
+          "        try {",
+          "            if (bloqueos[id]) bloquear(bloqueos[id]);",
+          "            if (idsUI.includes(id) && !adaptador.ui) bloquear('Este caso requiere la interfaz. Ejecutar la tanda UI con Ejecutar-MascotasQA.cjs.');",
+          "            c.actor = await actor(c, id === 'MAS-REG-005');",
+          "            if (['MAS-REG-001', 'MAS-DET-002', 'MAS-EDI-003'].includes(id)) c.ajeno = await actor(c);",
+          "            c.cuerpo = basePet('QA ' + id);",
+          "            c.accion = { metodo: 'GET', ruta: '/mascotas', token: c.actor.sesion.accessToken };",
+          "            if (id.startsWith('MAS-REG')) {",
+          "                c.accion = { metodo: 'POST', ruta: '/mascotas', token: c.actor.sesion.accessToken };",
+          "                if (id === 'MAS-REG-002') c.cuerpo = { ...c.cuerpo, nombre: '' };",
+          "                if (id === 'MAS-REG-003') c.cuerpo.nombre = 'Á'.repeat(100);",
+          "                if (id === 'MAS-REG-004') for (let i = 0; i < 5; i++) await fixturePet(c, { nombre: 'QA Cupo ' + i });",
+          "                c.listaInicial = await listar(c);",
+          "                if (id === 'MAS-REG-005') requerir(c.listaInicial.length >= 5, 'La cuenta Premium QA debe superar el límite Free antes de ejecutar.');",
+          "                c.accion.cuerpo = c.cuerpo;",
+          "            } else if (id !== 'MAS-LIS-002') {",
+          "                c.pet = await fixturePet(c);",
+          "                if (['MAS-EDI-001', 'MAS-EDI-004', 'MAS-ELI-001', 'MAS-ELI-002'].includes(id)) await fixtureHistoria(c);",
+          "                c.accion.ruta = '/mascotas/' + c.pet.idMascota;",
+          "                if (id === 'MAS-DET-002') c.accion.token = c.ajeno.sesion.accessToken;",
+          "                if (id.startsWith('MAS-EDI')) {",
+          "                    c.accion.metodo = 'PUT';",
+          "                    c.accion.cuerpo = { ...basePet('QA Editada ' + id), pesoActual: id === 'MAS-EDI-004' ? 99 : id === 'MAS-EDI-001' ? 10 : null };",
+          "                    if (id === 'MAS-EDI-003') c.accion.token = c.ajeno.sesion.accessToken;",
+          "                }",
+          "            }",
+          "            await observar(c, 'antes');",
+          "        } catch (e) { c.bloqueo = e.message; c.resultado.resultado = 'Bloqueada'; c.resultado.motivo = e.message; }",
+          "        return c;",
+          "    }",
+          "    async function validarAlta(c, r, cuerpo, variante) {",
+          "        const creada = comprobar(c, variante + ': HTTP 201', r.status === 201, 201, r.status, 'MAS-ALTA-VALIDA');",
+          "        if (!creada || !r.body.idMascota) return;",
+          "        if (!c.creadas.includes(r.body.idMascota)) c.creadas.push(r.body.idMascota);",
+          "        if (!c.resultado.datos.mascotas.includes(r.body.idMascota)) c.resultado.datos.mascotas.push(r.body.idMascota);",
+          "        comprobar(c, variante + ': campos conservados sin truncar',",
+          "            Object.keys(cuerpo).every(k => igual(r.body[k], cuerpo[k])) && r.body.propietarioId === c.actor.idUsuario,",
+          "            cuerpo, r.body, 'MAS-TRUNCADO');",
+          "        const detalle = await http(c, 'GET', '/mascotas/' + r.body.idMascota, undefined, c.actor.sesion.accessToken);",
+          "        comprobar(c, variante + ': lectura posterior idéntica', detalle.status === 200 && mismaMascota(detalle.body, r.body), r.body, detalle.body, 'MAS-PERSISTENCIA');",
+          "    }",
+          "    async function validarInvalida(c, cuerpo, nombre) {",
+          "        const defecto = 'MAS-VAL-' + nombre.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, '-');",
+          "        const antes = await listar(c);",
+          "        const r = await http(c, 'POST', '/mascotas', cuerpo, c.actor.sesion.accessToken, 'acción: ' + nombre);",
+          "        comprobar(c, nombre + ': error de validación controlado', [400, 422].includes(r.status), '400 o 422', r.status,",
+          "            defecto);",
+          "        const despues = await listar(c);",
+          "        comprobar(c, nombre + ': sin alta parcial', igual(antes, despues), antes.length, despues.length, defecto);",
+          "        if (r.status === 201 && r.body.idMascota) {",
+          "            c.creadas.push(r.body.idMascota); c.resultado.datos.mascotas.push(r.body.idMascota);",
+          "            // Conservar la falla y limpiar únicamente la alta propia para aislar la siguiente variante.",
+          "            await http(c, 'DELETE', '/mascotas/' + r.body.idMascota, undefined, c.actor.sesion.accessToken, 'aislamiento de variante');",
+          "        }",
+          "    }",
+          "    async function verificar(c, r) {",
+          "        const id = c.id;",
+          "        if (id === 'MAS-REG-001' || id === 'MAS-REG-005') {",
+          "            await validarAlta(c, r, c.cuerpo, id === 'MAS-REG-005' ? 'Alta Premium por encima del cupo' : 'Alta válida');",
+          "            const lista = await listar(c);",
+          "            comprobar(c, 'Una mascota activa adicional', lista.length === c.listaInicial.length + 1, c.listaInicial.length + 1, lista.length, 'MAS-PERSISTENCIA');",
+          "            if (c.ajeno && r.body.idMascota) {",
+          "                const ajenas = await listar(c, c.ajeno);",
+          "                const d = await http(c, 'GET', '/mascotas/' + r.body.idMascota, undefined, c.ajeno.sesion.accessToken);",
+          "                comprobar(c, 'No aparece ni se revela a un usuario sin acceso', !ajenas.some(x => x.idMascota === r.body.idMascota) && d.status === 403 &&",
+          "                    d.body.codigo === 'ACCESO_DENEGADO' && !d.body.nombre && !d.body.propietarioId, 'Listado ajeno vacío y 403 sin datos', { lista: ajenas, http: d.status, error: d.body }, 'MAS-FILTRACION');",
+          "            }",
+          "        } else if (id === 'MAS-REG-002') {",
+          "            const variantes = [{ nombre: '' }, { especie: '' }, { nombre: '', especie: '' }, { nombre: null }, { especie: null }];",
+          "            const respuestas = [r];",
+          "            for (const cambios of variantes.slice(1)) respuestas.push(await http(c, 'POST', '/mascotas', { ...basePet('QA Obligatorios'), ...cambios }, c.actor.sesion.accessToken, 'acción: obligatorios'));",
+          "            respuestas.forEach((res, i) => {",
+          "                comprobar(c, 'Obligatorios variante ' + (i + 1) + ': 400 por campos', res.status === 400 && res.body.codigo === 'ERROR_VALIDACION', '400 ERROR_VALIDACION', { http: res.status, cuerpo: res.body }, 'MAS-OBLIGATORIOS');",
+          "                for (const campo of Object.keys(variantes[i])) comprobar(c, 'Error identifica ' + campo + ' en variante ' + (i + 1), String(res.body.mensaje).includes(campo + ':'), campo, res.body.mensaje, 'MAS-OBLIGATORIOS');",
+          "                if (res.body.idMascota) { c.creadas.push(res.body.idMascota); c.resultado.datos.mascotas.push(res.body.idMascota); }",
+          "            });",
+          "            comprobar(c, 'No hay mascotas activas tras rechazar obligatorios', (await listar(c)).length === 0, 0, (await listar(c)).length, 'MAS-ALTA-PARCIAL');",
+          "        } else if (id === 'MAS-REG-003') {",
+          "            await validarAlta(c, r, c.cuerpo, 'Nombre de 100 caracteres');",
+          "            if (r.body.idMascota) await http(c, 'DELETE', '/mascotas/' + r.body.idMascota, undefined, c.actor.sesion.accessToken, 'aislamiento de variante');",
+          "            for (const [nombre, cambios] of [",
+          "                ['Texto en límites exactos', { nombre: 'Ñ'.repeat(100), especie: 'E'.repeat(50), raza: 'R'.repeat(100), notas: 'N'.repeat(255) }],",
+          "                ['Edad desconocida', {}], ['Nacimiento válido', { fechaNacimiento: '2020-02-29' }],",
+          "                ...['dias', 'semanas', 'meses', 'anios'].map(u => ['Edad aproximada en ' + u, { fechaAproximada: true, edadValor: 1, edadUnidad: u }])",
+          "            ]) {",
+          "                const cuerpo = { ...basePet('QA Válida'), ...cambios };",
+          "                const res = await http(c, 'POST', '/mascotas', cuerpo, c.actor.sesion.accessToken, 'acción: ' + nombre);",
+          "                await validarAlta(c, res, cuerpo, nombre);",
+          "                if (res.body.idMascota) await http(c, 'DELETE', '/mascotas/' + res.body.idMascota, undefined, c.actor.sesion.accessToken, 'aislamiento de variante');",
+          "            }",
+          "            for (const [nombre, cambios] of [",
+          "                ['Nombre de 101 caracteres', { nombre: 'N'.repeat(101) }], ['Especie de 51 caracteres', { especie: 'E'.repeat(51) }],",
+          "                ['Raza de 101 caracteres', { raza: 'R'.repeat(101) }], ['Notas de 256 caracteres', { notas: 'N'.repeat(256) }],",
+          "                ['Fecha inexistente', { fechaNacimiento: '2026-02-30' }],",
+          "                ['Fecha futura', { fechaNacimiento: '2999-01-01' }],",
+          "                ['Edad negativa', { fechaAproximada: true, edadValor: -1, edadUnidad: 'anios' }],",
+          "                ['Unidad de edad inválida', { fechaAproximada: true, edadValor: 1, edadUnidad: 'siglos' }],",
+          "                ['Peso cero', { pesoActual: 0 }], ['Peso negativo', { pesoActual: -1 }], ['Peso fuera del límite del formulario', { pesoActual: 10000 }]",
+          "            ]) await validarInvalida(c, { ...basePet('QA Inválida'), ...cambios }, nombre);",
+          "        } else if (id === 'MAS-REG-004') {",
+          "            comprobar(c, 'Sexta mascota Free rechazada', r.status === 409 && r.body.codigo === 'LIMITE_MASCOTAS_ALCANZADO', '409 LIMITE_MASCOTAS_ALCANZADO', { http: r.status, cuerpo: r.body }, 'MAS-CUPO-FREE');",
+          "            const lista = await listar(c);",
+          "            comprobar(c, 'Las cinco mascotas existentes permanecen iguales', igual(c.listaInicial, lista), c.listaInicial, lista, 'MAS-CUPO-FREE');",
+          "            if (r.body.idMascota) { c.creadas.push(r.body.idMascota); c.resultado.datos.mascotas.push(r.body.idMascota); }",
+          "        } else if (id === 'MAS-DET-001') {",
+          "            comprobar(c, 'Detalle propio completo', r.status === 200 && mismaMascota(r.body, c.pet), c.pet, { http: r.status, cuerpo: r.body }, 'MAS-DETALLE');",
+          "            c.resultado.limites.push('Variante propietario. Los roles compartidos se bloquean en sus casos específicos. UI sin probar.');",
+          "        } else if (id === 'MAS-DET-002') {",
+          "            comprobar(c, 'Detalle ajeno denegado sin perfil de mascota', r.status === 403 && r.body.codigo === 'ACCESO_DENEGADO' && !r.body.idMascota && !r.body.nombre && !r.body.propietarioId,",
+          "                '403 ACCESO_DENEGADO sin datos de mascota', { http: r.status, cuerpo: r.body }, 'MAS-FILTRACION');",
+          "        } else if (id === 'MAS-EDI-001') {",
+          "            comprobar(c, 'Edición por propietario aceptada', r.status === 200 && r.body.nombre === c.accion.cuerpo.nombre, '200 y nombre editado', { http: r.status, cuerpo: r.body }, 'MAS-EDICION');",
+          "            const d = await http(c, 'GET', '/mascotas/' + c.pet.idMascota, undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'Cambios persistidos en lectura posterior', d.status === 200 && d.body.nombre === c.accion.cuerpo.nombre, c.accion.cuerpo.nombre, d.body.nombre, 'MAS-EDICION');",
+          "            const historia = await http(c, 'GET', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos', undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'Historia clínica intacta tras edición básica', igual(historia.body, c.historiaInicial), c.historiaInicial, historia.body, 'MAS-HISTORIA');",
+          "        } else if (id === 'MAS-EDI-003') {",
+          "            comprobar(c, 'Edición ajena rechazada', r.status === 403 && r.body.codigo === 'ACCESO_DENEGADO', '403 ACCESO_DENEGADO', { http: r.status, cuerpo: r.body }, 'MAS-EDICION-AJENA');",
+          "            const d = await http(c, 'GET', '/mascotas/' + c.pet.idMascota, undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'Mascota propia sin cambios por el tercero', d.status === 200 && mismaMascota(d.body, c.pet), c.pet, d.body, 'MAS-EDICION-AJENA');",
+          "        } else if (id === 'MAS-EDI-004') {",
+          "            const d = await http(c, 'GET', '/mascotas/' + c.pet.idMascota, undefined, c.actor.sesion.accessToken);",
+          "            const historia = await http(c, 'GET', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos', undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'PUT del perfil no sobrescribe peso actual', d.status === 200 && d.body.pesoActual === 10,",
+          "                'El peso permanece 10 kg o se rechaza la modificación básica', { httpPut: r.status, pesoActual: d.body.pesoActual }, 'MAS-PESO-BASICO');",
+          "            comprobar(c, 'Mediciones históricas preservadas', igual(historia.body, c.historiaInicial), c.historiaInicial, historia.body, 'MAS-HISTORIA');",
+          "        }",
+          "        if (adaptador.observar) {",
+          "            const despues = await observar(c, 'despues');",
+          "            const antes = c.resultado.sql.antes;",
+          "            if (id === 'MAS-REG-002' || id === 'MAS-REG-004') comprobar(c, 'SQL: rechazo sin fila parcial ni cambios previos', igual(antes.mascotas, despues.mascotas), antes.mascotas.length, despues.mascotas.length, 'MAS-ALTA-PARCIAL');",
+          "            if (id === 'MAS-REG-001' || id === 'MAS-REG-005') comprobar(c, 'SQL: exactamente una fila propia adicional', despues.mascotas.length === antes.mascotas.length + 1 && despues.mascotas.some(m => m.id_mascota === r.body.idMascota && m.fecha_eliminacion === null), antes.mascotas.length + 1, despues.mascotas.length, 'MAS-PERSISTENCIA');",
+          "            if (id === 'MAS-EDI-003') comprobar(c, 'SQL: acceso ajeno no altera mascota ni historial', igual(antes, despues), 'Instantánea anterior', 'Comparación de instantáneas', 'MAS-EDICION-AJENA');",
+          "            if (id === 'MAS-EDI-001' || id === 'MAS-EDI-004') comprobar(c, 'SQL: eventos históricos intactos', igual(antes.eventos, despues.eventos), antes.eventos, despues.eventos, 'MAS-HISTORIA');",
+          "        }",
+          "    }",
+          "    async function limpiar(c) {",
+          "        // Solo borrado lógico por la API de mascotas creadas por este caso.",
+          "        for (const id of [...new Set(c.creadas)]) {",
+          "            try {",
+          "                const r = await adaptador.http('DELETE', '/mascotas/' + id, undefined, c.actor.sesion.accessToken);",
+          "                if (![204, 404].includes(r.status)) c.resultado.limites.push('No se pudo retirar lógicamente el fixture ' + id);",
+          "            } catch { c.resultado.limites.push('Falló limpieza lógica del fixture ' + id); }",
+          "        }",
+          "        for (const refreshToken of c.sesiones) {",
+          "            try { await adaptador.http('POST', '/auth/logout', { refreshToken }); }",
+          "            catch { c.resultado.limites.push('No se pudo cerrar una sesión QA.'); }",
+          "        }",
+          "    }",
+          "    async function finalizar(c, r) {",
+          "        try {",
+          "            if (!c.bloqueo) {",
+          "                if (idsUI.includes(c.id)) await adaptador.ui(c, { http, comprobar, observar });",
+          "                else await verificar(c, r);",
+          "                c.resultado.resultado = c.resultado.comprobaciones.some(x => !x.cumple) ? 'Fallida' : 'Aprobada';",
+          "            }",
+          "        } catch (e) {",
+          "            c.resultado.resultado = c.resultado.comprobaciones.some(x => !x.cumple) ? 'Fallida' : 'Bloqueada';",
+          "            c.resultado.motivo = e.bloqueo ? e.message : 'No se completó la ejecución: ' + e.message;",
+          "        } finally {",
+          "            await limpiar(c);",
+          "            c.resultado.fin = new Date().toISOString();",
+          "            c.resultado.capa = idsUI.includes(c.id) ? 'Web + API + SQL' : adaptador.observar ? 'API + SQL' : 'API';",
+          "        }",
+          "        return c.resultado;",
+          "    }",
+          "    return { preparar, finalizar, bloqueos, idsUI };",
+          "}",
+          "",
+          "",
+          "",
+          "const base = String(pm.variables.get('baseUrl')).replace(new RegExp('/$'), '');",
+          "const mail = String(pm.variables.get('mailpitUrl')).replace(new RegExp('/$'), '');",
+          "const local = u => new RegExp('^http://(localhost|127[.]0[.]0[.]1)(:[0-9]+)?$').test(u);",
+          "if (!local(base) || !local(mail)) throw new Error('Solo se admiten URLs HTTP locales QA.');",
+          "const enviar = (url, metodo, datos, token) => new Promise((resolve, reject) => pm.sendRequest({",
+          "    url, method: metodo, auth: { type: 'noauth' }, header: { 'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token}: {}) },",
+          "    ...(datos === undefined ? {} : {body:{mode:'raw',raw:JSON.stringify(datos)}})",
+          "}, (error,respuesta) => {if(error) return reject(new Error('Fallo HTTP auxiliar.')); let body={};try{body=respuesta.json();}catch{} resolve({status:respuesta.code,body});}));",
+          "const pruebas = crearPruebasMascotas({",
+          "    uuid:()=>pm.variables.replaceIn('{{$guid}}'),",
+          "    http:(m,p,b,t)=>enviar(base+p,m,b,t), mail:p=>enviar(mail+p,'GET'),",
+          "    premium:{email:pm.variables.get('qa_premium_email'),password:pm.variables.get('qa_premium_password')},",
+          "    comprobacion:(nombre,cumple)=>pm.test(pm.info.requestName.split(' ')[0]+' | '+nombre,()=>{if(!cumple)pm.expect.fail(nombre);})",
+          "});",
+          "(async()=>{",
+          "    pm.variables.set('mas_url', base+'/mascotas'); pm.variables.set('mas_metodo','GET'); pm.variables.set('mas_cuerpo','{}'); pm.variables.set('mas_token','');",
+          "    const c=await pruebas.preparar(pm.info.requestName.split(' ')[0]);",
+          "    pm.variables.set('mas_contexto',JSON.stringify(c));",
+          "    if(c.bloqueo){",
+          "        pm.test(c.id+' | BLOQUEADA: '+c.bloqueo,()=>pm.expect.fail(c.bloqueo));",
+          "        await pruebas.finalizar(c); pm.variables.unset('mas_contexto'); pm.execution.skipRequest(); return;",
+          "    }",
+          "    pm.variables.set('mas_url',base+c.accion.ruta); pm.variables.set('mas_metodo',c.accion.metodo);",
+          "    pm.request.method=c.accion.metodo;",
+          "    pm.variables.set('mas_cuerpo',JSON.stringify(c.accion.cuerpo||{}));",
+          "    pm.variables.set('mas_token',c.accion.token);",
+          "})();"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "/* Casos compartidos entre Postman y el ejecutor QA. No modifica el producto. */",
+          "function crearPruebasMascotas(adaptador) {",
+          "    const bloqueos = {",
+          "        'MAS-LIS-001': 'Listado combinado propio/compartido: faltan la aceptación de invitaciones y el acceso compartido en AccesoMascotaService.',",
+          "        'MAS-LIS-003': 'Falta el flujo de invitación pendiente y aceptación. No se simula con una mascota ajena.',",
+          "        'MAS-LIS-004': 'Falta revocar accesos compartidos y refrescar permisos de un colaborador con pantalla abierta.',",
+          "        'MAS-EDI-002': 'Faltan los perfiles Familia/Cuidador y sus accesos aceptados. Un tercero sin acceso no representa este caso.',",
+          "        'MAS-ELI-003': 'Faltan los perfiles Familia/Cuidador y sus accesos aceptados para intentar el borrado.',",
+          "        'MAS-ELI-004': 'Faltan cuentas vinculadas por acceso compartido y política implementada de pérdida de acceso tras borrar.'",
+          "    };",
+          "    const idsUI = ['MAS-LIS-002', 'MAS-ELI-001', 'MAS-ELI-002'];",
+          "    const clave = 'QaMascotas2026!';",
+          "    const esperar = ms => new Promise(resolve => setTimeout(resolve, ms));",
+          "    const basePet = nombre => ({ nombre, especie: 'Perro', raza: null, fechaNacimiento: null,",
+          "        fechaAproximada: false, edadValor: null, edadUnidad: null, fotoPerfil: null,",
+          "        pesoActual: null, notas: 'Datos ficticios de QA Mascotas' });",
+          "    const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);",
+          "    function mismaMascota(a, b) {",
+          "        if (!a || !b) return false;",
+          "        const { creadoEn: fechaA, ...datosA } = a;",
+          "        const { creadoEn: fechaB, ...datosB } = b;",
+          "        // Java emite nanosegundos y PostgreSQL conserva microsegundos redondeados.",
+          "        // La fecha técnica no define la identidad ni los datos editables.",
+          "        return igual(datosA, datosB) && Math.abs(Date.parse(fechaA) - Date.parse(fechaB)) <= 1;",
+          "    }",
+          "    function comprobar(c, nombre, condicion, esperado, observado, defecto = '') {",
+          "        c.resultado.comprobaciones.push({ nombre, cumple: Boolean(condicion), esperado, observado, defecto: condicion ? '' : defecto });",
+          "        if (adaptador.comprobacion) adaptador.comprobacion(nombre, Boolean(condicion));",
+          "        return Boolean(condicion);",
+          "    }",
+          "    function bloquear(motivo) { const e = new Error(motivo); e.bloqueo = true; throw e; }",
+          "    const requerir = (condicion, motivo) => { if (!condicion) bloquear(motivo); };",
+          "    async function http(c, metodo, ruta, cuerpo, token, fase = 'verificación') {",
+          "        const r = await adaptador.http(metodo, ruta, cuerpo, token);",
+          "        if (!ruta.startsWith('/auth') && !ruta.startsWith('/api/v1')) {",
+          "            c.resultado.solicitudes.push({ fase, metodo, ruta, cuerpo: cuerpo ?? null,",
+          "                http: r.status, respuesta: r.body });",
+          "        }",
+          "        return r;",
+          "    }",
+          "    async function correos(email) {",
+          "        const r = await adaptador.mail('/api/v1/search?query=' + encodeURIComponent('to:' + email) + '&limit=500');",
+          "        requerir(r.status === 200 && Array.isArray(r.body.messages), 'Mailpit no está disponible o devuelve un formato inesperado.');",
+          "        return r.body.messages;",
+          "    }",
+          "    async function actor(c, premium = false) {",
+          "        const sufijo = adaptador.uuid().replace(/-/g, '');",
+          "        const u = { email: 'qa.mas.' + sufijo + '@mismascotas.test', nombre: 'QA Mascotas ' + c.id, password: clave };",
+          "        if (premium) {",
+          "            u.email = adaptador.premium?.email;",
+          "            u.password = adaptador.premium?.password;",
+          "            requerir(u.email && u.password, 'Falta configurar la cuenta Premium QA documentada.');",
+          "        }",
+          "        const anteriores = (await correos(u.email)).map(m => m.ID);",
+          "        const inicio = Date.now();",
+          "        const r = await adaptador.http('POST', premium ? '/auth/login' : '/auth/register', u);",
+          "        requerir(r.status === 200 && typeof r.body.token === 'string', 'No se pudo preparar la autenticación del actor QA.');",
+          "        const limite = Date.now() + 30000;",
+          "        let codigo;",
+          "        while (!codigo && Date.now() < limite) {",
+          "            for (const m of await correos(u.email)) {",
+          "                if (anteriores.includes(m.ID)) continue;",
+          "                const d = await adaptador.mail('/api/v1/message/' + encodeURIComponent(m.ID));",
+          "                if (d.status !== 200 || !(d.body.To || []).some(t => t.Address.toLowerCase() === u.email.toLowerCase())) continue;",
+          "                if (Date.parse(d.body.Date || m.Created) < inicio - 2000) continue;",
+          "                codigo = String(d.body.Text || '').match(/Tu codigo de verificacion es:\\s*(\\d{6})(?!\\d)/)?.[1];",
+          "                if (codigo) break;",
+          "            }",
+          "            if (!codigo) await esperar(400);",
+          "        }",
+          "        requerir(codigo, 'No llegó un código 2FA nuevo al destinatario QA.');",
+          "        const s = await adaptador.http('POST', '/auth/verificar-codigo', { codigo }, r.body.token);",
+          "        requerir(s.status === 200 && s.body.accessToken && s.body.refreshToken, 'No se pudo completar 2FA del actor QA.');",
+          "        c.sesiones.push(s.body.refreshToken);",
+          "        const perfil = await adaptador.http('GET', '/usuario/me', undefined, s.body.accessToken);",
+          "        requerir(perfil.status === 200 && perfil.body.email === u.email, 'La sesión QA no corresponde al actor esperado.');",
+          "        requerir(perfil.body.esPremium === premium, 'El plan real del fixture no coincide con el plan requerido.');",
+          "        const dato = { email: u.email, idUsuario: perfil.body.idUsuario, plan: premium ? 'Premium' : 'Free' };",
+          "        c.resultado.datos.usuarios.push(dato);",
+          "        return { ...dato, nombre: perfil.body.nombre, sesion: s.body };",
+          "    }",
+          "    async function listar(c, u = c.actor) {",
+          "        const r = await http(c, 'GET', '/mascotas', undefined, u.sesion.accessToken);",
+          "        requerir(r.status === 200 && Array.isArray(r.body), 'No se pudo consultar el listado del actor QA.');",
+          "        return r.body;",
+          "    }",
+          "    async function fixturePet(c, cambios = {}) {",
+          "        const r = await http(c, 'POST', '/mascotas', { ...basePet('QA ' + c.id), ...cambios }, c.actor.sesion.accessToken, 'preparación');",
+          "        requerir(r.status === 201 && r.body.idMascota, 'No se pudo preparar una mascota propia para el caso.');",
+          "        c.creadas.push(r.body.idMascota);",
+          "        c.resultado.datos.mascotas.push(r.body.idMascota);",
+          "        return r.body;",
+          "    }",
+          "    async function fixtureHistoria(c) {",
+          "        const r = await http(c, 'POST', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos',",
+          "            { tipo: 'PESO', fecha: new Date(Date.now() - 60000).toISOString(), valorPeso: 10, observaciones: 'Peso ficticio QA' },",
+          "            c.actor.sesion.accessToken, 'preparación');",
+          "        requerir(r.status === 201, 'No se pudo preparar el historial clínico de la mascota QA.');",
+          "        c.historiaInicial = (await http(c, 'GET', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos', undefined, c.actor.sesion.accessToken)).body;",
+          "    }",
+          "    async function observar(c, etapa) {",
+          "        if (adaptador.observar) {",
+          "            c.resultado.sql[etapa] = await adaptador.observar(c.actor.idUsuario);",
+          "            return c.resultado.sql[etapa];",
+          "        }",
+          "        c.resultado.limites.push('La ejecución en Postman no observa SQL. Repetir con el ejecutor para certificar persistencia.');",
+          "        return null;",
+          "    }",
+          "    async function preparar(id) {",
+          "        const c = { id, sesiones: [], creadas: [], resultado: { id_caso: id, inicio: new Date().toISOString(),",
+          "            resultado: 'No ejecutada', motivo: '', datos: { usuarios: [], mascotas: [] }, comprobaciones: [],",
+          "            solicitudes: [], sql: {}, limites: [] } };",
+          "        try {",
+          "            if (bloqueos[id]) bloquear(bloqueos[id]);",
+          "            if (idsUI.includes(id) && !adaptador.ui) bloquear('Este caso requiere la interfaz. Ejecutar la tanda UI con Ejecutar-MascotasQA.cjs.');",
+          "            c.actor = await actor(c, id === 'MAS-REG-005');",
+          "            if (['MAS-REG-001', 'MAS-DET-002', 'MAS-EDI-003'].includes(id)) c.ajeno = await actor(c);",
+          "            c.cuerpo = basePet('QA ' + id);",
+          "            c.accion = { metodo: 'GET', ruta: '/mascotas', token: c.actor.sesion.accessToken };",
+          "            if (id.startsWith('MAS-REG')) {",
+          "                c.accion = { metodo: 'POST', ruta: '/mascotas', token: c.actor.sesion.accessToken };",
+          "                if (id === 'MAS-REG-002') c.cuerpo = { ...c.cuerpo, nombre: '' };",
+          "                if (id === 'MAS-REG-003') c.cuerpo.nombre = 'Á'.repeat(100);",
+          "                if (id === 'MAS-REG-004') for (let i = 0; i < 5; i++) await fixturePet(c, { nombre: 'QA Cupo ' + i });",
+          "                c.listaInicial = await listar(c);",
+          "                if (id === 'MAS-REG-005') requerir(c.listaInicial.length >= 5, 'La cuenta Premium QA debe superar el límite Free antes de ejecutar.');",
+          "                c.accion.cuerpo = c.cuerpo;",
+          "            } else if (id !== 'MAS-LIS-002') {",
+          "                c.pet = await fixturePet(c);",
+          "                if (['MAS-EDI-001', 'MAS-EDI-004', 'MAS-ELI-001', 'MAS-ELI-002'].includes(id)) await fixtureHistoria(c);",
+          "                c.accion.ruta = '/mascotas/' + c.pet.idMascota;",
+          "                if (id === 'MAS-DET-002') c.accion.token = c.ajeno.sesion.accessToken;",
+          "                if (id.startsWith('MAS-EDI')) {",
+          "                    c.accion.metodo = 'PUT';",
+          "                    c.accion.cuerpo = { ...basePet('QA Editada ' + id), pesoActual: id === 'MAS-EDI-004' ? 99 : id === 'MAS-EDI-001' ? 10 : null };",
+          "                    if (id === 'MAS-EDI-003') c.accion.token = c.ajeno.sesion.accessToken;",
+          "                }",
+          "            }",
+          "            await observar(c, 'antes');",
+          "        } catch (e) { c.bloqueo = e.message; c.resultado.resultado = 'Bloqueada'; c.resultado.motivo = e.message; }",
+          "        return c;",
+          "    }",
+          "    async function validarAlta(c, r, cuerpo, variante) {",
+          "        const creada = comprobar(c, variante + ': HTTP 201', r.status === 201, 201, r.status, 'MAS-ALTA-VALIDA');",
+          "        if (!creada || !r.body.idMascota) return;",
+          "        if (!c.creadas.includes(r.body.idMascota)) c.creadas.push(r.body.idMascota);",
+          "        if (!c.resultado.datos.mascotas.includes(r.body.idMascota)) c.resultado.datos.mascotas.push(r.body.idMascota);",
+          "        comprobar(c, variante + ': campos conservados sin truncar',",
+          "            Object.keys(cuerpo).every(k => igual(r.body[k], cuerpo[k])) && r.body.propietarioId === c.actor.idUsuario,",
+          "            cuerpo, r.body, 'MAS-TRUNCADO');",
+          "        const detalle = await http(c, 'GET', '/mascotas/' + r.body.idMascota, undefined, c.actor.sesion.accessToken);",
+          "        comprobar(c, variante + ': lectura posterior idéntica', detalle.status === 200 && mismaMascota(detalle.body, r.body), r.body, detalle.body, 'MAS-PERSISTENCIA');",
+          "    }",
+          "    async function validarInvalida(c, cuerpo, nombre) {",
+          "        const defecto = 'MAS-VAL-' + nombre.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, '-');",
+          "        const antes = await listar(c);",
+          "        const r = await http(c, 'POST', '/mascotas', cuerpo, c.actor.sesion.accessToken, 'acción: ' + nombre);",
+          "        comprobar(c, nombre + ': error de validación controlado', [400, 422].includes(r.status), '400 o 422', r.status,",
+          "            defecto);",
+          "        const despues = await listar(c);",
+          "        comprobar(c, nombre + ': sin alta parcial', igual(antes, despues), antes.length, despues.length, defecto);",
+          "        if (r.status === 201 && r.body.idMascota) {",
+          "            c.creadas.push(r.body.idMascota); c.resultado.datos.mascotas.push(r.body.idMascota);",
+          "            // Conservar la falla y limpiar únicamente la alta propia para aislar la siguiente variante.",
+          "            await http(c, 'DELETE', '/mascotas/' + r.body.idMascota, undefined, c.actor.sesion.accessToken, 'aislamiento de variante');",
+          "        }",
+          "    }",
+          "    async function verificar(c, r) {",
+          "        const id = c.id;",
+          "        if (id === 'MAS-REG-001' || id === 'MAS-REG-005') {",
+          "            await validarAlta(c, r, c.cuerpo, id === 'MAS-REG-005' ? 'Alta Premium por encima del cupo' : 'Alta válida');",
+          "            const lista = await listar(c);",
+          "            comprobar(c, 'Una mascota activa adicional', lista.length === c.listaInicial.length + 1, c.listaInicial.length + 1, lista.length, 'MAS-PERSISTENCIA');",
+          "            if (c.ajeno && r.body.idMascota) {",
+          "                const ajenas = await listar(c, c.ajeno);",
+          "                const d = await http(c, 'GET', '/mascotas/' + r.body.idMascota, undefined, c.ajeno.sesion.accessToken);",
+          "                comprobar(c, 'No aparece ni se revela a un usuario sin acceso', !ajenas.some(x => x.idMascota === r.body.idMascota) && d.status === 403 &&",
+          "                    d.body.codigo === 'ACCESO_DENEGADO' && !d.body.nombre && !d.body.propietarioId, 'Listado ajeno vacío y 403 sin datos', { lista: ajenas, http: d.status, error: d.body }, 'MAS-FILTRACION');",
+          "            }",
+          "        } else if (id === 'MAS-REG-002') {",
+          "            const variantes = [{ nombre: '' }, { especie: '' }, { nombre: '', especie: '' }, { nombre: null }, { especie: null }];",
+          "            const respuestas = [r];",
+          "            for (const cambios of variantes.slice(1)) respuestas.push(await http(c, 'POST', '/mascotas', { ...basePet('QA Obligatorios'), ...cambios }, c.actor.sesion.accessToken, 'acción: obligatorios'));",
+          "            respuestas.forEach((res, i) => {",
+          "                comprobar(c, 'Obligatorios variante ' + (i + 1) + ': 400 por campos', res.status === 400 && res.body.codigo === 'ERROR_VALIDACION', '400 ERROR_VALIDACION', { http: res.status, cuerpo: res.body }, 'MAS-OBLIGATORIOS');",
+          "                for (const campo of Object.keys(variantes[i])) comprobar(c, 'Error identifica ' + campo + ' en variante ' + (i + 1), String(res.body.mensaje).includes(campo + ':'), campo, res.body.mensaje, 'MAS-OBLIGATORIOS');",
+          "                if (res.body.idMascota) { c.creadas.push(res.body.idMascota); c.resultado.datos.mascotas.push(res.body.idMascota); }",
+          "            });",
+          "            comprobar(c, 'No hay mascotas activas tras rechazar obligatorios', (await listar(c)).length === 0, 0, (await listar(c)).length, 'MAS-ALTA-PARCIAL');",
+          "        } else if (id === 'MAS-REG-003') {",
+          "            await validarAlta(c, r, c.cuerpo, 'Nombre de 100 caracteres');",
+          "            if (r.body.idMascota) await http(c, 'DELETE', '/mascotas/' + r.body.idMascota, undefined, c.actor.sesion.accessToken, 'aislamiento de variante');",
+          "            for (const [nombre, cambios] of [",
+          "                ['Texto en límites exactos', { nombre: 'Ñ'.repeat(100), especie: 'E'.repeat(50), raza: 'R'.repeat(100), notas: 'N'.repeat(255) }],",
+          "                ['Edad desconocida', {}], ['Nacimiento válido', { fechaNacimiento: '2020-02-29' }],",
+          "                ...['dias', 'semanas', 'meses', 'anios'].map(u => ['Edad aproximada en ' + u, { fechaAproximada: true, edadValor: 1, edadUnidad: u }])",
+          "            ]) {",
+          "                const cuerpo = { ...basePet('QA Válida'), ...cambios };",
+          "                const res = await http(c, 'POST', '/mascotas', cuerpo, c.actor.sesion.accessToken, 'acción: ' + nombre);",
+          "                await validarAlta(c, res, cuerpo, nombre);",
+          "                if (res.body.idMascota) await http(c, 'DELETE', '/mascotas/' + res.body.idMascota, undefined, c.actor.sesion.accessToken, 'aislamiento de variante');",
+          "            }",
+          "            for (const [nombre, cambios] of [",
+          "                ['Nombre de 101 caracteres', { nombre: 'N'.repeat(101) }], ['Especie de 51 caracteres', { especie: 'E'.repeat(51) }],",
+          "                ['Raza de 101 caracteres', { raza: 'R'.repeat(101) }], ['Notas de 256 caracteres', { notas: 'N'.repeat(256) }],",
+          "                ['Fecha inexistente', { fechaNacimiento: '2026-02-30' }],",
+          "                ['Fecha futura', { fechaNacimiento: '2999-01-01' }],",
+          "                ['Edad negativa', { fechaAproximada: true, edadValor: -1, edadUnidad: 'anios' }],",
+          "                ['Unidad de edad inválida', { fechaAproximada: true, edadValor: 1, edadUnidad: 'siglos' }],",
+          "                ['Peso cero', { pesoActual: 0 }], ['Peso negativo', { pesoActual: -1 }], ['Peso fuera del límite del formulario', { pesoActual: 10000 }]",
+          "            ]) await validarInvalida(c, { ...basePet('QA Inválida'), ...cambios }, nombre);",
+          "        } else if (id === 'MAS-REG-004') {",
+          "            comprobar(c, 'Sexta mascota Free rechazada', r.status === 409 && r.body.codigo === 'LIMITE_MASCOTAS_ALCANZADO', '409 LIMITE_MASCOTAS_ALCANZADO', { http: r.status, cuerpo: r.body }, 'MAS-CUPO-FREE');",
+          "            const lista = await listar(c);",
+          "            comprobar(c, 'Las cinco mascotas existentes permanecen iguales', igual(c.listaInicial, lista), c.listaInicial, lista, 'MAS-CUPO-FREE');",
+          "            if (r.body.idMascota) { c.creadas.push(r.body.idMascota); c.resultado.datos.mascotas.push(r.body.idMascota); }",
+          "        } else if (id === 'MAS-DET-001') {",
+          "            comprobar(c, 'Detalle propio completo', r.status === 200 && mismaMascota(r.body, c.pet), c.pet, { http: r.status, cuerpo: r.body }, 'MAS-DETALLE');",
+          "            c.resultado.limites.push('Variante propietario. Los roles compartidos se bloquean en sus casos específicos. UI sin probar.');",
+          "        } else if (id === 'MAS-DET-002') {",
+          "            comprobar(c, 'Detalle ajeno denegado sin perfil de mascota', r.status === 403 && r.body.codigo === 'ACCESO_DENEGADO' && !r.body.idMascota && !r.body.nombre && !r.body.propietarioId,",
+          "                '403 ACCESO_DENEGADO sin datos de mascota', { http: r.status, cuerpo: r.body }, 'MAS-FILTRACION');",
+          "        } else if (id === 'MAS-EDI-001') {",
+          "            comprobar(c, 'Edición por propietario aceptada', r.status === 200 && r.body.nombre === c.accion.cuerpo.nombre, '200 y nombre editado', { http: r.status, cuerpo: r.body }, 'MAS-EDICION');",
+          "            const d = await http(c, 'GET', '/mascotas/' + c.pet.idMascota, undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'Cambios persistidos en lectura posterior', d.status === 200 && d.body.nombre === c.accion.cuerpo.nombre, c.accion.cuerpo.nombre, d.body.nombre, 'MAS-EDICION');",
+          "            const historia = await http(c, 'GET', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos', undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'Historia clínica intacta tras edición básica', igual(historia.body, c.historiaInicial), c.historiaInicial, historia.body, 'MAS-HISTORIA');",
+          "        } else if (id === 'MAS-EDI-003') {",
+          "            comprobar(c, 'Edición ajena rechazada', r.status === 403 && r.body.codigo === 'ACCESO_DENEGADO', '403 ACCESO_DENEGADO', { http: r.status, cuerpo: r.body }, 'MAS-EDICION-AJENA');",
+          "            const d = await http(c, 'GET', '/mascotas/' + c.pet.idMascota, undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'Mascota propia sin cambios por el tercero', d.status === 200 && mismaMascota(d.body, c.pet), c.pet, d.body, 'MAS-EDICION-AJENA');",
+          "        } else if (id === 'MAS-EDI-004') {",
+          "            const d = await http(c, 'GET', '/mascotas/' + c.pet.idMascota, undefined, c.actor.sesion.accessToken);",
+          "            const historia = await http(c, 'GET', '/mascotas/' + c.pet.idMascota + '/eventos-clinicos', undefined, c.actor.sesion.accessToken);",
+          "            comprobar(c, 'PUT del perfil no sobrescribe peso actual', d.status === 200 && d.body.pesoActual === 10,",
+          "                'El peso permanece 10 kg o se rechaza la modificación básica', { httpPut: r.status, pesoActual: d.body.pesoActual }, 'MAS-PESO-BASICO');",
+          "            comprobar(c, 'Mediciones históricas preservadas', igual(historia.body, c.historiaInicial), c.historiaInicial, historia.body, 'MAS-HISTORIA');",
+          "        }",
+          "        if (adaptador.observar) {",
+          "            const despues = await observar(c, 'despues');",
+          "            const antes = c.resultado.sql.antes;",
+          "            if (id === 'MAS-REG-002' || id === 'MAS-REG-004') comprobar(c, 'SQL: rechazo sin fila parcial ni cambios previos', igual(antes.mascotas, despues.mascotas), antes.mascotas.length, despues.mascotas.length, 'MAS-ALTA-PARCIAL');",
+          "            if (id === 'MAS-REG-001' || id === 'MAS-REG-005') comprobar(c, 'SQL: exactamente una fila propia adicional', despues.mascotas.length === antes.mascotas.length + 1 && despues.mascotas.some(m => m.id_mascota === r.body.idMascota && m.fecha_eliminacion === null), antes.mascotas.length + 1, despues.mascotas.length, 'MAS-PERSISTENCIA');",
+          "            if (id === 'MAS-EDI-003') comprobar(c, 'SQL: acceso ajeno no altera mascota ni historial', igual(antes, despues), 'Instantánea anterior', 'Comparación de instantáneas', 'MAS-EDICION-AJENA');",
+          "            if (id === 'MAS-EDI-001' || id === 'MAS-EDI-004') comprobar(c, 'SQL: eventos históricos intactos', igual(antes.eventos, despues.eventos), antes.eventos, despues.eventos, 'MAS-HISTORIA');",
+          "        }",
+          "    }",
+          "    async function limpiar(c) {",
+          "        // Solo borrado lógico por la API de mascotas creadas por este caso.",
+          "        for (const id of [...new Set(c.creadas)]) {",
+          "            try {",
+          "                const r = await adaptador.http('DELETE', '/mascotas/' + id, undefined, c.actor.sesion.accessToken);",
+          "                if (![204, 404].includes(r.status)) c.resultado.limites.push('No se pudo retirar lógicamente el fixture ' + id);",
+          "            } catch { c.resultado.limites.push('Falló limpieza lógica del fixture ' + id); }",
+          "        }",
+          "        for (const refreshToken of c.sesiones) {",
+          "            try { await adaptador.http('POST', '/auth/logout', { refreshToken }); }",
+          "            catch { c.resultado.limites.push('No se pudo cerrar una sesión QA.'); }",
+          "        }",
+          "    }",
+          "    async function finalizar(c, r) {",
+          "        try {",
+          "            if (!c.bloqueo) {",
+          "                if (idsUI.includes(c.id)) await adaptador.ui(c, { http, comprobar, observar });",
+          "                else await verificar(c, r);",
+          "                c.resultado.resultado = c.resultado.comprobaciones.some(x => !x.cumple) ? 'Fallida' : 'Aprobada';",
+          "            }",
+          "        } catch (e) {",
+          "            c.resultado.resultado = c.resultado.comprobaciones.some(x => !x.cumple) ? 'Fallida' : 'Bloqueada';",
+          "            c.resultado.motivo = e.bloqueo ? e.message : 'No se completó la ejecución: ' + e.message;",
+          "        } finally {",
+          "            await limpiar(c);",
+          "            c.resultado.fin = new Date().toISOString();",
+          "            c.resultado.capa = idsUI.includes(c.id) ? 'Web + API + SQL' : adaptador.observar ? 'API + SQL' : 'API';",
+          "        }",
+          "        return c.resultado;",
+          "    }",
+          "    return { preparar, finalizar, bloqueos, idsUI };",
+          "}",
+          "",
+          "",
+          "",
+          "const base = String(pm.variables.get('baseUrl')).replace(new RegExp('/$'), '');",
+          "const mail = String(pm.variables.get('mailpitUrl')).replace(new RegExp('/$'), '');",
+          "const local = u => new RegExp('^http://(localhost|127[.]0[.]0[.]1)(:[0-9]+)?$').test(u);",
+          "if (!local(base) || !local(mail)) throw new Error('Solo se admiten URLs HTTP locales QA.');",
+          "const enviar = (url, metodo, datos, token) => new Promise((resolve, reject) => pm.sendRequest({",
+          "    url, method: metodo, auth: { type: 'noauth' }, header: { 'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token}: {}) },",
+          "    ...(datos === undefined ? {} : {body:{mode:'raw',raw:JSON.stringify(datos)}})",
+          "}, (error,respuesta) => {if(error) return reject(new Error('Fallo HTTP auxiliar.')); let body={};try{body=respuesta.json();}catch{} resolve({status:respuesta.code,body});}));",
+          "const pruebas = crearPruebasMascotas({",
+          "    uuid:()=>pm.variables.replaceIn('{{$guid}}'),",
+          "    http:(m,p,b,t)=>enviar(base+p,m,b,t), mail:p=>enviar(mail+p,'GET'),",
+          "    premium:{email:pm.variables.get('qa_premium_email'),password:pm.variables.get('qa_premium_password')},",
+          "    comprobacion:(nombre,cumple)=>pm.test(pm.info.requestName.split(' ')[0]+' | '+nombre,()=>{if(!cumple)pm.expect.fail(nombre);})",
+          "});",
+          "(async()=>{",
+          "    const c=JSON.parse(pm.variables.get('mas_contexto')); let body={};try{body=pm.response.json();}catch{}",
+          "    const r=await pruebas.finalizar(c,{status:pm.response.code,body});",
+          "    pm.test(c.id+' | Estado '+r.resultado,()=>{if(r.resultado!=='Aprobada')pm.expect.fail(r.motivo||r.resultado);});",
+          "    pm.visualizer.set('<h3>{{id_caso}}: {{resultado}}</h3><p>{{motivo}}</p><p>Capa API. Repetir con el ejecutor para evidencia SQL/UI y registro en CSV.</p>',r);",
+          "    ['mas_contexto','mas_cuerpo','mas_token'].forEach(k=>pm.variables.unset(k));",
+          "})();"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Alta",
+      "item": [
+        {
+          "name": "MAS-REG-001 — Alta válida",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Propietario bajo el cupo de su plan\n\n**Acción:** Crear mascota con datos obligatorios\n\n**Esperado del CSV:** Mascota persistida y visible solo a personas autorizadas\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-REG-002 — Campos obligatorios faltantes",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Datos mínimos incompletos\n\n**Acción:** Crear mascota\n\n**Esperado del CSV:** Validación por campo sin mascota parcial\n\n**Prioridad:** Alta\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-REG-003 — Valores inválidos o extremos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Fechas y textos en sus límites\n\n**Acción:** Crear mascota\n\n**Esperado del CSV:** Se aceptan los valores válidos y se rechazan los inválidos sin truncado silencioso\n\n**Prioridad:** Alta\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-REG-004 — Cupo Free",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Propietario Free con cinco mascotas activas\n\n**Acción:** Crear una sexta mascota\n\n**Esperado del CSV:** Alta rechazada sin afectar las cinco existentes\n\n**Prioridad:** Alta\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-REG-005 — Alta Premium",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Propietario Premium supera cinco mascotas\n\n**Acción:** Crear otra mascota\n\n**Esperado del CSV:** Alta permitida sin límite Free\n\n**Prioridad:** Alta\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Listado",
+      "item": [
+        {
+          "name": "MAS-LIS-001 — Listado propio y compartido",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Usuario con mascotas propias y accesos aceptados\n\n**Acción:** Abrir listado\n\n**Esperado del CSV:** Aparecen solo las mascotas accesibles sin duplicados\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-LIS-002 — Estado vacío",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Usuario sin mascotas accesibles\n\n**Acción:** Abrir listado\n\n**Esperado del CSV:** Mensaje y acción inicial adecuados sin error\n\n**Prioridad:** Media\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-LIS-003 — Invitación pendiente",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Usuario con invitación no aceptada\n\n**Acción:** Abrir listado\n\n**Esperado del CSV:** La mascota no aparece como accesible hasta aceptar\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-LIS-004 — Revocación reciente",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Acceso revocado mientras la pantalla estaba abierta\n\n**Acción:** Actualizar o abrir detalle\n\n**Esperado del CSV:** La mascota desaparece y el detalle directo se deniega\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Detalle",
+      "item": [
+        {
+          "name": "MAS-DET-001 — Detalle autorizado",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Propietario o usuario con acceso aceptado\n\n**Acción:** Abrir detalle\n\n**Esperado del CSV:** Datos correctos y acciones según rol\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-DET-002 — Mascota ajena",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Usuario sin acceso e ID conocido\n\n**Acción:** Consultar detalle directo\n\n**Esperado del CSV:** Acceso denegado sin filtración de datos\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Edición",
+      "item": [
+        {
+          "name": "MAS-EDI-001 — Edición por propietario",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Propietario de la mascota\n\n**Acción:** Modificar datos editables\n\n**Esperado del CSV:** Cambios persistidos sin alterar historia clínica\n\n**Prioridad:** Alta\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-EDI-002 — Edición por colaborador",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Familia o Cuidador con acceso\n\n**Acción:** Modificar perfil básico por UI o API\n\n**Esperado del CSV:** Acción denegada sin cambios\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-EDI-003 — Mascota ajena",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Usuario sin acceso\n\n**Acción:** Enviar edición directa\n\n**Esperado del CSV:** Acción denegada sin cambios\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-EDI-004 — Peso no se modifica como dato básico",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Mascota con historial de pesos\n\n**Acción:** Intentar editar peso desde perfil\n\n**Esperado del CSV:** Se deriva al flujo de carga de peso sin sobrescribir historia\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Eliminación",
+      "item": [
+        {
+          "name": "MAS-ELI-001 — Confirmación de borrado",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Propietario con mascota activa\n\n**Acción:** Solicitar y confirmar eliminación\n\n**Esperado del CSV:** Mascota queda eliminada lógicamente y no accesible en flujos activos\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-ELI-002 — Cancelar borrado",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Propietario en confirmación\n\n**Acción:** Cancelar\n\n**Esperado del CSV:** Mascota y relaciones permanecen sin cambios\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-ELI-003 — Borrado por colaborador",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Familia o Cuidador\n\n**Acción:** Intentar eliminar por UI o API\n\n**Esperado del CSV:** Acción denegada\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        },
+        {
+          "name": "MAS-ELI-004 — Pérdida de acceso compartido",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mas_token}}"
+              }
+            ],
+            "url": "{{mas_url}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{{mas_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Datos:** Mascota eliminada lógicamente\n\n**Acción:** Consultar desde cuentas vinculadas\n\n**Esperado del CSV:** Todos pierden acceso activo y se conserva el historial hasta la purga prevista\n\n**Prioridad:** Crítica\n\nLos escenarios de funciones ausentes se bloquean; los de UI se ejecutan desde el script QA."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

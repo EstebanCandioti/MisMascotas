@@ -1,0 +1,479 @@
+{
+  "id_caso": "ECL-REG-004",
+  "inicio": "2026-10-25T01:16:28.533Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "capa": "Selenium Web + API + SQL",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.ecl.1a4e6310cfcb4d3780213ecf12251ae5@mismascotas.test",
+        "idUsuario": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "nombre": "QA Clínico ECL-REG-004"
+      }
+    ],
+    "mascotas": [
+      {
+        "idMascota": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "nombre": "QA ECL-REG-004 1"
+      }
+    ],
+    "eventos": [
+      "748274f3-4f15-4630-b4c7-133bff8f339b",
+      "116fbb98-af97-4def-9c2b-b8370f6756af",
+      "39e94268-9f52-43eb-a3bc-7fd15b0bbb81",
+      "8db9cafe-8d99-46db-a771-d2f2f4db9e89"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "tipo_consulta_veterinaria: una sola fila clínica nueva",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_consulta_veterinaria: tipo, campos, fecha y autoría conservados",
+      "cumple": true,
+      "esperado": {
+        "tipo": "CONSULTA_VETERINARIA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "motivo": "Consulta ficticia QA",
+        "diagnostico": "Diagnóstico ficticio QA",
+        "observaciones": "Registro exclusivo de pruebas.",
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1"
+      },
+      "observado": {
+        "idEvento": "748274f3-4f15-4630-b4c7-133bff8f339b",
+        "mascotaId": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registradoPorId": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "registradoPorNombre": "QA Clínico ECL-REG-004",
+        "tipo": "CONSULTA_VETERINARIA",
+        "fecha": "2026-10-22T15:00:00Z",
+        "nombre": null,
+        "dosis": null,
+        "valorPeso": null,
+        "motivo": "Consulta ficticia QA",
+        "diagnostico": "Diagnóstico ficticio QA",
+        "observaciones": "Registro exclusivo de pruebas.",
+        "creadoEn": "2026-10-25T01:16:30.958190Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_consulta_veterinaria: persistencia SQL e identidad de mascota/autor",
+      "cumple": true,
+      "esperado": {
+        "mascota": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "fecha": "2026-10-22T12:00:00-03:00"
+      },
+      "observado": {
+        "id_evento": "748274f3-4f15-4630-b4c7-133bff8f339b",
+        "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "id_cliente": null,
+        "diagnostico": "Diagnóstico ficticio QA",
+        "dosis": null,
+        "motivo": "Consulta ficticia QA",
+        "observaciones": "Registro exclusivo de pruebas.",
+        "tipo": "CONSULTA_VETERINARIA",
+        "valor_peso": null,
+        "nombre": null,
+        "fecha_eliminacion": null,
+        "fecha": "2026-10-22T15:00:00+00:00",
+        "creado_en": "2026-10-25T01:16:30.95819+00:00",
+        "actualizado_en": "2026-10-25T01:16:30.958191+00:00"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_vacuna: una sola fila clínica nueva",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_vacuna: tipo, campos, fecha y autoría conservados",
+      "cumple": true,
+      "esperado": {
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico.",
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1"
+      },
+      "observado": {
+        "idEvento": "116fbb98-af97-4def-9c2b-b8370f6756af",
+        "mascotaId": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registradoPorId": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "registradoPorNombre": "QA Clínico ECL-REG-004",
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T15:00:00Z",
+        "nombre": "Vacuna ficticia QA",
+        "dosis": null,
+        "valorPeso": null,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": "Sin uso clínico.",
+        "creadoEn": "2026-10-25T01:16:31.885724Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_vacuna: persistencia SQL e identidad de mascota/autor",
+      "cumple": true,
+      "esperado": {
+        "mascota": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "fecha": "2026-10-22T12:00:00-03:00"
+      },
+      "observado": {
+        "id_evento": "116fbb98-af97-4def-9c2b-b8370f6756af",
+        "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "id_cliente": null,
+        "diagnostico": null,
+        "dosis": null,
+        "motivo": null,
+        "observaciones": "Sin uso clínico.",
+        "tipo": "VACUNA",
+        "valor_peso": null,
+        "nombre": "Vacuna ficticia QA",
+        "fecha_eliminacion": null,
+        "fecha": "2026-10-22T15:00:00+00:00",
+        "creado_en": "2026-10-25T01:16:31.885724+00:00",
+        "actualizado_en": "2026-10-25T01:16:31.885724+00:00"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_medicacion: una sola fila clínica nueva",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_medicacion: tipo, campos, fecha y autoría conservados",
+      "cumple": true,
+      "esperado": {
+        "tipo": "MEDICACION",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Tratamiento ficticio QA",
+        "dosis": "Dosis ficticia QA",
+        "observaciones": "Sin indicación veterinaria.",
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1"
+      },
+      "observado": {
+        "idEvento": "39e94268-9f52-43eb-a3bc-7fd15b0bbb81",
+        "mascotaId": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registradoPorId": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "registradoPorNombre": "QA Clínico ECL-REG-004",
+        "tipo": "MEDICACION",
+        "fecha": "2026-10-22T15:00:00Z",
+        "nombre": "Tratamiento ficticio QA",
+        "dosis": "Dosis ficticia QA",
+        "valorPeso": null,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": "Sin indicación veterinaria.",
+        "creadoEn": "2026-10-25T01:16:32.963842Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_medicacion: persistencia SQL e identidad de mascota/autor",
+      "cumple": true,
+      "esperado": {
+        "mascota": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "fecha": "2026-10-22T12:00:00-03:00"
+      },
+      "observado": {
+        "id_evento": "39e94268-9f52-43eb-a3bc-7fd15b0bbb81",
+        "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "id_cliente": null,
+        "diagnostico": null,
+        "dosis": "Dosis ficticia QA",
+        "motivo": null,
+        "observaciones": "Sin indicación veterinaria.",
+        "tipo": "MEDICACION",
+        "valor_peso": null,
+        "nombre": "Tratamiento ficticio QA",
+        "fecha_eliminacion": null,
+        "fecha": "2026-10-22T15:00:00+00:00",
+        "creado_en": "2026-10-25T01:16:32.963842+00:00",
+        "actualizado_en": "2026-10-25T01:16:32.963843+00:00"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_peso: una sola fila clínica nueva",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_peso: tipo, campos, fecha y autoría conservados",
+      "cumple": true,
+      "esperado": {
+        "tipo": "PESO",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "valorPeso": 10,
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1"
+      },
+      "observado": {
+        "idEvento": "8db9cafe-8d99-46db-a771-d2f2f4db9e89",
+        "mascotaId": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registradoPorId": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "registradoPorNombre": "QA Clínico ECL-REG-004",
+        "tipo": "PESO",
+        "fecha": "2026-10-22T15:00:00Z",
+        "nombre": null,
+        "dosis": null,
+        "valorPeso": 10,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": null,
+        "creadoEn": "2026-10-25T01:16:34.043759Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_peso: persistencia SQL e identidad de mascota/autor",
+      "cumple": true,
+      "esperado": {
+        "mascota": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "autor": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "fecha": "2026-10-22T12:00:00-03:00"
+      },
+      "observado": {
+        "id_evento": "8db9cafe-8d99-46db-a771-d2f2f4db9e89",
+        "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+        "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+        "id_cliente": null,
+        "diagnostico": null,
+        "dosis": null,
+        "motivo": null,
+        "observaciones": null,
+        "tipo": "PESO",
+        "valor_peso": 10,
+        "nombre": null,
+        "fecha_eliminacion": null,
+        "fecha": "2026-10-22T15:00:00+00:00",
+        "creado_en": "2026-10-25T01:16:34.043759+00:00",
+        "actualizado_en": "2026-10-25T01:16:34.04376+00:00"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Los cuatro tipos están presentes una sola vez",
+      "cumple": true,
+      "esperado": [
+        "CONSULTA_VETERINARIA",
+        "VACUNA",
+        "MEDICACION",
+        "PESO"
+      ],
+      "observado": [
+        "CONSULTA_VETERINARIA",
+        "VACUNA",
+        "MEDICACION",
+        "PESO"
+      ],
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [],
+  "acciones_selenium": [
+    {
+      "accion": "Guardar formulario clínico mediante clic WebDriver",
+      "datos": {
+        "tipo": "CONSULTA_VETERINARIA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "motivo": "Consulta ficticia QA",
+        "diagnostico": "Diagnóstico ficticio QA",
+        "observaciones": "Registro exclusivo de pruebas."
+      },
+      "fecha": "2026-10-25T01:16:30.878Z"
+    },
+    {
+      "accion": "Guardar formulario clínico mediante clic WebDriver",
+      "datos": {
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "fecha": "2026-10-25T01:16:31.830Z"
+    },
+    {
+      "accion": "Guardar formulario clínico mediante clic WebDriver",
+      "datos": {
+        "tipo": "MEDICACION",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Tratamiento ficticio QA",
+        "dosis": "Dosis ficticia QA",
+        "observaciones": "Sin indicación veterinaria."
+      },
+      "fecha": "2026-10-25T01:16:32.882Z"
+    },
+    {
+      "accion": "Guardar formulario clínico mediante clic WebDriver",
+      "datos": {
+        "tipo": "PESO",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "valorPeso": 10
+      },
+      "fecha": "2026-10-25T01:16:33.981Z"
+    }
+  ],
+  "capturas": [
+    "antes.png",
+    "tipo_consulta_veterinaria_formulario.png",
+    "tipo_consulta_veterinaria_historial.png",
+    "tipo_vacuna_formulario.png",
+    "tipo_vacuna_historial.png",
+    "tipo_medicacion_formulario.png",
+    "tipo_medicacion_historial.png",
+    "tipo_peso_formulario.png",
+    "tipo_peso_historial.png",
+    "despues.png"
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+          "propietario_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-004 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:16:29.051076+00:00",
+          "actualizado_en": "2026-10-25T01:16:29.051077+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+          "propietario_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-004 1",
+          "peso_actual": 10,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:16:29.051076+00:00",
+          "actualizado_en": "2026-10-25T01:16:34.07084+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "116fbb98-af97-4def-9c2b-b8370f6756af",
+          "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+          "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": "Sin uso clínico.",
+          "tipo": "VACUNA",
+          "valor_peso": null,
+          "nombre": "Vacuna ficticia QA",
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-22T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:16:31.885724+00:00",
+          "actualizado_en": "2026-10-25T01:16:31.885724+00:00"
+        },
+        {
+          "id_evento": "39e94268-9f52-43eb-a3bc-7fd15b0bbb81",
+          "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+          "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": "Dosis ficticia QA",
+          "motivo": null,
+          "observaciones": "Sin indicación veterinaria.",
+          "tipo": "MEDICACION",
+          "valor_peso": null,
+          "nombre": "Tratamiento ficticio QA",
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-22T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:16:32.963842+00:00",
+          "actualizado_en": "2026-10-25T01:16:32.963843+00:00"
+        },
+        {
+          "id_evento": "748274f3-4f15-4630-b4c7-133bff8f339b",
+          "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+          "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+          "id_cliente": null,
+          "diagnostico": "Diagnóstico ficticio QA",
+          "dosis": null,
+          "motivo": "Consulta ficticia QA",
+          "observaciones": "Registro exclusivo de pruebas.",
+          "tipo": "CONSULTA_VETERINARIA",
+          "valor_peso": null,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-22T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:16:30.95819+00:00",
+          "actualizado_en": "2026-10-25T01:16:30.958191+00:00"
+        },
+        {
+          "id_evento": "8db9cafe-8d99-46db-a771-d2f2f4db9e89",
+          "mascota_id": "cc8c948d-5123-40a1-a07b-913ce45aeb49",
+          "registrado_por_id": "c348fbfb-5175-48d1-b736-082cc3daacc1",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": null,
+          "tipo": "PESO",
+          "valor_peso": 10,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-22T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:16:34.043759+00:00",
+          "actualizado_en": "2026-10-25T01:16:34.04376+00:00"
+        }
+      ]
+    }
+  },
+  "limites": [],
+  "navegador": {
+    "herramienta": "Selenium WebDriver",
+    "version_selenium": "4.51.0",
+    "nombre": "MicrosoftEdge",
+    "version": "156.0.4314.42"
+  },
+  "fin": "2026-10-25T01:16:34.833Z",
+  "id_ejecucion": "ECL-SELENIUM-REGISTRO-20261025T011612943Z-2d8a3f__ECL-REG-004__01",
+  "fecha_hora": "2026-10-24T22:16:34.833-03:00",
+  "esperado_catalogo": "Cada uno conserva campos específicos y aparece en historial",
+  "escenario": "Tipos clínicos soportados",
+  "fundamento": "Diseñado por QA",
+  "ficha": "../entorno.json"
+}

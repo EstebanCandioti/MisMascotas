@@ -1,0 +1,20 @@
+{
+  "id_ejecucion": "AUTH-2026-10-24T23-32-28-088Z-50476__AUT-SES-005__01",
+  "id_caso": "AUT-SES-005",
+  "resultado": "Fallida",
+  "estado_ejecutor_original": "FALLÓ",
+  "fecha_hora": "2026-10-24T20:32:43.018-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-SES-005",
+    "estado": "FALLÓ",
+    "verificaciones": 6,
+    "pendientes": 0,
+    "fallos": [
+      "AUT-SES-005 | Como máximo una renovación simultánea emite sesión"
+    ]
+  },
+  "observaciones": "Dos renovaciones simultáneas con el mismo refresh emitieron sesión; esperado como máximo una. UI sin probar.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

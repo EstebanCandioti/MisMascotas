@@ -1,0 +1,156 @@
+{
+  "id_corrida": "SMK-API-01-20261023T022653Z-e39ab800",
+  "estado": "Preparada; no iniciada. Sin resultados de casos.",
+  "capturada_en_utc": "2026-10-23T02:27:01.0120529+00:00",
+  "plan": "docs/testing/tandas/smoke_api_01.md",
+  "capa": "API",
+  "proyecto": "mismascotas-web-testing",
+  "volumen": "mismascotas_web_testing_db",
+  "repositorio_actual": {
+    "commit": "ec0c39c2ce17ab1a8f035af1b734b3e595d5a674",
+    "rama": "testing-integracion-web",
+    "cambios_locales": true,
+    "advertencia": "Contexto del checkout; no demuestra la procedencia de las imagenes ejecutadas."
+  },
+  "servicios": {
+    "db-web-testing": {
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "imagen_referencia": "postgres:17.6",
+      "imagen_digests": [
+        "postgres@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929"
+      ],
+      "imagen_creada_en": "2025-11-04T04:13:30.991646263Z",
+      "plataforma": "linux/amd64",
+      "revision_declarada": null,
+      "origen_codigo_build": "No verificado: no se deduce del commit actual ni solo de una etiqueta.",
+      "salud": "healthy",
+      "puertos": []
+    },
+    "backend-web-testing": {
+      "contenedor_id": "f8120c5e0b2b51617183fabe2ae9551b1c69f9b1ffd8f3374937b0d5df1c3f3b",
+      "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "imagen_referencia": "mismascotas-web-testing-backend-web-testing",
+      "imagen_digests": [
+        "mismascotas-web-testing-backend-web-testing@sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4"
+      ],
+      "imagen_creada_en": "2026-10-19T02:45:07.529943658Z",
+      "plataforma": "linux/amd64",
+      "revision_declarada": null,
+      "origen_codigo_build": "No verificado: no se deduce del commit actual ni solo de una etiqueta.",
+      "salud": "healthy",
+      "puertos": [
+        {
+          "puerto_contenedor": "8080/tcp",
+          "interfaz_host": "0.0.0.0",
+          "puerto_host": "8080"
+        },
+        {
+          "puerto_contenedor": "8080/tcp",
+          "interfaz_host": "::",
+          "puerto_host": "8080"
+        }
+      ]
+    },
+    "frontend-web-testing": {
+      "contenedor_id": "8de82e36aa48cbdccaddbf1d1b9b30fcc1f9e597db40bd7a81d6f0ffd70747df",
+      "imagen_id": "sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630",
+      "imagen_referencia": "mismascotas-web-testing-frontend-web-testing",
+      "imagen_digests": [
+        "mismascotas-web-testing-frontend-web-testing@sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630"
+      ],
+      "imagen_creada_en": "2026-10-19T02:47:39.994058915Z",
+      "plataforma": "linux/amd64",
+      "revision_declarada": null,
+      "origen_codigo_build": "No verificado: no se deduce del commit actual ni solo de una etiqueta.",
+      "salud": "healthy",
+      "puertos": [
+        {
+          "puerto_contenedor": "3000/tcp",
+          "interfaz_host": "0.0.0.0",
+          "puerto_host": "3000"
+        },
+        {
+          "puerto_contenedor": "3000/tcp",
+          "interfaz_host": "::",
+          "puerto_host": "3000"
+        }
+      ]
+    },
+    "mailpit-web-testing": {
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "imagen_referencia": "axllent/mailpit:v1.31.5",
+      "imagen_digests": [
+        "axllent/mailpit@sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea"
+      ],
+      "imagen_creada_en": "2026-10-11T00:50:40.702164208Z",
+      "plataforma": "linux/amd64",
+      "revision_declarada": null,
+      "origen_codigo_build": "No verificado: no se deduce del commit actual ni solo de una etiqueta.",
+      "salud": "healthy",
+      "puertos": [
+        {
+          "puerto_contenedor": "8025/tcp",
+          "interfaz_host": "127.0.0.1",
+          "puerto_host": "8025"
+        }
+      ]
+    }
+  },
+  "configuracion_backend_no_sensible": {
+    "JWT_ACCESS_TOKEN_EXPIRATION_MINUTES": "15",
+    "JWT_REFRESH_TOKEN_EXPIRATION_DAYS": "14",
+    "JWT_PRE_AUTH_EXPIRATION_MINUTES": "10",
+    "AUTH_CODIGO_VERIFICACION_EXPIRACION_MINUTOS": "10",
+    "MAIL_HOST": "mailpit-web-testing",
+    "MAIL_PORT": "1025",
+    "MAIL_SMTP_AUTH": "false",
+    "MAIL_SMTP_STARTTLS_ENABLE": "false",
+    "MAIL_SMTP_STARTTLS_REQUIRED": "false",
+    "JPA_SHOW_SQL": "false"
+  },
+  "base": {
+    "version_motor": "17.6 (Debian 17.6-2.pgdg13+1)",
+    "base": "mismascotas",
+    "capturado_en": "2026-10-22T23:26:57.315027-03:00",
+    "fecha_argentina": "2026-10-22",
+    "usuarios": 6,
+    "mascotas": 15,
+    "eventos_clinicos": 20,
+    "recordatorios": 15,
+    "codigos_2fa": 0,
+    "refresh_tokens": 0,
+    "logs_auditoria": 0
+  },
+  "conteos_compatibles_con_seed_base": true,
+  "seed_referenciado": {
+    "version": "qa-base-v1",
+    "hash_aplicado": "CC68B5E7348AC4C30E52B3787ED34BF6F517E3C529BC7828AD2F30CABA4BB4B7",
+    "hash_coincide_con_archivo": true,
+    "d0": "2026-10-22",
+    "t0": "2026-10-22T21:36:25.362331-03:00",
+    "evidencia_restauracion": ".qa/restauraciones/20261022-213624-f3d05ff710e347ce90dcc07e7a6111c6.json",
+    "advertencia": "Referencia a una restauracion anterior; no certifica que los datos no se hayan modificado despues."
+  },
+  "correos_mailpit": 0,
+  "hashes_archivos": {
+    "DB/01-init.sql": "D17BCE98A45AA9D007C83F27DD6CB6C11C7E69D43001F2C3192896565D482017",
+    "DB/02-seed.sql": "830979AE775993CB57663D3F785C50BECE020BC3C274EB0F5FDCC3489B5C326C",
+    "DB/qa/restablecer-seed.sql": "CC68B5E7348AC4C30E52B3787ED34BF6F517E3C529BC7828AD2F30CABA4BB4B7",
+    "docs/testing/casos_prueba.csv": "07D75844CA2218033F53BF3A8550C16B89C86F4C2BFC02F380E702093CDF7EB3",
+    "docs/testing/tandas/smoke_api_01.md": "8AC4C43D3C3075D7617666912501D153DF4F4DFB2CFC18F2BE91E5F55569E937",
+    "docker-compose.web-testing.yml": "4482F9FF91ED323CD9201E0394F02884FEF0416C371A6A122A4789F007B1BEC8"
+  },
+  "navegador": "No aplica: esta tanda no verifica la interfaz.",
+  "limitaciones": [
+    "No verifica toda la integridad de los datos a partir de conteos.",
+    "Captura valida solo mientras no cambien imagenes, estructura, configuracion o datos iniciales.",
+    "Las imagenes locales deben conservarse para repetir exactamente la misma version."
+  ],
+  "estructura_capturada": {
+    "archivo": "esquema.sql",
+    "sha256": "53843A06803281622E623A2319296DB5BA460C7ADDBF5A2026E56F1D20C66974",
+    "alcance": "Solo estructura real; sin datos, propietarios ni permisos. El hash identifica este archivo, no una equivalencia semantica entre volcados."
+  }
+}

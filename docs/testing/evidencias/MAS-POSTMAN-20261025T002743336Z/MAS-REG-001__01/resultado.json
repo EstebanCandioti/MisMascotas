@@ -1,0 +1,168 @@
+{
+  "id_ejecucion": "MAS-POSTMAN-20261025T002743336Z__MAS-REG-001__01",
+  "id_caso": "MAS-REG-001",
+  "inicio": "2026-10-25T00:27:43.336Z",
+  "fin": "2026-10-25T00:27:44.398Z",
+  "fecha_hora": "2026-10-24T21:27:44.398-03:00",
+  "resultado": "Aprobada",
+  "capa": "API / Postman en Newman",
+  "comprobaciones": [
+    {
+      "nombre": "MAS-REG-001 | Alta válida: HTTP 201",
+      "cumple": true,
+      "pendiente": false
+    },
+    {
+      "nombre": "MAS-REG-001 | Alta válida: campos conservados sin truncar",
+      "cumple": true,
+      "pendiente": false
+    },
+    {
+      "nombre": "MAS-REG-001 | Alta válida: lectura posterior idéntica",
+      "cumple": true,
+      "pendiente": false
+    },
+    {
+      "nombre": "MAS-REG-001 | Una mascota activa adicional",
+      "cumple": true,
+      "pendiente": false
+    },
+    {
+      "nombre": "MAS-REG-001 | No aparece ni se revela a un usuario sin acceso",
+      "cumple": true,
+      "pendiente": false
+    },
+    {
+      "nombre": "MAS-REG-001 | Estado Aprobada",
+      "cumple": true,
+      "pendiente": false
+    }
+  ],
+  "solicitudes": [
+    {
+      "metodo": "GET",
+      "ruta": "/usuario/me",
+      "http": 200,
+      "respuesta": {
+        "idUsuario": "3ee594d4-3071-414f-9198-ead13e8c105e",
+        "nombre": "QA Mascotas MAS-REG-001",
+        "email": "qa.mas.0b8a31a6cb2c427d9b02dd63ef344028@mismascotas.test",
+        "esPremium": false
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/usuario/me",
+      "http": 200,
+      "respuesta": {
+        "idUsuario": "b8820351-d209-4827-bf9c-25cda8caa348",
+        "nombre": "QA Mascotas MAS-REG-001",
+        "email": "qa.mas.331a6a0fdae242f9961230f0f56d99b7@mismascotas.test",
+        "esPremium": false
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "http": 201,
+      "respuesta": {
+        "idMascota": "eb37fbb9-efdc-4e39-a120-5d2fead21e23",
+        "propietarioId": "3ee594d4-3071-414f-9198-ead13e8c105e",
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:27:44.218864768Z"
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/mascotas/eb37fbb9-efdc-4e39-a120-5d2fead21e23",
+      "http": 200,
+      "respuesta": {
+        "idMascota": "eb37fbb9-efdc-4e39-a120-5d2fead21e23",
+        "propietarioId": "3ee594d4-3071-414f-9198-ead13e8c105e",
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:27:44.218865Z"
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "http": 200,
+      "respuesta": [
+        {
+          "idMascota": "eb37fbb9-efdc-4e39-a120-5d2fead21e23",
+          "propietarioId": "3ee594d4-3071-414f-9198-ead13e8c105e",
+          "nombre": "QA MAS-REG-001",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:27:44.218865Z"
+        }
+      ]
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/mascotas/eb37fbb9-efdc-4e39-a120-5d2fead21e23",
+      "http": 403,
+      "respuesta": {
+        "codigo": "ACCESO_DENEGADO",
+        "mensaje": "No tenes permisos para realizar esta accion sobre esta mascota",
+        "timestamp": "2026-10-25T00:27:44.289966961Z"
+      }
+    },
+    {
+      "metodo": "DELETE",
+      "ruta": "/mascotas/eb37fbb9-efdc-4e39-a120-5d2fead21e23",
+      "http": 204,
+      "respuesta": {}
+    }
+  ],
+  "datos": [
+    {
+      "email": "qa.mas.0b8a31a6cb2c427d9b02dd63ef344028@mismascotas.test",
+      "idUsuario": "3ee594d4-3071-414f-9198-ead13e8c105e"
+    },
+    {
+      "email": "qa.mas.331a6a0fdae242f9961230f0f56d99b7@mismascotas.test",
+      "idUsuario": "b8820351-d209-4827-bf9c-25cda8caa348"
+    }
+  ],
+  "limitaciones": "UI y SQL no se verifican en este smoke; ver las tandas completas del ejecutor.",
+  "errores_ejecutor": [],
+  "ficha": "../entorno.json"
+}

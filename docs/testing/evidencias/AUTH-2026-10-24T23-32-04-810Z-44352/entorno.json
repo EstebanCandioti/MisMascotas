@@ -1,0 +1,13 @@
+{
+  "id_corrida": "AUTH-2026-10-24T23-32-04-810Z-44352",
+  "registro_retroactivo": true,
+  "inicio_observado": "2026-10-24T23:32:04.810Z",
+  "fin_observado": "2026-10-24T23:32:05.277Z",
+  "proyecto": "mismascotas-web-testing",
+  "capa": "API",
+  "ejecutor": "Codex / Newman 6.2.3",
+  "imagenes": "No se guardaron IDs de imagen durante estas ejecuciones. No se infieren de la versión actual.",
+  "datos": "Cuentas sintéticas qa.auth.<uuid>@mismascotas.test. Los informes originales no conservaron los emails ni UUID de usuario.",
+  "limites": "El momento por caso no se conservó. fecha_hora registra el cierre real de la corrida. No se dispone de instantánea SQL histórica.",
+  "estados": "PARCIAL se registra Bloqueada con el pendiente explícito. ERROR_EJECUCION se registra Bloqueada por el ejecutor."
+}

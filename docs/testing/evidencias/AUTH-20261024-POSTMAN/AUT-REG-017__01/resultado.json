@@ -1,0 +1,20 @@
+{
+  "id_ejecucion": "AUTH-20261024-POSTMAN__AUT-REG-017__01",
+  "id_caso": "AUT-REG-017",
+  "resultado": "Fallida",
+  "estado_ejecutor_original": "FALLÓ",
+  "fecha_hora": "2026-10-24T20:35:24.760-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-REG-017",
+    "estado": "FALLÓ",
+    "verificaciones": 3,
+    "pendientes": 0,
+    "fallos": [
+      "AUT-REG-017 | HTTP esperado 409, recibido 400"
+    ]
+  },
+  "observaciones": "Duplicado con mayúsculas y espacios: esperado HTTP 409, observado HTTP 400. UI sin probar.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

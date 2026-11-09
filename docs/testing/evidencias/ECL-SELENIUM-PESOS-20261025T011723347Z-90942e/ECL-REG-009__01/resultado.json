@@ -1,0 +1,320 @@
+{
+  "id_caso": "ECL-REG-009",
+  "inicio": "2026-10-25T01:17:37.590Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "capa": "Selenium Web + API + SQL",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.ecl.e69265ab765845f4a4062e180460c0d9@mismascotas.test",
+        "idUsuario": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+        "nombre": "QA Clínico ECL-REG-009"
+      }
+    ],
+    "mascotas": [
+      {
+        "idMascota": "3315e275-8677-4d7d-b514-f4d72955a37c",
+        "nombre": "QA ECL-REG-009 1"
+      }
+    ],
+    "eventos": [
+      "58159bfb-670f-48f1-a4c8-24d38611ec9b",
+      "2dfb4ffa-1bd1-4635-a9ed-df9b504dc06d"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "medicion_peso: una sola fila clínica nueva",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "medicion_peso: tipo, campos, fecha y autoría conservados",
+      "cumple": true,
+      "esperado": {
+        "tipo": "PESO",
+        "fecha": "2026-10-09T12:00:00-03:00",
+        "valorPeso": 99,
+        "autor": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8"
+      },
+      "observado": {
+        "idEvento": "2dfb4ffa-1bd1-4635-a9ed-df9b504dc06d",
+        "mascotaId": "3315e275-8677-4d7d-b514-f4d72955a37c",
+        "registradoPorId": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+        "registradoPorNombre": "QA Clínico ECL-REG-009",
+        "tipo": "PESO",
+        "fecha": "2026-10-09T15:00:00Z",
+        "nombre": null,
+        "dosis": null,
+        "valorPeso": 99,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": null,
+        "creadoEn": "2026-10-25T01:17:40.012566Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "medicion_peso: persistencia SQL e identidad de mascota/autor",
+      "cumple": true,
+      "esperado": {
+        "mascota": "3315e275-8677-4d7d-b514-f4d72955a37c",
+        "autor": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+        "fecha": "2026-10-09T12:00:00-03:00"
+      },
+      "observado": {
+        "id_evento": "2dfb4ffa-1bd1-4635-a9ed-df9b504dc06d",
+        "mascota_id": "3315e275-8677-4d7d-b514-f4d72955a37c",
+        "registrado_por_id": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+        "id_cliente": null,
+        "diagnostico": null,
+        "dosis": null,
+        "motivo": null,
+        "observaciones": null,
+        "tipo": "PESO",
+        "valor_peso": 99,
+        "nombre": null,
+        "fecha_eliminacion": null,
+        "fecha": "2026-10-09T15:00:00+00:00",
+        "creado_en": "2026-10-25T01:17:40.012566+00:00",
+        "actualizado_en": "2026-10-25T01:17:40.012567+00:00"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Las dos mediciones permanecen con IDs y valores propios",
+      "cumple": true,
+      "esperado": [
+        {
+          "id": "58159bfb-670f-48f1-a4c8-24d38611ec9b",
+          "valor": 10
+        },
+        {
+          "id": "2dfb4ffa-1bd1-4635-a9ed-df9b504dc06d",
+          "valor": 99
+        }
+      ],
+      "observado": [
+        {
+          "idEvento": "58159bfb-670f-48f1-a4c8-24d38611ec9b",
+          "mascotaId": "3315e275-8677-4d7d-b514-f4d72955a37c",
+          "registradoPorId": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+          "registradoPorNombre": "QA Clínico ECL-REG-009",
+          "tipo": "PESO",
+          "fecha": "2026-10-23T15:00:00Z",
+          "nombre": null,
+          "dosis": null,
+          "valorPeso": 10,
+          "motivo": null,
+          "diagnostico": null,
+          "observaciones": null,
+          "creadoEn": "2026-10-25T01:17:38.114665Z"
+        },
+        {
+          "idEvento": "2dfb4ffa-1bd1-4635-a9ed-df9b504dc06d",
+          "mascotaId": "3315e275-8677-4d7d-b514-f4d72955a37c",
+          "registradoPorId": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+          "registradoPorNombre": "QA Clínico ECL-REG-009",
+          "tipo": "PESO",
+          "fecha": "2026-10-09T15:00:00Z",
+          "nombre": null,
+          "dosis": null,
+          "valorPeso": 99,
+          "motivo": null,
+          "diagnostico": null,
+          "observaciones": null,
+          "creadoEn": "2026-10-25T01:17:40.012566Z"
+        }
+      ],
+      "defecto": ""
+    },
+    {
+      "nombre": "El historial ordena por fecha de medición descendente",
+      "cumple": true,
+      "esperado": "Fecha descendente",
+      "observado": [
+        "2026-10-23T15:00:00Z",
+        "2026-10-09T15:00:00Z"
+      ],
+      "defecto": ""
+    },
+    {
+      "nombre": "Peso actual calculado por fecha y no por orden de carga",
+      "cumple": true,
+      "esperado": 10,
+      "observado": 10,
+      "defecto": ""
+    },
+    {
+      "nombre": "Selenium: la ficha muestra el peso vigente",
+      "cumple": true,
+      "esperado": "10 kg",
+      "observado": "Peso actual\n10 kg",
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "preparación",
+      "metodo": "POST",
+      "ruta": "/mascotas/3315e275-8677-4d7d-b514-f4d72955a37c/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-10-23T12:00:00-03:00",
+        "valorPeso": 10
+      },
+      "http": 201,
+      "respuesta": {
+        "idEvento": "58159bfb-670f-48f1-a4c8-24d38611ec9b",
+        "mascotaId": "3315e275-8677-4d7d-b514-f4d72955a37c",
+        "registradoPorId": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+        "registradoPorNombre": "QA Clínico ECL-REG-009",
+        "tipo": "PESO",
+        "fecha": "2026-10-23T15:00:00Z",
+        "nombre": null,
+        "dosis": null,
+        "valorPeso": 10,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": null,
+        "creadoEn": "2026-10-25T01:17:38.114665441Z"
+      }
+    }
+  ],
+  "acciones_selenium": [
+    {
+      "accion": "Guardar formulario clínico mediante clic WebDriver",
+      "datos": {
+        "tipo": "PESO",
+        "fecha": "2026-10-09T12:00:00-03:00",
+        "valorPeso": 99
+      },
+      "fecha": "2026-10-25T01:17:39.950Z"
+    }
+  ],
+  "capturas": [
+    "antes.png",
+    "medicion_peso_formulario.png",
+    "medicion_peso_historial.png",
+    "peso_actual.png",
+    "despues.png"
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "3315e275-8677-4d7d-b514-f4d72955a37c",
+          "propietario_id": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-009 1",
+          "peso_actual": 10,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:17:38.103785+00:00",
+          "actualizado_en": "2026-10-25T01:17:38.118092+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "58159bfb-670f-48f1-a4c8-24d38611ec9b",
+          "mascota_id": "3315e275-8677-4d7d-b514-f4d72955a37c",
+          "registrado_por_id": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": null,
+          "tipo": "PESO",
+          "valor_peso": 10,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-23T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:17:38.114665+00:00",
+          "actualizado_en": "2026-10-25T01:17:38.114666+00:00"
+        }
+      ]
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "3315e275-8677-4d7d-b514-f4d72955a37c",
+          "propietario_id": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-009 1",
+          "peso_actual": 10,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:17:38.103785+00:00",
+          "actualizado_en": "2026-10-25T01:17:38.118092+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "2dfb4ffa-1bd1-4635-a9ed-df9b504dc06d",
+          "mascota_id": "3315e275-8677-4d7d-b514-f4d72955a37c",
+          "registrado_por_id": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": null,
+          "tipo": "PESO",
+          "valor_peso": 99,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-09T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:17:40.012566+00:00",
+          "actualizado_en": "2026-10-25T01:17:40.012567+00:00"
+        },
+        {
+          "id_evento": "58159bfb-670f-48f1-a4c8-24d38611ec9b",
+          "mascota_id": "3315e275-8677-4d7d-b514-f4d72955a37c",
+          "registrado_por_id": "d40d8c3f-b4f1-472a-8156-ac9af6b521e8",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": null,
+          "tipo": "PESO",
+          "valor_peso": 10,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-23T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:17:38.114665+00:00",
+          "actualizado_en": "2026-10-25T01:17:38.114666+00:00"
+        }
+      ]
+    }
+  },
+  "limites": [],
+  "navegador": {
+    "herramienta": "Selenium WebDriver",
+    "version_selenium": "4.51.0",
+    "nombre": "MicrosoftEdge",
+    "version": "156.0.4314.42"
+  },
+  "fin": "2026-10-25T01:17:41.277Z",
+  "id_ejecucion": "ECL-SELENIUM-PESOS-20261025T011723347Z-90942e__ECL-REG-009__01",
+  "fecha_hora": "2026-10-24T22:17:41.277-03:00",
+  "esperado_catalogo": "Se agrega al historial y el peso actual se calcula por fecha de medición más reciente no por fecha de carga",
+  "escenario": "Peso anterior a un registro más reciente",
+  "fundamento": "Acordado",
+  "ficha": "../entorno.json"
+}

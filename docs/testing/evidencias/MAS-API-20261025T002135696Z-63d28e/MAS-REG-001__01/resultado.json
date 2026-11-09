@@ -1,0 +1,296 @@
+{
+  "id_caso": "MAS-REG-001",
+  "inicio": "2026-10-25T00:21:36.147Z",
+  "resultado": "Fallida",
+  "motivo": "",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.mas.f1b5f151c96a44d29e17bc7ba8744332@mismascotas.test",
+        "idUsuario": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+        "plan": "Free"
+      },
+      {
+        "email": "qa.mas.a49b71f6a0e848aa82f49971b04f1d43@mismascotas.test",
+        "idUsuario": "5acc7f54-a906-4be9-b2f6-a44997208a79",
+        "plan": "Free"
+      }
+    ],
+    "mascotas": [
+      "418fdd4d-daa5-473c-a232-10422989768d"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Alta válida: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Alta válida: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+        "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:38.034691071Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Alta válida: lectura posterior idéntica",
+      "cumple": false,
+      "esperado": {
+        "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+        "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:38.034691071Z"
+      },
+      "observado": {
+        "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+        "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:38.034691Z"
+      },
+      "defecto": "MAS-PERSISTENCIA"
+    },
+    {
+      "nombre": "Una mascota activa adicional",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "No aparece ni se revela a un usuario sin acceso",
+      "cumple": true,
+      "esperado": "Listado ajeno vacío y 403 sin datos",
+      "observado": {
+        "lista": [],
+        "http": 403,
+        "error": {
+          "codigo": "ACCESO_DENEGADO",
+          "mensaje": "No tenes permisos para realizar esta accion sobre esta mascota",
+          "timestamp": "2026-10-25T00:21:38.217025911Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "SQL: exactamente una fila propia adicional",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción principal",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+        "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:38.034691071Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/418fdd4d-daa5-473c-a232-10422989768d",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+        "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+        "nombre": "QA MAS-REG-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:38.034691Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": [
+        {
+          "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+          "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+          "nombre": "QA MAS-REG-001",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:38.034691Z"
+        }
+      ]
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/418fdd4d-daa5-473c-a232-10422989768d",
+      "cuerpo": null,
+      "http": 403,
+      "respuesta": {
+        "codigo": "ACCESO_DENEGADO",
+        "mensaje": "No tenes permisos para realizar esta accion sobre esta mascota",
+        "timestamp": "2026-10-25T00:21:38.217025911Z"
+      }
+    }
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [],
+      "eventos": [],
+      "recordatorios": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "418fdd4d-daa5-473c-a232-10422989768d",
+          "propietario_id": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA MAS-REG-001",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T00:21:38.034691+00:00",
+          "actualizado_en": "2026-10-25T00:21:38.034693+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [],
+      "recordatorios": []
+    }
+  },
+  "limites": [],
+  "fin": "2026-10-25T00:21:38.433Z",
+  "capa": "API + SQL",
+  "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-001__01",
+  "esperado_catalogo": "Mascota persistida y visible solo a personas autorizadas",
+  "escenario": "Alta válida",
+  "fecha_hora": "2026-10-24T21:21:38.433-03:00",
+  "ficha": "../entorno.json",
+  "versiones": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.325838952Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "contenedor_id": "f8120c5e0b2b51617183fabe2ae9551b1c69f9b1ffd8f3374937b0d5df1c3f3b",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:52.420525904Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.545241728Z"
+    }
+  }
+}

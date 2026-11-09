@@ -1,0 +1,21 @@
+{
+  "id_corrida": "MAS-WEB-20261025T002445326Z-4b912d",
+  "tanda": "web",
+  "resultados": [
+    {
+      "id": "MAS-LIS-002",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-LIS-002__01/resultado.json"
+    },
+    {
+      "id": "MAS-ELI-001",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-ELI-001__01/resultado.json"
+    },
+    {
+      "id": "MAS-ELI-002",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-ELI-002__01/resultado.json"
+    }
+  ]
+}

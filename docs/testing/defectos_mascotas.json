@@ -1,0 +1,872 @@
+{
+  "DEF-MAS-PERSISTENCIA": {
+    "id": "DEF-MAS-PERSISTENCIA",
+    "estado": "Descartado: comparador QA",
+    "titulo": "Alta válida: lectura posterior idéntica",
+    "impacto": "Falso positivo por comparación exacta de creadoEn entre nanosegundos de Java y microsegundos de PostgreSQL.",
+    "casos": [
+      "MAS-REG-001",
+      "MAS-REG-003",
+      "MAS-REG-005"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-001__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-001__01/resultado.json",
+        "comprobacion": "Alta válida: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+          "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+          "nombre": "QA MAS-REG-001",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:38.034691071Z"
+        },
+        "observado": {
+          "idMascota": "418fdd4d-daa5-473c-a232-10422989768d",
+          "propietarioId": "1790dfbb-143e-4b2f-8909-baa76eadcf28",
+          "nombre": "QA MAS-REG-001",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:38.034691Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-001. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Nombre de 100 caracteres: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "748380b7-f694-435e-a956-4470d1cb154e",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.079062077Z"
+        },
+        "observado": {
+          "idMascota": "748380b7-f694-435e-a956-4470d1cb154e",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.079062Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Texto en límites exactos: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "ecc4ff5a-e507-4010-94bc-433dba432adc",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+          "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+          "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+          "creadoEn": "2026-10-25T00:21:40.117871250Z"
+        },
+        "observado": {
+          "idMascota": "ecc4ff5a-e507-4010-94bc-433dba432adc",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+          "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+          "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+          "creadoEn": "2026-10-25T00:21:40.117871Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad desconocida: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "297bc64b-4b3c-4e17-a548-8ffc2640d585",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.157172050Z"
+        },
+        "observado": {
+          "idMascota": "297bc64b-4b3c-4e17-a548-8ffc2640d585",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.157172Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Nacimiento válido: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "0f55d017-c3a6-42ad-80af-83f24ebef176",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": "2020-02-29",
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.198321148Z"
+        },
+        "observado": {
+          "idMascota": "0f55d017-c3a6-42ad-80af-83f24ebef176",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": "2020-02-29",
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.198321Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad aproximada en dias: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "602d9ed7-5fe1-4d8d-bb49-e13feffd05b6",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "dias",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.236764701Z"
+        },
+        "observado": {
+          "idMascota": "602d9ed7-5fe1-4d8d-bb49-e13feffd05b6",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "dias",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.236765Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad aproximada en semanas: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "202199bc-66c4-42dd-aa75-25a4d1174326",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "semanas",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.275117550Z"
+        },
+        "observado": {
+          "idMascota": "202199bc-66c4-42dd-aa75-25a4d1174326",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "semanas",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.275118Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad aproximada en meses: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "2500e0ba-a306-4fd5-a0b8-395fa00de68e",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "meses",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.311626900Z"
+        },
+        "observado": {
+          "idMascota": "2500e0ba-a306-4fd5-a0b8-395fa00de68e",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "meses",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.311627Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad aproximada en anios: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "b31cafd9-0faf-4d69-8f30-c8f646bfae3e",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "anios",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.347057593Z"
+        },
+        "observado": {
+          "idMascota": "b31cafd9-0faf-4d69-8f30-c8f646bfae3e",
+          "propietarioId": "85e23662-e7a5-4ef2-b8c4-776d0b1a9719",
+          "nombre": "QA Válida",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": true,
+          "edadValor": 1,
+          "edadUnidad": "anios",
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:40.347058Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-005__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-005__01/resultado.json",
+        "comprobacion": "Alta Premium por encima del cupo: lectura posterior idéntica",
+        "esperado": {
+          "idMascota": "ca05f94c-60c5-4f21-8d94-4293720d87d8",
+          "propietarioId": "10000000-0000-4000-8000-000000000004",
+          "nombre": "QA MAS-REG-005",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:42.877407559Z"
+        },
+        "observado": {
+          "idMascota": "ca05f94c-60c5-4f21-8d94-4293720d87d8",
+          "propietarioId": "10000000-0000-4000-8000-000000000004",
+          "nombre": "QA MAS-REG-005",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:42.877408Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-005. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ],
+    "tipo": "Instrumentación, sin defecto demostrado del producto",
+    "nota": "Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración."
+  },
+  "DEF-MAS-VAL-NOMBRE-DE-101-CARACTERES": {
+    "id": "DEF-MAS-VAL-NOMBRE-DE-101-CARACTERES",
+    "estado": "Abierto",
+    "titulo": "Nombre de 101 caracteres provoca HTTP 500",
+    "impacto": "Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Nombre de 101 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Nombre de 101 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-ESPECIE-DE-51-CARACTERES": {
+    "id": "DEF-MAS-VAL-ESPECIE-DE-51-CARACTERES",
+    "estado": "Abierto",
+    "titulo": "Especie de 51 caracteres provoca HTTP 500",
+    "impacto": "Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Especie de 51 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Especie de 51 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-RAZA-DE-101-CARACTERES": {
+    "id": "DEF-MAS-VAL-RAZA-DE-101-CARACTERES",
+    "estado": "Abierto",
+    "titulo": "Raza de 101 caracteres provoca HTTP 500",
+    "impacto": "Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Raza de 101 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Raza de 101 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-NOTAS-DE-256-CARACTERES": {
+    "id": "DEF-MAS-VAL-NOTAS-DE-256-CARACTERES",
+    "estado": "Abierto",
+    "titulo": "Notas de 256 caracteres provoca HTTP 500",
+    "impacto": "Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Notas de 256 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Notas de 256 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-FECHA-INEXISTENTE": {
+    "id": "DEF-MAS-VAL-FECHA-INEXISTENTE",
+    "estado": "Abierto",
+    "titulo": "Fecha inexistente provoca HTTP 500",
+    "impacto": "Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha inexistente: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha inexistente: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-FECHA-FUTURA": {
+    "id": "DEF-MAS-VAL-FECHA-FUTURA",
+    "estado": "Abierto",
+    "titulo": "Fecha futura se acepta con HTTP 201",
+    "impacto": "Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha futura: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha futura: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha futura: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha futura: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-EDAD-NEGATIVA": {
+    "id": "DEF-MAS-VAL-EDAD-NEGATIVA",
+    "estado": "Abierto",
+    "titulo": "Edad negativa se acepta con HTTP 201",
+    "impacto": "Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad negativa: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad negativa: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad negativa: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad negativa: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-UNIDAD-DE-EDAD-INVALIDA": {
+    "id": "DEF-MAS-VAL-UNIDAD-DE-EDAD-INVALIDA",
+    "estado": "Abierto",
+    "titulo": "Unidad de edad inválida provoca HTTP 500",
+    "impacto": "Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Unidad de edad inválida: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Unidad de edad inválida: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-PESO-CERO": {
+    "id": "DEF-MAS-VAL-PESO-CERO",
+    "estado": "Abierto",
+    "titulo": "Peso cero se acepta con HTTP 201",
+    "impacto": "Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso cero: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso cero: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso cero: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso cero: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-PESO-NEGATIVO": {
+    "id": "DEF-MAS-VAL-PESO-NEGATIVO",
+    "estado": "Abierto",
+    "titulo": "Peso negativo se acepta con HTTP 201",
+    "impacto": "Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso negativo: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso negativo: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso negativo: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso negativo: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-VAL-PESO-FUERA-DEL-LIMITE-DEL-FORMULARIO": {
+    "id": "DEF-MAS-VAL-PESO-FUERA-DEL-LIMITE-DEL-FORMULARIO",
+    "estado": "Abierto",
+    "titulo": "Peso fuera del límite del formulario provoca HTTP 500",
+    "impacto": "Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.",
+    "casos": [
+      "MAS-REG-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso fuera del límite del formulario: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso fuera del límite del formulario: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  },
+  "DEF-MAS-DETALLE": {
+    "id": "DEF-MAS-DETALLE",
+    "estado": "Descartado: comparador QA",
+    "titulo": "Detalle propio completo",
+    "impacto": "Falso positivo por comparación exacta de creadoEn entre nanosegundos de Java y microsegundos de PostgreSQL.",
+    "casos": [
+      "MAS-DET-001"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-DET-001__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-DET-001__01/resultado.json",
+        "comprobacion": "Detalle propio completo",
+        "esperado": {
+          "idMascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+          "propietarioId": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+          "nombre": "QA MAS-DET-001",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:43.661492148Z"
+        },
+        "observado": {
+          "http": 200,
+          "cuerpo": {
+            "idMascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+            "propietarioId": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+            "nombre": "QA MAS-DET-001",
+            "especie": "Perro",
+            "raza": null,
+            "fechaNacimiento": null,
+            "fechaAproximada": false,
+            "edadValor": null,
+            "edadUnidad": null,
+            "fotoPerfil": null,
+            "pesoActual": null,
+            "notas": "Datos ficticios de QA Mascotas",
+            "creadoEn": "2026-10-25T00:21:43.661492Z"
+          }
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-DET-001. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ],
+    "tipo": "Instrumentación, sin defecto demostrado del producto",
+    "nota": "Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración."
+  },
+  "DEF-MAS-EDICION-AJENA": {
+    "id": "DEF-MAS-EDICION-AJENA",
+    "estado": "Descartado: comparador QA",
+    "titulo": "Mascota propia sin cambios por el tercero",
+    "impacto": "Falso positivo por comparación exacta de creadoEn entre nanosegundos de Java y microsegundos de PostgreSQL.",
+    "casos": [
+      "MAS-EDI-003"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-EDI-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-EDI-003__01/resultado.json",
+        "comprobacion": "Mascota propia sin cambios por el tercero",
+        "esperado": {
+          "idMascota": "9d792d28-026b-481c-b87e-58736e28f563",
+          "propietarioId": "8c0c7a59-73b0-408b-92a9-4d4b9cfbe3a3",
+          "nombre": "QA MAS-EDI-003",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:47.460508670Z"
+        },
+        "observado": {
+          "idMascota": "9d792d28-026b-481c-b87e-58736e28f563",
+          "propietarioId": "8c0c7a59-73b0-408b-92a9-4d4b9cfbe3a3",
+          "nombre": "QA MAS-EDI-003",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:47.460509Z"
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-EDI-003. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ],
+    "tipo": "Instrumentación, sin defecto demostrado del producto",
+    "nota": "Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración."
+  },
+  "DEF-MAS-PESO-BASICO": {
+    "id": "DEF-MAS-PESO-BASICO",
+    "estado": "Abierto",
+    "titulo": "El perfil básico sobrescribe el peso sin crear una medición",
+    "impacto": "El perfil queda en 99 kg mientras el historial conserva su última medición de 10 kg.",
+    "casos": [
+      "MAS-EDI-004"
+    ],
+    "observaciones": [
+      {
+        "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-EDI-004__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-EDI-004__01/resultado.json",
+        "comprobacion": "PUT del perfil no sobrescribe peso actual",
+        "esperado": "El peso permanece 10 kg o se rechaza la modificación básica",
+        "observado": {
+          "httpPut": 200,
+          "pesoActual": 99
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-EDI-004. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-EDI-004__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-EDI-004__01/resultado.json",
+        "comprobacion": "PUT del perfil no sobrescribe peso actual",
+        "esperado": "El peso permanece 10 kg o se rechaza la modificación básica",
+        "observado": {
+          "httpPut": 200,
+          "pesoActual": 99
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-EDI-004. Ver la variante y solicitudes saneadas en la evidencia."
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id_corrida": "MAS-WEB-20261025T002329845Z-9149f7",
+  "capturada_en": "2026-10-24T21:23:29.850-03:00",
+  "capa": "web",
+  "proyecto": "mismascotas-web-testing",
+  "servicios": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.325838952Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "contenedor_id": "f8120c5e0b2b51617183fabe2ae9551b1c69f9b1ffd8f3374937b0d5df1c3f3b",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:52.420525904Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.545241728Z"
+    },
+    "frontend-web-testing": {
+      "imagen_id": "sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630",
+      "contenedor_id": "8de82e36aa48cbdccaddbf1d1b9b30fcc1f9e597db40bd7a81d6f0ffd70747df",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-25T00:14:19.528533211Z"
+    }
+  },
+  "origen_build": "No verificado: el commit del checkout no se atribuye a las imágenes.",
+  "catalogo_sha256": "ddc07e3f32728d1b91ff7cffd2b6eecbab5393b3646f855152b5c7680741e147",
+  "ejecutor_sha256": "11dd2d9d2da70349c808739a6e0d442723815ed59b3cc6139164a129abbbfada",
+  "biblioteca_sha256": "6dfa4a537152c04a35d1f6b8eb9ce87da68c73b5813120f32c8d06ccd20559fa",
+  "version_node": "v24.22.1",
+  "sin_restauracion": true,
+  "sql": "Solo lectura; fixtures nuevos por API. Seed original comparado antes/después.",
+  "huella_seed_antes": "9683f978c6396b74a86bee64605b659b"
+}

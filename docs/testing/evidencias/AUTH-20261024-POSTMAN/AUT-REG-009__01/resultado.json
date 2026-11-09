@@ -1,0 +1,18 @@
+{
+  "id_ejecucion": "AUTH-20261024-POSTMAN__AUT-REG-009__01",
+  "id_caso": "AUT-REG-009",
+  "resultado": "Bloqueada",
+  "estado_ejecutor_original": "PARCIAL",
+  "fecha_hora": "2026-10-24T20:35:24.760-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-REG-009",
+    "estado": "PARCIAL",
+    "verificaciones": 6,
+    "pendientes": 1,
+    "fallos": []
+  },
+  "observaciones": "API satisfactoria. Bloqueada para cierre: falta comprobar navegación directa a 2FA en UI.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

@@ -6,7 +6,8 @@ Este stack levanta un entorno independiente para testing y presentación de MisM
 
 - PostgreSQL 17.6;
 - backend Java 21;
-- frontend Web con Node 22 y Vinext.
+- frontend Web con Node 22 y Vinext;
+- Mailpit v1.31.5 para capturar correos QA.
 
 No reemplaza ni comparte la base de datos del entorno definido en
 `docker-compose.yml`.
@@ -20,7 +21,8 @@ La PC necesita únicamente:
 
 No requiere instalar Node, npm, Java, Maven ni PostgreSQL.
 
-Los puertos `3000` y `8080` deben estar disponibles.
+Los puertos `3000`, `8080` y `8025` deben estar disponibles. Mailpit publica
+su bandeja y API únicamente en la interfaz local de la PC.
 
 Si el stack de desarrollo ya está usando esos puertos, pueden definirse
 temporalmente `WEB_TESTING_FRONTEND_PORT` y
@@ -55,20 +57,31 @@ conectarse a `db-web-testing`, no a `localhost`.
 ## SMTP y 2FA
 
 El registro y el inicio de sesión generan un código de verificación de dos
-factores. Para recibirlo deben configurarse:
+factores. El Compose dirige el SMTP del backend a `mailpit-web-testing:1025`,
+sin autenticación ni STARTTLS, dentro de la red QA. Estos valores tienen
+prioridad sobre los `MAIL_*` del archivo local para mantener el correo de
+testing en Mailpit.
 
-- `MAIL_HOST`;
-- `MAIL_PORT`;
-- `MAIL_USERNAME`;
-- `MAIL_PASSWORD`;
-- las opciones `MAIL_SMTP_*` correspondientes al proveedor.
+Abrir <http://localhost:8025>, buscar el destinatario con el que se registró
+o inició sesión, abrir el mensaje y copiar el último código. También se
+pueden utilizar direcciones ficticias como las documentadas en `cuentas_qa.md`.
+Los mensajes se capturan localmente; no llegan a Gmail ni a otro buzón externo.
 
-Con Gmail normalmente se necesita una contraseña de aplicación. No debe
-versionarse esa contraseña.
+Docker descarga la imagen de Mailpit al iniciar por primera vez. No requiere
+una instalación adicional en Windows ni credenciales de un proveedor de correo.
 
-Si SMTP no está configurado o rechaza la conexión, el backend puede iniciar,
-pero el código no llegará por correo y no será posible completar el flujo de
-registro/login desde la Web. El stack no desactiva ni evita 2FA.
+El backend espera a que Mailpit esté saludable. El stack mantiene el flujo
+real de 2FA. El detalle de la configuración, la API y las comprobaciones está
+en `mailpit_qa.md`.
+
+Para incorporar Mailpit en una instalación ya construida:
+
+```powershell
+docker compose --env-file .env.web-testing -f docker-compose.web-testing.yml up -d --no-build --wait mailpit-web-testing backend-web-testing frontend-web-testing
+```
+
+La actualización recrea el backend cuando cambia su configuración; conserva
+la base QA. No usar `down -v` para agregar Mailpit.
 
 ## Construcción y arranque
 
@@ -99,6 +112,11 @@ navegador del usuario, no dentro de la red Docker.
 
 - Web: <http://localhost:3000>
 - Backend: <http://localhost:8080>
+- Correos y API de Mailpit: <http://localhost:8025>
+
+El puerto de la bandeja puede cambiarse con `WEB_TESTING_MAILPIT_PORT`.
+Si se define en `.env.web-testing`, pasar también `--env-file .env.web-testing`
+al comando Compose para que se aplique a la publicación del puerto.
 
 PostgreSQL no se publica al host. El backend accede mediante la red exclusiva
 `mismascotas_web_testing_network`.
@@ -130,8 +148,37 @@ docker compose -f docker-compose.web-testing.yml down
 ```
 
 Este comando conserva la base de datos de testing.
+Los correos no usan un volumen propio: reiniciar el mismo contenedor Mailpit
+conserva su bandeja, pero eliminarlo o recrearlo la vacía.
 
-## Reset completo de la base
+## Carga y restauración habitual del seed QA
+
+Una vez iniciado el stack, desde la raíz del repositorio y en PowerShell:
+
+```powershell
+.\scripts\qa\Restablecer-QA.ps1
+```
+
+Sin argumentos solo valida el destino; no modifica datos. Para reemplazar los
+datos QA por las seis cuentas y sus mascotas, eventos y recordatorios:
+
+```powershell
+.\scripts\qa\Restablecer-QA.ps1 -ConfirmarRestablecimiento
+```
+
+El procedimiento valida proyecto, contenedores, base y volumen; detiene el
+backend QA, respalda la base anterior, vacía las tablas de negocio y carga el
+seed en una transacción. Solo después de confirmar limpia Mailpit y reinicia
+el backend si estaba encendido. No borra el volumen ni modifica el esquema.
+
+Los respaldos y evidencias quedan en `.qa/restauraciones/`, fuera de Git.
+Las credenciales están en `cuentas_qa.md`; el detalle, en `seed_qa.md`.
+La carga es explícita: iniciar Docker por sí solo no inserta los datos QA.
+
+## Reset completo de la estructura (excepcional)
+
+Este procedimiento elimina el volumen y sus datos. Reservarlo para cambios
+estructurales o una instalación desde cero, no para repetir pruebas habituales.
 
 ```bash
 docker compose -f docker-compose.web-testing.yml down -v
@@ -140,7 +187,8 @@ docker compose -f docker-compose.web-testing.yml up -d
 
 El reset elimina exclusivamente el volumen
 `mismascotas_web_testing_db`. Al iniciarse nuevamente se ejecutan
-`DB/01-init.sql` y `DB/02-seed.sql`.
+`DB/01-init.sql` y `DB/02-seed.sql`. Después se debe ejecutar la restauración
+QA anterior: el seed de negocio no se incorpora automáticamente al arranque.
 
 ## Reconstrucción después de cambios
 
@@ -164,8 +212,8 @@ docker compose -f docker-compose.web-testing.yml up -d
 docker compose -f docker-compose.web-testing.yml ps
 ```
 
-La DB y el backend poseen healthchecks. El frontend espera que el backend esté
-saludable antes de iniciar.
+La DB, Mailpit, el backend y el frontend poseen healthchecks. El backend espera
+a la DB y a Mailpit; el frontend espera al backend.
 
 ## Aislamiento
 
@@ -175,6 +223,8 @@ El stack utiliza:
 - volumen: `mismascotas_web_testing_db`;
 - red: `mismascotas_web_testing_network`;
 - servicios: `db-web-testing`, `backend-web-testing` y
-  `frontend-web-testing`.
+  `frontend-web-testing`, más `mailpit-web-testing`;
+- SMTP de Mailpit: solo interno en la red QA, sin publicar el puerto `1025` al host;
+- bandeja Mailpit: publicada en `127.0.0.1:8025` por defecto.
 
 No comparte volumen ni red con el Docker de desarrollo.

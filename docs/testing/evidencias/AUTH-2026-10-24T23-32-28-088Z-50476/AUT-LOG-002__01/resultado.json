@@ -1,0 +1,18 @@
+{
+  "id_ejecucion": "AUTH-2026-10-24T23-32-28-088Z-50476__AUT-LOG-002__01",
+  "id_caso": "AUT-LOG-002",
+  "resultado": "Aprobada",
+  "estado_ejecutor_original": "APROBADO_API",
+  "fecha_hora": "2026-10-24T20:32:43.018-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-LOG-002",
+    "estado": "APROBADO_API",
+    "verificaciones": 6,
+    "pendientes": 0,
+    "fallos": []
+  },
+  "observaciones": "6 verificaciones de API satisfactorias. UI sin probar; sin certificación SQL completa.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

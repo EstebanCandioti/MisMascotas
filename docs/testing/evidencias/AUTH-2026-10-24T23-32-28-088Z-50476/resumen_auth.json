@@ -1,0 +1,264 @@
+{
+  "inicio": "2026-10-24T23:32:28.088Z",
+  "fin": "2026-10-24T23:32:43.018Z",
+  "alcance": "API Auth; no certifica interfaz ni integridad SQL completa.",
+  "error_general": false,
+  "errores_ejecucion": 0,
+  "resultados": [
+    {
+      "id": "AUT-REG-001",
+      "estado": "APROBADO_API",
+      "verificaciones": 5,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-002",
+      "estado": "APROBADO_API",
+      "verificaciones": 5,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-003",
+      "estado": "APROBADO_API",
+      "verificaciones": 5,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-004",
+      "estado": "APROBADO_API",
+      "verificaciones": 8,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-005",
+      "estado": "APROBADO_API",
+      "verificaciones": 5,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-006",
+      "estado": "APROBADO_API",
+      "verificaciones": 8,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-007",
+      "estado": "APROBADO_API",
+      "verificaciones": 6,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-008",
+      "estado": "APROBADO_API",
+      "verificaciones": 12,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-009",
+      "estado": "PARCIAL",
+      "verificaciones": 6,
+      "pendientes": 1,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-010",
+      "estado": "APROBADO_API",
+      "verificaciones": 8,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-011",
+      "estado": "APROBADO_API",
+      "verificaciones": 6,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-012",
+      "estado": "APROBADO_API",
+      "verificaciones": 9,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-013",
+      "estado": "APROBADO_API",
+      "verificaciones": 7,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-014",
+      "estado": "APROBADO_API",
+      "verificaciones": 8,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-015",
+      "estado": "APROBADO_API",
+      "verificaciones": 8,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-016",
+      "estado": "APROBADO_API",
+      "verificaciones": 10,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-REG-017",
+      "estado": "FALLÓ",
+      "verificaciones": 3,
+      "pendientes": 0,
+      "fallos": [
+        "AUT-REG-017 | HTTP 409: rechazo esperado"
+      ]
+    },
+    {
+      "id": "AUT-LOG-001",
+      "estado": "APROBADO_API",
+      "verificaciones": 9,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-LOG-002",
+      "estado": "APROBADO_API",
+      "verificaciones": 6,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-LOG-003",
+      "estado": "APROBADO_API",
+      "verificaciones": 10,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-LOG-004",
+      "estado": "APROBADO_API",
+      "verificaciones": 9,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-LOG-005",
+      "estado": "APROBADO_API",
+      "verificaciones": 9,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-LOG-006",
+      "estado": "APROBADO_API",
+      "verificaciones": 10,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-2FA-001",
+      "estado": "APROBADO_API",
+      "verificaciones": 10,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-2FA-002",
+      "estado": "APROBADO_API",
+      "verificaciones": 12,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-2FA-003",
+      "estado": "APROBADO_API",
+      "verificaciones": 13,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-2FA-004",
+      "estado": "BLOQUEADO",
+      "verificaciones": 1,
+      "pendientes": 0,
+      "fallos": [
+        "AUT-2FA-004 | BLOQUEADO: BLOQUEADO: activar qa_esperar_vencimientos y usar pre-auth con vigencia mayor que el código."
+      ]
+    },
+    {
+      "id": "AUT-2FA-005",
+      "estado": "BLOQUEADO",
+      "verificaciones": 1,
+      "pendientes": 0,
+      "fallos": [
+        "AUT-2FA-005 | BLOQUEADO: BLOQUEADO: el backend no ofrece endpoint ni contrato de reenvío de registro."
+      ]
+    },
+    {
+      "id": "AUT-2FA-006",
+      "estado": "BLOQUEADO",
+      "verificaciones": 1,
+      "pendientes": 0,
+      "fallos": [
+        "AUT-2FA-006 | BLOQUEADO: BLOQUEADO: el backend no ofrece endpoint ni contrato de reenvío de registro."
+      ]
+    },
+    {
+      "id": "AUT-SES-001",
+      "estado": "APROBADO_API",
+      "verificaciones": 9,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-SES-002",
+      "estado": "APROBADO_API",
+      "verificaciones": 13,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-SES-003",
+      "estado": "APROBADO_API",
+      "verificaciones": 13,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-SES-004",
+      "estado": "APROBADO_API",
+      "verificaciones": 9,
+      "pendientes": 0,
+      "fallos": []
+    },
+    {
+      "id": "AUT-SES-005",
+      "estado": "FALLÓ",
+      "verificaciones": 6,
+      "pendientes": 0,
+      "fallos": [
+        "AUT-SES-005 | Como máximo una renovación simultánea emite sesión"
+      ]
+    },
+    {
+      "id": "AUT-SES-006",
+      "estado": "PARCIAL",
+      "verificaciones": 12,
+      "pendientes": 1,
+      "fallos": []
+    }
+  ]
+}

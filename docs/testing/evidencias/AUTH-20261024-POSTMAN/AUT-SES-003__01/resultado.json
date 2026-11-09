@@ -1,0 +1,18 @@
+{
+  "id_ejecucion": "AUTH-20261024-POSTMAN__AUT-SES-003__01",
+  "id_caso": "AUT-SES-003",
+  "resultado": "Aprobada",
+  "estado_ejecutor_original": "APROBADO_API",
+  "fecha_hora": "2026-10-24T20:35:24.760-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-SES-003",
+    "estado": "APROBADO_API",
+    "verificaciones": 13,
+    "pendientes": 0,
+    "fallos": []
+  },
+  "observaciones": "13 verificaciones de API satisfactorias. UI sin probar; sin certificación SQL completa.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

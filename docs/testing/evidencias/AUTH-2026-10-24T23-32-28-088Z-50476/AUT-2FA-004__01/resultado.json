@@ -1,0 +1,20 @@
+{
+  "id_ejecucion": "AUTH-2026-10-24T23-32-28-088Z-50476__AUT-2FA-004__01",
+  "id_caso": "AUT-2FA-004",
+  "resultado": "Bloqueada",
+  "estado_ejecutor_original": "BLOQUEADO",
+  "fecha_hora": "2026-10-24T20:32:43.018-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-2FA-004",
+    "estado": "BLOQUEADO",
+    "verificaciones": 1,
+    "pendientes": 0,
+    "fallos": [
+      "AUT-2FA-004 | BLOQUEADO: BLOQUEADO: activar qa_esperar_vencimientos y usar pre-auth con vigencia mayor que el código."
+    ]
+  },
+  "observaciones": "No se esperó el vencimiento real; requiere pre-auth con vigencia mayor que el código. UI sin probar.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

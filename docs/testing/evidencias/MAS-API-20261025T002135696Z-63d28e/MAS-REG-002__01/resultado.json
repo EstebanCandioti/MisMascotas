@@ -1,0 +1,325 @@
+{
+  "id_caso": "MAS-REG-002",
+  "inicio": "2026-10-25T00:21:38.444Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.mas.1b975d69fa8a42b0a27881db3f1a9b1a@mismascotas.test",
+        "idUsuario": "cffcac7c-ed7e-4ef6-8cc4-e6778cbf27d0",
+        "plan": "Free"
+      }
+    ],
+    "mascotas": []
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Obligatorios variante 1: 400 por campos",
+      "cumple": true,
+      "esperado": "400 ERROR_VALIDACION",
+      "observado": {
+        "http": 400,
+        "cuerpo": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "nombre: El nombre es obligatorio",
+          "timestamp": "2026-10-25T00:21:39.137938704Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Error identifica nombre en variante 1",
+      "cumple": true,
+      "esperado": "nombre",
+      "observado": "nombre: El nombre es obligatorio",
+      "defecto": ""
+    },
+    {
+      "nombre": "Obligatorios variante 2: 400 por campos",
+      "cumple": true,
+      "esperado": "400 ERROR_VALIDACION",
+      "observado": {
+        "http": 400,
+        "cuerpo": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "especie: La especie es obligatoria",
+          "timestamp": "2026-10-25T00:21:39.149855941Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Error identifica especie en variante 2",
+      "cumple": true,
+      "esperado": "especie",
+      "observado": "especie: La especie es obligatoria",
+      "defecto": ""
+    },
+    {
+      "nombre": "Obligatorios variante 3: 400 por campos",
+      "cumple": true,
+      "esperado": "400 ERROR_VALIDACION",
+      "observado": {
+        "http": 400,
+        "cuerpo": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "nombre: El nombre es obligatorio; especie: La especie es obligatoria",
+          "timestamp": "2026-10-25T00:21:39.159669465Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Error identifica nombre en variante 3",
+      "cumple": true,
+      "esperado": "nombre",
+      "observado": "nombre: El nombre es obligatorio; especie: La especie es obligatoria",
+      "defecto": ""
+    },
+    {
+      "nombre": "Error identifica especie en variante 3",
+      "cumple": true,
+      "esperado": "especie",
+      "observado": "nombre: El nombre es obligatorio; especie: La especie es obligatoria",
+      "defecto": ""
+    },
+    {
+      "nombre": "Obligatorios variante 4: 400 por campos",
+      "cumple": true,
+      "esperado": "400 ERROR_VALIDACION",
+      "observado": {
+        "http": 400,
+        "cuerpo": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "nombre: El nombre es obligatorio",
+          "timestamp": "2026-10-25T00:21:39.168043012Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Error identifica nombre en variante 4",
+      "cumple": true,
+      "esperado": "nombre",
+      "observado": "nombre: El nombre es obligatorio",
+      "defecto": ""
+    },
+    {
+      "nombre": "Obligatorios variante 5: 400 por campos",
+      "cumple": true,
+      "esperado": "400 ERROR_VALIDACION",
+      "observado": {
+        "http": 400,
+        "cuerpo": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "especie: La especie es obligatoria",
+          "timestamp": "2026-10-25T00:21:39.177092996Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Error identifica especie en variante 5",
+      "cumple": true,
+      "esperado": "especie",
+      "observado": "especie: La especie es obligatoria",
+      "defecto": ""
+    },
+    {
+      "nombre": "No hay mascotas activas tras rechazar obligatorios",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "SQL: rechazo sin fila parcial ni cambios previos",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción principal",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "nombre: El nombre es obligatorio",
+        "timestamp": "2026-10-25T00:21:39.137938704Z"
+      }
+    },
+    {
+      "fase": "acción: obligatorios",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Obligatorios",
+        "especie": "",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "especie: La especie es obligatoria",
+        "timestamp": "2026-10-25T00:21:39.149855941Z"
+      }
+    },
+    {
+      "fase": "acción: obligatorios",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "",
+        "especie": "",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "nombre: El nombre es obligatorio; especie: La especie es obligatoria",
+        "timestamp": "2026-10-25T00:21:39.159669465Z"
+      }
+    },
+    {
+      "fase": "acción: obligatorios",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": null,
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "nombre: El nombre es obligatorio",
+        "timestamp": "2026-10-25T00:21:39.168043012Z"
+      }
+    },
+    {
+      "fase": "acción: obligatorios",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Obligatorios",
+        "especie": null,
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "especie: La especie es obligatoria",
+        "timestamp": "2026-10-25T00:21:39.177092996Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    }
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [],
+      "eventos": [],
+      "recordatorios": []
+    },
+    "despues": {
+      "mascotas": [],
+      "eventos": [],
+      "recordatorios": []
+    }
+  },
+  "limites": [],
+  "fin": "2026-10-25T00:21:39.375Z",
+  "capa": "API + SQL",
+  "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-REG-002__01",
+  "esperado_catalogo": "Validación por campo sin mascota parcial",
+  "escenario": "Campos obligatorios faltantes",
+  "fecha_hora": "2026-10-24T21:21:39.375-03:00",
+  "ficha": "../entorno.json",
+  "versiones": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.325838952Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "contenedor_id": "f8120c5e0b2b51617183fabe2ae9551b1c69f9b1ffd8f3374937b0d5df1c3f3b",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:52.420525904Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.545241728Z"
+    }
+  }
+}

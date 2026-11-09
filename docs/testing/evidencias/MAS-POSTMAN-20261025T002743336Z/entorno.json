@@ -1,0 +1,11 @@
+{
+  "id_corrida": "MAS-POSTMAN-20261025T002743336Z",
+  "capturada_en": "2026-10-24T21:27:43.336-03:00",
+  "backend": {
+    "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+    "proyecto": "mismascotas-web-testing",
+    "salud": "healthy"
+  },
+  "origen_codigo_build": "No verificado",
+  "alcance": "API. Smoke del artefacto Postman en Newman 6.2.3; sin certificación SQL o UI."
+}

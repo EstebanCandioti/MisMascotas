@@ -1,0 +1,25 @@
+{
+  "id_caso": "ECL-EDI-001",
+  "inicio": "2026-10-25T01:19:14.995Z",
+  "resultado": "Bloqueada",
+  "motivo": "El catálogo mantiene Pendiente de permisos para corrección permitida. Falta cerrar autorización y trazabilidad antes de ejecutar la mutación.",
+  "capa": "Contrato pendiente; sin ejecución funcional",
+  "datos": {
+    "usuarios": [],
+    "mascotas": [],
+    "eventos": []
+  },
+  "comprobaciones": [],
+  "solicitudes": [],
+  "acciones_selenium": [],
+  "capturas": [],
+  "sql": {},
+  "limites": [],
+  "fin": "2026-10-25T01:19:14.996Z",
+  "id_ejecucion": "ECL-SELENIUM-PERMISOS-20261025T011912682Z-582d26__ECL-EDI-001__01",
+  "fecha_hora": "2026-10-24T22:19:14.996-03:00",
+  "esperado_catalogo": "Se actualiza el evento correcto con trazabilidad sin alterar otros eventos",
+  "escenario": "Corrección permitida",
+  "fundamento": "Pendiente de permisos",
+  "ficha": "../entorno.json"
+}

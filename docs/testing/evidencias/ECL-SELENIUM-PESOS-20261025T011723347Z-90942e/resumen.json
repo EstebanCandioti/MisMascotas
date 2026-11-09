@@ -1,0 +1,36 @@
+{
+  "id_corrida": "ECL-SELENIUM-PESOS-20261025T011723347Z-90942e",
+  "tanda": "pesos",
+  "resultados": [
+    {
+      "id": "ECL-REG-005",
+      "resultado": "Bloqueada",
+      "motivo": "No hay contrato específico de PUT de carga inicial que cree una medición histórica. El PUT del perfil básico no se sustituye por ese flujo; POST PESO se prueba en otros casos.",
+      "evidencia": "ECL-REG-005__01/resultado.json"
+    },
+    {
+      "id": "ECL-REG-006",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-REG-006__01/resultado.json"
+    },
+    {
+      "id": "ECL-REG-007",
+      "resultado": "Fallida",
+      "motivo": "",
+      "evidencia": "ECL-REG-007__01/resultado.json"
+    },
+    {
+      "id": "ECL-REG-008",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-REG-008__01/resultado.json"
+    },
+    {
+      "id": "ECL-REG-009",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-REG-009__01/resultado.json"
+    }
+  ]
+}

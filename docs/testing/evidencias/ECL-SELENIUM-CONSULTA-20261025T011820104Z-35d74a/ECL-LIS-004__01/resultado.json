@@ -1,0 +1,25 @@
+{
+  "id_caso": "ECL-LIS-004",
+  "inicio": "2026-10-25T01:18:32.248Z",
+  "resultado": "Bloqueada",
+  "motivo": "Falta el acceso compartido aceptado de Familia/Cuidador en la aplicación.",
+  "capa": "Contrato pendiente; sin ejecución funcional",
+  "datos": {
+    "usuarios": [],
+    "mascotas": [],
+    "eventos": []
+  },
+  "comprobaciones": [],
+  "solicitudes": [],
+  "acciones_selenium": [],
+  "capturas": [],
+  "sql": {},
+  "limites": [],
+  "fin": "2026-10-25T01:18:32.248Z",
+  "id_ejecucion": "ECL-SELENIUM-CONSULTA-20261025T011820104Z-35d74a__ECL-LIS-004__01",
+  "fecha_hora": "2026-10-24T22:18:32.248-03:00",
+  "esperado_catalogo": "Puede consultar según permisos sin editar perfil de mascota",
+  "escenario": "Acceso compartido",
+  "fundamento": "Acordado",
+  "ficha": "../entorno.json"
+}

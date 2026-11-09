@@ -1,0 +1,25 @@
+{
+  "id_caso": "ECL-REG-005",
+  "inicio": "2026-10-25T01:17:23.837Z",
+  "resultado": "Bloqueada",
+  "motivo": "No hay contrato específico de PUT de carga inicial que cree una medición histórica. El PUT del perfil básico no se sustituye por ese flujo; POST PESO se prueba en otros casos.",
+  "capa": "Contrato pendiente; sin ejecución funcional",
+  "datos": {
+    "usuarios": [],
+    "mascotas": [],
+    "eventos": []
+  },
+  "comprobaciones": [],
+  "solicitudes": [],
+  "acciones_selenium": [],
+  "capturas": [],
+  "sql": {},
+  "limites": [],
+  "fin": "2026-10-25T01:17:23.837Z",
+  "id_ejecucion": "ECL-SELENIUM-PESOS-20261025T011723347Z-90942e__ECL-REG-005__01",
+  "fecha_hora": "2026-10-24T22:17:23.838-03:00",
+  "esperado_catalogo": "Queda primer peso en el historial y disponible para consultas clínicas",
+  "escenario": "Carga inicial de peso",
+  "fundamento": "Acordado",
+  "ficha": "../entorno.json"
+}

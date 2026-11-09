@@ -1,0 +1,30 @@
+{
+  "id_corrida": "ECL-SELENIUM-CONSULTA-20261025T011820104Z-35d74a",
+  "tanda": "consulta",
+  "resultados": [
+    {
+      "id": "ECL-LIS-001",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-LIS-001__01/resultado.json"
+    },
+    {
+      "id": "ECL-LIS-002",
+      "resultado": "Bloqueada",
+      "motivo": "Se probaron tipo y limpiar, pero falta el filtro por fecha del catálogo. Caso parcial que permanece Bloqueada.",
+      "evidencia": "ECL-LIS-002__01/resultado.json"
+    },
+    {
+      "id": "ECL-LIS-003",
+      "resultado": "Bloqueada",
+      "motivo": "No hay gráfico de evolución disponible para comprobar ejes y valores. El listado de pesos no sustituye al gráfico.",
+      "evidencia": "ECL-LIS-003__01/resultado.json"
+    },
+    {
+      "id": "ECL-LIS-004",
+      "resultado": "Bloqueada",
+      "motivo": "Falta el acceso compartido aceptado de Familia/Cuidador en la aplicación.",
+      "evidencia": "ECL-LIS-004__01/resultado.json"
+    }
+  ]
+}

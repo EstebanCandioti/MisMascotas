@@ -1,0 +1,18 @@
+{
+  "id_ejecucion": "AUTH-2026-10-24T23-32-28-088Z-50476__AUT-SES-006__01",
+  "id_caso": "AUT-SES-006",
+  "resultado": "Bloqueada",
+  "estado_ejecutor_original": "PARCIAL",
+  "fecha_hora": "2026-10-24T20:32:43.018-03:00",
+  "fecha_corresponde_a": "Cierre de corrida; no se conservó marca individual por caso.",
+  "comprobaciones_originales": {
+    "id": "AUT-SES-006",
+    "estado": "PARCIAL",
+    "verificaciones": 12,
+    "pendientes": 1,
+    "fallos": []
+  },
+  "observaciones": "Access anterior aceptado tras renovar. Bloqueada para cierre: falta comprobar rechazo tras vencimiento real. UI sin probar.",
+  "ficha": "../entorno.json",
+  "fuente": "../resumen_auth.json"
+}

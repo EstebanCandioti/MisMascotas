@@ -1,8 +1,12 @@
 {
   "info": {
-    "name": "MisMascotas - Auth (CU1 + CU2 2FA + Refresh)",
-    "description": "Colección especializada para el flujo Auth actual: registro/login con preautenticación, 2FA, access token, refresh token rotativo, logout y múltiples dispositivos. Configurar email, password y el último código recibido por email. No contiene credenciales ni tokens reales.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "_postman_id": "c0689999-0fe3-4a89-8d87-4102c37ee185",
+    "name": "MisMascotas - Auth QA (35 casos CSV)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Casos AUT-REG-001 a AUT-SES-006 del CSV. Mailpit automático. Cada caso prepara datos aislados. Resultados API; ver docs/testing/auth_postman.md para bloqueos y cobertura parcial. Genera cuentas temporales; no restaura la base."
+  },
+  "auth": {
+    "type": "noauth"
   },
   "variable": [
     {
@@ -11,483 +15,1326 @@
       "type": "string"
     },
     {
-      "key": "email",
-      "value": "",
+      "key": "mailpitUrl",
+      "value": "http://localhost:8025",
       "type": "string"
     },
     {
-      "key": "password",
-      "value": "",
+      "key": "qa_mail_timeout_ms",
+      "value": "30000",
       "type": "string"
     },
     {
-      "key": "codigo",
-      "value": "",
+      "key": "qa_esperar_vencimientos",
+      "value": "false",
       "type": "string"
     },
     {
-      "key": "preAuthToken",
-      "value": "",
+      "key": "qa_codigo_ttl_ms",
+      "value": "600000",
       "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "/* Biblioteca incorporada a la colección por Generar-AuthPostman.mjs.",
+          " * Los secretos viven únicamente en el contexto local de cada solicitud. */",
+          "function crearQA(pm) {",
+          "    const id = pm.info.requestName.split(' ')[0];",
+          "    const obtener = (k, defecto) => pm.variables.get(k) ?? defecto;",
+          "    const api = String(obtener('baseUrl', 'http://localhost:8080')).replace(/\\/$/, '');",
+          "    const mail = String(obtener('mailpitUrl', 'http://localhost:8025')).replace(/\\/$/, '');",
+          "    let contexto = {};",
+          "    let fallo = false;",
+          "    let parcial = false;",
+          "    const pausa = ms => new Promise(resolve => setTimeout(resolve, ms));",
+          "    const registrar = (nombre, condicion) => {",
+          "        pm.test(id + ' | ' + nombre, () => {",
+          "            if (!condicion) pm.expect.fail(nombre);",
+          "        });",
+          "        if (!condicion) { fallo = true; throw new Error(nombre); }",
+          "    };",
+          "    const pendiente = motivo => {",
+          "        parcial = true;",
+          "        pm.test.skip(id + ' | PENDIENTE: ' + motivo, () => {});",
+          "    };",
+          "    function resultado(estado, detalle) {",
+          "        const datos = JSON.parse(obtener('qa_resultados', '{}'));",
+          "        datos[id] = { estado, detalle, fecha: new Date().toISOString() };",
+          "        pm.variables.set('qa_resultados', JSON.stringify(datos));",
+          "        pm.visualizer.set('<h3>{{id}}: {{estado}}</h3><p>{{detalle}}</p>', { id, estado, detalle });",
+          "    }",
+          "    async function enviar(ruta, metodo = 'GET', datos, token = '') {",
+          "        const header = { 'Content-Type': 'application/json' };",
+          "        if (token) header.Authorization = 'Bearer ' + token;",
+          "        try {",
+          "            return await new Promise((resolve, reject) => pm.sendRequest({ url: ruta.startsWith('http') ? ruta : api + ruta,",
+          "                method: metodo, header, auth: { type: 'noauth' },",
+          "                ...(datos === undefined ? {} : { body: { mode: 'raw', raw: JSON.stringify(datos) } }) },",
+          "                (error, respuesta) => error ? reject(error) : resolve(respuesta)));",
+          "        } catch { throw new Error('No se pudo completar una solicitud HTTP auxiliar. Revisar backend/Mailpit.'); }",
+          "    }",
+          "    const json = r => { try { return r.json(); } catch { throw new Error('La respuesta debe ser JSON.'); } };",
+          "    function urlLocal(valor) {",
+          "        return /^http:\\/\\/(localhost|127\\.0\\.0\\.1)(:\\d+)?$/.test(valor);",
+          "    }",
+          "    async function mensajes(email) {",
+          "        const r = await enviar(mail + '/api/v1/search?query=' + encodeURIComponent('to:' + email) + '&limit=500');",
+          "        if (r.code !== 200) throw new Error('Mailpit no responde HTTP 200.');",
+          "        const b = json(r);",
+          "        if (!Array.isArray(b.messages)) throw new Error('Respuesta de búsqueda de Mailpit inesperada.');",
+          "        return b.messages;",
+          "    }",
+          "    async function leerCodigo(email, previos, inicio) {",
+          "        const limite = Date.now() + Number(obtener('qa_mail_timeout_ms', 30000));",
+          "        while (Date.now() < limite) {",
+          "            for (const m of await mensajes(email)) {",
+          "                if (previos.includes(m.ID)) continue;",
+          "                const r = await enviar(mail + '/api/v1/message/' + encodeURIComponent(m.ID));",
+          "                if (r.code !== 200) throw new Error('No se pudo leer un mensaje de Mailpit.');",
+          "                const d = json(r);",
+          "                if (!(d.To || []).some(t => String(t.Address).toLowerCase() === email.toLowerCase())) continue;",
+          "                if (Date.parse(d.Date || m.Created) < inicio - 2000) continue;",
+          "                const coincidencia = String(d.Text || '').match(/Tu codigo de verificacion es:\\s*(\\d{6})(?!\\d)/);",
+          "                if (coincidencia) return coincidencia[1];",
+          "            }",
+          "            await pausa(400);",
+          "        }",
+          "        throw new Error('No llegó un código 2FA nuevo para el destinatario dentro del tiempo permitido.');",
+          "    }",
+          "    function nuevo() {",
+          "        const sufijo = pm.variables.replaceIn('{{$guid}}').replace(/-/g, '').toLowerCase();",
+          "        return { nombre: 'QA Auth ' + id, email: 'qa.auth.' + sufijo + '@mismascotas.test', password: 'QaAuth2026!' };",
+          "    }",
+          "    function preauth(r) {",
+          "        registrar('HTTP 200: desafío emitido', r.code === 200);",
+          "        const b = json(r);",
+          "        registrar('Token previo y tipo Bearer, sin sesión definitiva',",
+          "            typeof b.token === 'string' && b.token.length > 0 && b.tipo === 'Bearer' && !b.accessToken && !b.refreshToken);",
+          "        return b.token;",
+          "    }",
+          "    function sesion(r) {",
+          "        registrar('HTTP 200: sesión emitida', r.code === 200);",
+          "        const b = json(r);",
+          "        registrar('Pareja completa de tokens y vencimiento informado',",
+          "            typeof b.accessToken === 'string' && b.accessToken.length > 0 &&",
+          "            typeof b.refreshToken === 'string' && b.refreshToken.length > 0 && b.tipo === 'Bearer' &&",
+          "            Date.parse(b.accessTokenExpiraEn) > Date.now());",
+          "        contexto.sesiones.push(b.refreshToken);",
+          "        return b;",
+          "    }",
+          "    async function desafio(usuario, ruta) {",
+          "        const anteriores = (await mensajes(usuario.email)).map(m => m.ID);",
+          "        const inicio = Date.now();",
+          "        const token = preauth(await enviar(ruta, 'POST', usuario));",
+          "        const codigo = await leerCodigo(usuario.email, anteriores, inicio);",
+          "        return { token, codigo };",
+          "    }",
+          "    async function crearPendiente() {",
+          "        contexto.usuario = nuevo();",
+          "        contexto.desafio = await desafio(contexto.usuario, '/auth/register');",
+          "    }",
+          "    async function crearSesion() {",
+          "        await crearPendiente();",
+          "        contexto.sesion = sesion(await enviar('/auth/verificar-codigo', 'POST',",
+          "            { codigo: contexto.desafio.codigo }, contexto.desafio.token));",
+          "    }",
+          "    function rechazo(r, estado, codigo) {",
+          "        registrar('HTTP esperado ' + estado + ', recibido ' + r.code, r.code === estado);",
+          "        const b = json(r);",
+          "        registrar('Código de error esperado', b.codigo === codigo);",
+          "        registrar('No devuelve tokens ni perfil protegido', !b.token && !b.accessToken && !b.refreshToken &&",
+          "            !b.idUsuario && !b.email && !b.password && !b.passwordHash);",
+          "        return b;",
+          "    }",
+          "    async function perfil(token) {",
+          "        const r = await enviar('/usuario/me', 'GET', undefined, token);",
+          "        registrar('Perfil autorizado: HTTP 200', r.code === 200);",
+          "        const b = json(r);",
+          "        registrar('Identidad, nombre, UUID y plan del usuario propio', b.email === contexto.usuario.email &&",
+          "            b.nombre === contexto.usuario.nombre && typeof b.idUsuario === 'string' &&",
+          "            /^[0-9a-f-]{36}$/i.test(b.idUsuario) && b.esPremium === false);",
+          "        registrar('Perfil sin secretos ni campos adicionales',",
+          "            Object.keys(b).every(k => ['idUsuario', 'nombre', 'email', 'esPremium'].includes(k)));",
+          "    }",
+          "    const regInvalidos = {",
+          "        '003': { email: 'email-invalido' }, '004': { password: 'Qa2026!' },",
+          "        '005': { email: '' }, '006': { password: '' }, '007': { email: '', password: '' },",
+          "        '010': { nombre: '' }, '011': { nombre: '', email: '' },",
+          "        '012': { nombre: '', password: '' }, '013': { nombre: '', email: '', password: '' },",
+          "        '014': { password: 'sinmayuscula2026' }, '015': { password: 'SinNumerosQA' }",
+          "    };",
+          "    async function preparar() {",
+          "        contexto = { sesiones: [], usuario: nuevo(), cuerpo: {}, token: '', anteriores: [], inicio: Date.now() };",
+          "        pm.variables.unset('qa_contexto');",
+          "        pm.variables.set('qa_cuerpo', '{}');",
+          "        pm.variables.set('qa_token', '');",
+          "        if (!urlLocal(api) || !urlLocal(mail)) throw new Error('Esta colección solo admite URLs HTTP locales de QA.');",
+          "        await mensajes(contexto.usuario.email);",
+          "        const n = id.slice(-3);",
+          "        if (id.startsWith('AUT-REG')) {",
+          "            contexto.cuerpo = { ...contexto.usuario, ...(regInvalidos[n] || {}) };",
+          "            if (['002', '017'].includes(n)) {",
+          "                await crearPendiente();",
+          "                contexto.cuerpo = { ...contexto.usuario };",
+          "                if (n === '017') contexto.cuerpo.email = '  ' + contexto.usuario.email.toUpperCase() + '  ';",
+          "            }",
+          "            if (n === '016') contexto.cuerpo.password = 'Qa123456';",
+          "        } else if (id.startsWith('AUT-LOG')) {",
+          "            if (['001', '003'].includes(n)) await crearSesion();",
+          "            else if (n !== '002') await crearPendiente();",
+          "            contexto.cuerpo = { email: contexto.usuario.email, password: contexto.usuario.password };",
+          "            if (n === '003') contexto.cuerpo.password = 'OtraClave2026!';",
+          "            if (['004', '006'].includes(n)) contexto.cuerpo.email = '';",
+          "            if (['005', '006'].includes(n)) contexto.cuerpo.password = '';",
+          "        } else if (id.startsWith('AUT-2FA')) {",
+          "            if (['005', '006'].includes(n)) throw new Error('BLOQUEADO: el backend no ofrece endpoint ni contrato de reenvío de registro.');",
+          "            if (n === '004' && String(obtener('qa_esperar_vencimientos', 'false')) !== 'true')",
+          "                throw new Error('BLOQUEADO: activar qa_esperar_vencimientos y usar pre-auth con vigencia mayor que el código.');",
+          "            await crearPendiente();",
+          "            if (n === '002') contexto.desafio = await desafio(contexto.usuario, '/auth/login');",
+          "            if (n === '004') {",
+          "                const ttl = Number(obtener('qa_codigo_ttl_ms', 600000));",
+          "                const payload = JSON.parse(atob(contexto.desafio.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+          "                if (!(ttl > 0 && ttl <= 1200000) || payload.exp * 1000 <= Date.now() + ttl + 5000)",
+          "                    throw new Error('BLOQUEADO: el pre-auth vencería antes de poder comprobar el código expirado. Revisar vigencias de QA.');",
+          "                await pausa(ttl + 1000);",
+          "            }",
+          "            contexto.cuerpo = { codigo: contexto.desafio.codigo };",
+          "            if (n === '003') contexto.cuerpo.codigo = contexto.desafio.codigo.slice(0, -1) +",
+          "                ((Number(contexto.desafio.codigo.slice(-1)) + 1) % 10);",
+          "            contexto.token = contexto.desafio.token;",
+          "        } else {",
+          "            await crearSesion();",
+          "            if (['001', '006'].includes(n)) contexto.token = contexto.sesion.accessToken;",
+          "            if (['003', '004'].includes(n)) {",
+          "                contexto.cuerpo = { refreshToken: contexto.sesion.refreshToken };",
+          "                if (n === '004') contexto.rotada = sesion(await enviar('/auth/refresh', 'POST', contexto.cuerpo));",
+          "            }",
+          "            if (n === '006') contexto.rotada = sesion(await enviar('/auth/refresh', 'POST', { refreshToken: contexto.sesion.refreshToken }));",
+          "        }",
+          "        contexto.anteriores = (await mensajes(contexto.usuario.email)).map(m => m.ID);",
+          "        contexto.inicio = Date.now();",
+          "        pm.variables.set('qa_cuerpo', JSON.stringify(contexto.cuerpo));",
+          "        pm.variables.set('qa_token', contexto.token);",
+          "        pm.variables.set('qa_contexto', JSON.stringify(contexto));",
+          "    }",
+          "    async function verificar(r) {",
+          "        contexto = JSON.parse(obtener('qa_contexto', '{}'));",
+          "        const n = id.slice(-3);",
+          "        if (id.startsWith('AUT-REG')) {",
+          "            if (['002', '017'].includes(n)) rechazo(r, 409, 'ERROR_NEGOCIO');",
+          "            else if (regInvalidos[n]) {",
+          "                const b = rechazo(r, 400, 'ERROR_VALIDACION');",
+          "                for (const campo of Object.keys(regInvalidos[n])) registrar('Validación informa el campo ' + campo,",
+          "                    typeof b.mensaje === 'string' && b.mensaje.includes(campo + ':'));",
+          "                const recibidos = await mensajes(contexto.usuario.email);",
+          "                registrar('No genera correo de registro rechazado', recibidos.every(m => contexto.anteriores.includes(m.ID)));",
+          "                // Para emails utilizables, un login posterior debe seguir sin encontrar una cuenta.",
+          "                if (contexto.cuerpo.email === contexto.usuario.email)",
+          "                    rechazo(await enviar('/auth/login', 'POST', contexto.usuario), 401, 'NO_AUTENTICADO');",
+          "            } else {",
+          "                const token = preauth(r);",
+          "                const codigo = await leerCodigo(contexto.usuario.email, contexto.anteriores, contexto.inicio);",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, token), 401, 'NO_AUTENTICADO');",
+          "                if (n === '008') {",
+          "                    const reanudado = await desafio(contexto.usuario, '/auth/login');",
+          "                    const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo: reanudado.codigo }, reanudado.token));",
+          "                    await perfil(s.accessToken);",
+          "                }",
+          "                if (n === '016') {",
+          "                    const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo }, token));",
+          "                    await perfil(s.accessToken);",
+          "                }",
+          "                if (n === '009') pendiente('Confirmar navegación directa a 2FA en la interfaz.');",
+          "            }",
+          "        } else if (id.startsWith('AUT-LOG')) {",
+          "            if (n === '001') {",
+          "                const token = preauth(r);",
+          "                await leerCodigo(contexto.usuario.email, contexto.anteriores, contexto.inicio);",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, token), 401, 'NO_AUTENTICADO');",
+          "            } else {",
+          "                const b = rechazo(r, ['002', '003'].includes(n) ? 401 : 400,",
+          "                    ['002', '003'].includes(n) ? 'NO_AUTENTICADO' : 'ERROR_VALIDACION');",
+          "                for (const campo of ['email', 'password'].filter(k => contexto.cuerpo[k] === ''))",
+          "                    registrar('Validación informa ' + campo, String(b.mensaje).includes(campo + ':'));",
+          "                const limite = Date.now() + 1200;",
+          "                while (Date.now() < limite) {",
+          "                    registrar('Sin correo adicional por login rechazado',",
+          "                        (await mensajes(contexto.usuario.email)).every(m => contexto.anteriores.includes(m.ID)));",
+          "                    await pausa(400);",
+          "                }",
+          "            }",
+          "        } else if (id.startsWith('AUT-2FA')) {",
+          "            if (['001', '002'].includes(n)) {",
+          "                const s = sesion(r); await perfil(s.accessToken);",
+          "                rechazo(await enviar('/auth/verificar-codigo', 'POST', { codigo: contexto.desafio.codigo }, contexto.desafio.token), 400, 'CODIGO_INVALIDO');",
+          "            } else if (n === '003') {",
+          "                rechazo(r, 400, 'CODIGO_INVALIDO');",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, contexto.desafio.token), 401, 'NO_AUTENTICADO');",
+          "                const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo: contexto.desafio.codigo }, contexto.desafio.token));",
+          "                await perfil(s.accessToken);",
+          "            } else {",
+          "                rechazo(r, 410, 'CODIGO_EXPIRADO');",
+          "                const codigo = await leerCodigo(contexto.usuario.email, contexto.anteriores, contexto.inicio);",
+          "                const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo }, contexto.desafio.token));",
+          "                await perfil(s.accessToken);",
+          "            }",
+          "        } else {",
+          "            if (n === '001' || n === '006') {",
+          "                registrar('Access anterior aún vigente: HTTP 200', r.code === 200);",
+          "                registrar('Respuesta pertenece al usuario propio', json(r).email === contexto.usuario.email);",
+          "                await perfil(contexto.sesion.accessToken);",
+          "                if (n === '006') {",
+          "                    if (String(obtener('qa_esperar_vencimientos', 'false')) === 'true') {",
+          "                        const demora = Date.parse(contexto.sesion.accessTokenExpiraEn) - Date.now() + 1500;",
+          "                        if (!(demora > 0 && demora < 1200000)) throw new Error('Vencimiento fuera del límite de espera de 20 minutos.');",
+          "                        await pausa(demora);",
+          "                        rechazo(await enviar('/usuario/me', 'GET', undefined, contexto.sesion.accessToken), 401, 'NO_AUTENTICADO');",
+          "                    } else pendiente('Falta rechazo del access al vencer; activar qa_esperar_vencimientos.');",
+          "                }",
+          "            } else if (n === '002') {",
+          "                rechazo(r, 401, 'NO_AUTENTICADO');",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, 'qa-token-invalido'), 401, 'NO_AUTENTICADO');",
+          "                const partes = contexto.sesion.accessToken.split('.');",
+          "                partes[2] = (partes[2][0] === 'A' ? 'B' : 'A') + partes[2].slice(1);",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, partes.join('.')), 401, 'NO_AUTENTICADO');",
+          "            } else if (n === '003') {",
+          "                const s = sesion(r);",
+          "                registrar('Refresh rotado distinto del anterior', s.refreshToken !== contexto.sesion.refreshToken);",
+          "                await perfil(s.accessToken);",
+          "                rechazo(await enviar('/auth/refresh', 'POST', { refreshToken: contexto.sesion.refreshToken }), 401, 'NO_AUTENTICADO');",
+          "            } else if (n === '004') rechazo(r, 401, 'NO_AUTENTICADO');",
+          "            else if (n === '005') {",
+          "                registrar('Backend protegido disponible', r.code === 401);",
+          "                const enviarRefresh = () => enviar('/auth/refresh', 'POST', { refreshToken: contexto.sesion.refreshToken });",
+          "                const respuestas = await Promise.all([enviarRefresh(), enviarRefresh()]);",
+          "                const exitosas = respuestas.filter(x => x.code === 200);",
+          "                for (const x of exitosas) {",
+          "                    const b = json(x); if (b.refreshToken) contexto.sesiones.push(b.refreshToken);",
+          "                }",
+          "                registrar('Como máximo una renovación simultánea emite sesión; emisiones observadas: ' + exitosas.length, exitosas.length <= 1);",
+          "                registrar('Una renovación válida prospera y la repetida devuelve 401',",
+          "                    exitosas.length === 1 && respuestas.filter(x => x.code === 401).length === 1);",
+          "                sesion(exitosas[0]);",
+          "                rechazo(respuestas.find(x => x.code === 401), 401, 'NO_AUTENTICADO');",
+          "            }",
+          "        }",
+          "    }",
+          "    async function limpiar() {",
+          "        let advertencias = 0;",
+          "        for (const token of [...new Set(contexto.sesiones || [])]) {",
+          "            try {",
+          "                const r = await enviar('/auth/logout', 'POST', { refreshToken: token });",
+          "                if (![204, 401].includes(r.code)) advertencias++;",
+          "            } catch { advertencias++; }",
+          "        }",
+          "        if (advertencias) pendiente('No se pudieron cerrar todas las sesiones temporales.');",
+          "        ['qa_contexto', 'qa_cuerpo', 'qa_token'].forEach(k => pm.variables.unset(k));",
+          "    }",
+          "    return {",
+          "        async antes() {",
+          "            try { await preparar(); }",
+          "            catch (e) {",
+          "                try { await limpiar(); } catch { /* Mantener el impedimento original. */ }",
+          "                resultado('BLOQUEADO', e.message);",
+          "                pm.test(id + ' | BLOQUEADO: ' + e.message, () => pm.expect.fail(e.message));",
+          "                pm.execution.skipRequest();",
+          "            }",
+          "        },",
+          "        async despues() {",
+          "            let detalle = 'Verificaciones de API completas. Persistencia interna y UI fuera del alcance automático.';",
+          "            try { await verificar(pm.response); }",
+          "            catch (e) {",
+          "                detalle = e.message;",
+          "                if (!fallo) { fallo = true; pm.test(id + ' | Error de ejecución: ' + detalle, () => pm.expect.fail(detalle)); }",
+          "            } finally {",
+          "                await limpiar();",
+          "                resultado(fallo ? 'FALLÓ' : parcial ? 'PARCIAL' : 'APROBADO_API', detalle);",
+          "            }",
+          "        }",
+          "    };",
+          "}",
+          "",
+          "(async () => { await crearQA(pm).antes(); })();"
+        ]
+      }
     },
     {
-      "key": "accessToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "refreshToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "oldRefreshToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "refreshTokenDispositivoA",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "refreshTokenDispositivoB",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "accessTokenDispositivoB",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "refreshTokenRevocado",
-      "value": "",
-      "type": "string"
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "/* Biblioteca incorporada a la colección por Generar-AuthPostman.mjs.",
+          " * Los secretos viven únicamente en el contexto local de cada solicitud. */",
+          "function crearQA(pm) {",
+          "    const id = pm.info.requestName.split(' ')[0];",
+          "    const obtener = (k, defecto) => pm.variables.get(k) ?? defecto;",
+          "    const api = String(obtener('baseUrl', 'http://localhost:8080')).replace(/\\/$/, '');",
+          "    const mail = String(obtener('mailpitUrl', 'http://localhost:8025')).replace(/\\/$/, '');",
+          "    let contexto = {};",
+          "    let fallo = false;",
+          "    let parcial = false;",
+          "    const pausa = ms => new Promise(resolve => setTimeout(resolve, ms));",
+          "    const registrar = (nombre, condicion) => {",
+          "        pm.test(id + ' | ' + nombre, () => {",
+          "            if (!condicion) pm.expect.fail(nombre);",
+          "        });",
+          "        if (!condicion) { fallo = true; throw new Error(nombre); }",
+          "    };",
+          "    const pendiente = motivo => {",
+          "        parcial = true;",
+          "        pm.test.skip(id + ' | PENDIENTE: ' + motivo, () => {});",
+          "    };",
+          "    function resultado(estado, detalle) {",
+          "        const datos = JSON.parse(obtener('qa_resultados', '{}'));",
+          "        datos[id] = { estado, detalle, fecha: new Date().toISOString() };",
+          "        pm.variables.set('qa_resultados', JSON.stringify(datos));",
+          "        pm.visualizer.set('<h3>{{id}}: {{estado}}</h3><p>{{detalle}}</p>', { id, estado, detalle });",
+          "    }",
+          "    async function enviar(ruta, metodo = 'GET', datos, token = '') {",
+          "        const header = { 'Content-Type': 'application/json' };",
+          "        if (token) header.Authorization = 'Bearer ' + token;",
+          "        try {",
+          "            return await new Promise((resolve, reject) => pm.sendRequest({ url: ruta.startsWith('http') ? ruta : api + ruta,",
+          "                method: metodo, header, auth: { type: 'noauth' },",
+          "                ...(datos === undefined ? {} : { body: { mode: 'raw', raw: JSON.stringify(datos) } }) },",
+          "                (error, respuesta) => error ? reject(error) : resolve(respuesta)));",
+          "        } catch { throw new Error('No se pudo completar una solicitud HTTP auxiliar. Revisar backend/Mailpit.'); }",
+          "    }",
+          "    const json = r => { try { return r.json(); } catch { throw new Error('La respuesta debe ser JSON.'); } };",
+          "    function urlLocal(valor) {",
+          "        return /^http:\\/\\/(localhost|127\\.0\\.0\\.1)(:\\d+)?$/.test(valor);",
+          "    }",
+          "    async function mensajes(email) {",
+          "        const r = await enviar(mail + '/api/v1/search?query=' + encodeURIComponent('to:' + email) + '&limit=500');",
+          "        if (r.code !== 200) throw new Error('Mailpit no responde HTTP 200.');",
+          "        const b = json(r);",
+          "        if (!Array.isArray(b.messages)) throw new Error('Respuesta de búsqueda de Mailpit inesperada.');",
+          "        return b.messages;",
+          "    }",
+          "    async function leerCodigo(email, previos, inicio) {",
+          "        const limite = Date.now() + Number(obtener('qa_mail_timeout_ms', 30000));",
+          "        while (Date.now() < limite) {",
+          "            for (const m of await mensajes(email)) {",
+          "                if (previos.includes(m.ID)) continue;",
+          "                const r = await enviar(mail + '/api/v1/message/' + encodeURIComponent(m.ID));",
+          "                if (r.code !== 200) throw new Error('No se pudo leer un mensaje de Mailpit.');",
+          "                const d = json(r);",
+          "                if (!(d.To || []).some(t => String(t.Address).toLowerCase() === email.toLowerCase())) continue;",
+          "                if (Date.parse(d.Date || m.Created) < inicio - 2000) continue;",
+          "                const coincidencia = String(d.Text || '').match(/Tu codigo de verificacion es:\\s*(\\d{6})(?!\\d)/);",
+          "                if (coincidencia) return coincidencia[1];",
+          "            }",
+          "            await pausa(400);",
+          "        }",
+          "        throw new Error('No llegó un código 2FA nuevo para el destinatario dentro del tiempo permitido.');",
+          "    }",
+          "    function nuevo() {",
+          "        const sufijo = pm.variables.replaceIn('{{$guid}}').replace(/-/g, '').toLowerCase();",
+          "        return { nombre: 'QA Auth ' + id, email: 'qa.auth.' + sufijo + '@mismascotas.test', password: 'QaAuth2026!' };",
+          "    }",
+          "    function preauth(r) {",
+          "        registrar('HTTP 200: desafío emitido', r.code === 200);",
+          "        const b = json(r);",
+          "        registrar('Token previo y tipo Bearer, sin sesión definitiva',",
+          "            typeof b.token === 'string' && b.token.length > 0 && b.tipo === 'Bearer' && !b.accessToken && !b.refreshToken);",
+          "        return b.token;",
+          "    }",
+          "    function sesion(r) {",
+          "        registrar('HTTP 200: sesión emitida', r.code === 200);",
+          "        const b = json(r);",
+          "        registrar('Pareja completa de tokens y vencimiento informado',",
+          "            typeof b.accessToken === 'string' && b.accessToken.length > 0 &&",
+          "            typeof b.refreshToken === 'string' && b.refreshToken.length > 0 && b.tipo === 'Bearer' &&",
+          "            Date.parse(b.accessTokenExpiraEn) > Date.now());",
+          "        contexto.sesiones.push(b.refreshToken);",
+          "        return b;",
+          "    }",
+          "    async function desafio(usuario, ruta) {",
+          "        const anteriores = (await mensajes(usuario.email)).map(m => m.ID);",
+          "        const inicio = Date.now();",
+          "        const token = preauth(await enviar(ruta, 'POST', usuario));",
+          "        const codigo = await leerCodigo(usuario.email, anteriores, inicio);",
+          "        return { token, codigo };",
+          "    }",
+          "    async function crearPendiente() {",
+          "        contexto.usuario = nuevo();",
+          "        contexto.desafio = await desafio(contexto.usuario, '/auth/register');",
+          "    }",
+          "    async function crearSesion() {",
+          "        await crearPendiente();",
+          "        contexto.sesion = sesion(await enviar('/auth/verificar-codigo', 'POST',",
+          "            { codigo: contexto.desafio.codigo }, contexto.desafio.token));",
+          "    }",
+          "    function rechazo(r, estado, codigo) {",
+          "        registrar('HTTP esperado ' + estado + ', recibido ' + r.code, r.code === estado);",
+          "        const b = json(r);",
+          "        registrar('Código de error esperado', b.codigo === codigo);",
+          "        registrar('No devuelve tokens ni perfil protegido', !b.token && !b.accessToken && !b.refreshToken &&",
+          "            !b.idUsuario && !b.email && !b.password && !b.passwordHash);",
+          "        return b;",
+          "    }",
+          "    async function perfil(token) {",
+          "        const r = await enviar('/usuario/me', 'GET', undefined, token);",
+          "        registrar('Perfil autorizado: HTTP 200', r.code === 200);",
+          "        const b = json(r);",
+          "        registrar('Identidad, nombre, UUID y plan del usuario propio', b.email === contexto.usuario.email &&",
+          "            b.nombre === contexto.usuario.nombre && typeof b.idUsuario === 'string' &&",
+          "            /^[0-9a-f-]{36}$/i.test(b.idUsuario) && b.esPremium === false);",
+          "        registrar('Perfil sin secretos ni campos adicionales',",
+          "            Object.keys(b).every(k => ['idUsuario', 'nombre', 'email', 'esPremium'].includes(k)));",
+          "    }",
+          "    const regInvalidos = {",
+          "        '003': { email: 'email-invalido' }, '004': { password: 'Qa2026!' },",
+          "        '005': { email: '' }, '006': { password: '' }, '007': { email: '', password: '' },",
+          "        '010': { nombre: '' }, '011': { nombre: '', email: '' },",
+          "        '012': { nombre: '', password: '' }, '013': { nombre: '', email: '', password: '' },",
+          "        '014': { password: 'sinmayuscula2026' }, '015': { password: 'SinNumerosQA' }",
+          "    };",
+          "    async function preparar() {",
+          "        contexto = { sesiones: [], usuario: nuevo(), cuerpo: {}, token: '', anteriores: [], inicio: Date.now() };",
+          "        pm.variables.unset('qa_contexto');",
+          "        pm.variables.set('qa_cuerpo', '{}');",
+          "        pm.variables.set('qa_token', '');",
+          "        if (!urlLocal(api) || !urlLocal(mail)) throw new Error('Esta colección solo admite URLs HTTP locales de QA.');",
+          "        await mensajes(contexto.usuario.email);",
+          "        const n = id.slice(-3);",
+          "        if (id.startsWith('AUT-REG')) {",
+          "            contexto.cuerpo = { ...contexto.usuario, ...(regInvalidos[n] || {}) };",
+          "            if (['002', '017'].includes(n)) {",
+          "                await crearPendiente();",
+          "                contexto.cuerpo = { ...contexto.usuario };",
+          "                if (n === '017') contexto.cuerpo.email = '  ' + contexto.usuario.email.toUpperCase() + '  ';",
+          "            }",
+          "            if (n === '016') contexto.cuerpo.password = 'Qa123456';",
+          "        } else if (id.startsWith('AUT-LOG')) {",
+          "            if (['001', '003'].includes(n)) await crearSesion();",
+          "            else if (n !== '002') await crearPendiente();",
+          "            contexto.cuerpo = { email: contexto.usuario.email, password: contexto.usuario.password };",
+          "            if (n === '003') contexto.cuerpo.password = 'OtraClave2026!';",
+          "            if (['004', '006'].includes(n)) contexto.cuerpo.email = '';",
+          "            if (['005', '006'].includes(n)) contexto.cuerpo.password = '';",
+          "        } else if (id.startsWith('AUT-2FA')) {",
+          "            if (['005', '006'].includes(n)) throw new Error('BLOQUEADO: el backend no ofrece endpoint ni contrato de reenvío de registro.');",
+          "            if (n === '004' && String(obtener('qa_esperar_vencimientos', 'false')) !== 'true')",
+          "                throw new Error('BLOQUEADO: activar qa_esperar_vencimientos y usar pre-auth con vigencia mayor que el código.');",
+          "            await crearPendiente();",
+          "            if (n === '002') contexto.desafio = await desafio(contexto.usuario, '/auth/login');",
+          "            if (n === '004') {",
+          "                const ttl = Number(obtener('qa_codigo_ttl_ms', 600000));",
+          "                const payload = JSON.parse(atob(contexto.desafio.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+          "                if (!(ttl > 0 && ttl <= 1200000) || payload.exp * 1000 <= Date.now() + ttl + 5000)",
+          "                    throw new Error('BLOQUEADO: el pre-auth vencería antes de poder comprobar el código expirado. Revisar vigencias de QA.');",
+          "                await pausa(ttl + 1000);",
+          "            }",
+          "            contexto.cuerpo = { codigo: contexto.desafio.codigo };",
+          "            if (n === '003') contexto.cuerpo.codigo = contexto.desafio.codigo.slice(0, -1) +",
+          "                ((Number(contexto.desafio.codigo.slice(-1)) + 1) % 10);",
+          "            contexto.token = contexto.desafio.token;",
+          "        } else {",
+          "            await crearSesion();",
+          "            if (['001', '006'].includes(n)) contexto.token = contexto.sesion.accessToken;",
+          "            if (['003', '004'].includes(n)) {",
+          "                contexto.cuerpo = { refreshToken: contexto.sesion.refreshToken };",
+          "                if (n === '004') contexto.rotada = sesion(await enviar('/auth/refresh', 'POST', contexto.cuerpo));",
+          "            }",
+          "            if (n === '006') contexto.rotada = sesion(await enviar('/auth/refresh', 'POST', { refreshToken: contexto.sesion.refreshToken }));",
+          "        }",
+          "        contexto.anteriores = (await mensajes(contexto.usuario.email)).map(m => m.ID);",
+          "        contexto.inicio = Date.now();",
+          "        pm.variables.set('qa_cuerpo', JSON.stringify(contexto.cuerpo));",
+          "        pm.variables.set('qa_token', contexto.token);",
+          "        pm.variables.set('qa_contexto', JSON.stringify(contexto));",
+          "    }",
+          "    async function verificar(r) {",
+          "        contexto = JSON.parse(obtener('qa_contexto', '{}'));",
+          "        const n = id.slice(-3);",
+          "        if (id.startsWith('AUT-REG')) {",
+          "            if (['002', '017'].includes(n)) rechazo(r, 409, 'ERROR_NEGOCIO');",
+          "            else if (regInvalidos[n]) {",
+          "                const b = rechazo(r, 400, 'ERROR_VALIDACION');",
+          "                for (const campo of Object.keys(regInvalidos[n])) registrar('Validación informa el campo ' + campo,",
+          "                    typeof b.mensaje === 'string' && b.mensaje.includes(campo + ':'));",
+          "                const recibidos = await mensajes(contexto.usuario.email);",
+          "                registrar('No genera correo de registro rechazado', recibidos.every(m => contexto.anteriores.includes(m.ID)));",
+          "                // Para emails utilizables, un login posterior debe seguir sin encontrar una cuenta.",
+          "                if (contexto.cuerpo.email === contexto.usuario.email)",
+          "                    rechazo(await enviar('/auth/login', 'POST', contexto.usuario), 401, 'NO_AUTENTICADO');",
+          "            } else {",
+          "                const token = preauth(r);",
+          "                const codigo = await leerCodigo(contexto.usuario.email, contexto.anteriores, contexto.inicio);",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, token), 401, 'NO_AUTENTICADO');",
+          "                if (n === '008') {",
+          "                    const reanudado = await desafio(contexto.usuario, '/auth/login');",
+          "                    const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo: reanudado.codigo }, reanudado.token));",
+          "                    await perfil(s.accessToken);",
+          "                }",
+          "                if (n === '016') {",
+          "                    const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo }, token));",
+          "                    await perfil(s.accessToken);",
+          "                }",
+          "                if (n === '009') pendiente('Confirmar navegación directa a 2FA en la interfaz.');",
+          "            }",
+          "        } else if (id.startsWith('AUT-LOG')) {",
+          "            if (n === '001') {",
+          "                const token = preauth(r);",
+          "                await leerCodigo(contexto.usuario.email, contexto.anteriores, contexto.inicio);",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, token), 401, 'NO_AUTENTICADO');",
+          "            } else {",
+          "                const b = rechazo(r, ['002', '003'].includes(n) ? 401 : 400,",
+          "                    ['002', '003'].includes(n) ? 'NO_AUTENTICADO' : 'ERROR_VALIDACION');",
+          "                for (const campo of ['email', 'password'].filter(k => contexto.cuerpo[k] === ''))",
+          "                    registrar('Validación informa ' + campo, String(b.mensaje).includes(campo + ':'));",
+          "                const limite = Date.now() + 1200;",
+          "                while (Date.now() < limite) {",
+          "                    registrar('Sin correo adicional por login rechazado',",
+          "                        (await mensajes(contexto.usuario.email)).every(m => contexto.anteriores.includes(m.ID)));",
+          "                    await pausa(400);",
+          "                }",
+          "            }",
+          "        } else if (id.startsWith('AUT-2FA')) {",
+          "            if (['001', '002'].includes(n)) {",
+          "                const s = sesion(r); await perfil(s.accessToken);",
+          "                rechazo(await enviar('/auth/verificar-codigo', 'POST', { codigo: contexto.desafio.codigo }, contexto.desafio.token), 400, 'CODIGO_INVALIDO');",
+          "            } else if (n === '003') {",
+          "                rechazo(r, 400, 'CODIGO_INVALIDO');",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, contexto.desafio.token), 401, 'NO_AUTENTICADO');",
+          "                const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo: contexto.desafio.codigo }, contexto.desafio.token));",
+          "                await perfil(s.accessToken);",
+          "            } else {",
+          "                rechazo(r, 410, 'CODIGO_EXPIRADO');",
+          "                const codigo = await leerCodigo(contexto.usuario.email, contexto.anteriores, contexto.inicio);",
+          "                const s = sesion(await enviar('/auth/verificar-codigo', 'POST', { codigo }, contexto.desafio.token));",
+          "                await perfil(s.accessToken);",
+          "            }",
+          "        } else {",
+          "            if (n === '001' || n === '006') {",
+          "                registrar('Access anterior aún vigente: HTTP 200', r.code === 200);",
+          "                registrar('Respuesta pertenece al usuario propio', json(r).email === contexto.usuario.email);",
+          "                await perfil(contexto.sesion.accessToken);",
+          "                if (n === '006') {",
+          "                    if (String(obtener('qa_esperar_vencimientos', 'false')) === 'true') {",
+          "                        const demora = Date.parse(contexto.sesion.accessTokenExpiraEn) - Date.now() + 1500;",
+          "                        if (!(demora > 0 && demora < 1200000)) throw new Error('Vencimiento fuera del límite de espera de 20 minutos.');",
+          "                        await pausa(demora);",
+          "                        rechazo(await enviar('/usuario/me', 'GET', undefined, contexto.sesion.accessToken), 401, 'NO_AUTENTICADO');",
+          "                    } else pendiente('Falta rechazo del access al vencer; activar qa_esperar_vencimientos.');",
+          "                }",
+          "            } else if (n === '002') {",
+          "                rechazo(r, 401, 'NO_AUTENTICADO');",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, 'qa-token-invalido'), 401, 'NO_AUTENTICADO');",
+          "                const partes = contexto.sesion.accessToken.split('.');",
+          "                partes[2] = (partes[2][0] === 'A' ? 'B' : 'A') + partes[2].slice(1);",
+          "                rechazo(await enviar('/usuario/me', 'GET', undefined, partes.join('.')), 401, 'NO_AUTENTICADO');",
+          "            } else if (n === '003') {",
+          "                const s = sesion(r);",
+          "                registrar('Refresh rotado distinto del anterior', s.refreshToken !== contexto.sesion.refreshToken);",
+          "                await perfil(s.accessToken);",
+          "                rechazo(await enviar('/auth/refresh', 'POST', { refreshToken: contexto.sesion.refreshToken }), 401, 'NO_AUTENTICADO');",
+          "            } else if (n === '004') rechazo(r, 401, 'NO_AUTENTICADO');",
+          "            else if (n === '005') {",
+          "                registrar('Backend protegido disponible', r.code === 401);",
+          "                const enviarRefresh = () => enviar('/auth/refresh', 'POST', { refreshToken: contexto.sesion.refreshToken });",
+          "                const respuestas = await Promise.all([enviarRefresh(), enviarRefresh()]);",
+          "                const exitosas = respuestas.filter(x => x.code === 200);",
+          "                for (const x of exitosas) {",
+          "                    const b = json(x); if (b.refreshToken) contexto.sesiones.push(b.refreshToken);",
+          "                }",
+          "                registrar('Como máximo una renovación simultánea emite sesión; emisiones observadas: ' + exitosas.length, exitosas.length <= 1);",
+          "                registrar('Una renovación válida prospera y la repetida devuelve 401',",
+          "                    exitosas.length === 1 && respuestas.filter(x => x.code === 401).length === 1);",
+          "                sesion(exitosas[0]);",
+          "                rechazo(respuestas.find(x => x.code === 401), 401, 'NO_AUTENTICADO');",
+          "            }",
+          "        }",
+          "    }",
+          "    async function limpiar() {",
+          "        let advertencias = 0;",
+          "        for (const token of [...new Set(contexto.sesiones || [])]) {",
+          "            try {",
+          "                const r = await enviar('/auth/logout', 'POST', { refreshToken: token });",
+          "                if (![204, 401].includes(r.code)) advertencias++;",
+          "            } catch { advertencias++; }",
+          "        }",
+          "        if (advertencias) pendiente('No se pudieron cerrar todas las sesiones temporales.');",
+          "        ['qa_contexto', 'qa_cuerpo', 'qa_token'].forEach(k => pm.variables.unset(k));",
+          "    }",
+          "    return {",
+          "        async antes() {",
+          "            try { await preparar(); }",
+          "            catch (e) {",
+          "                try { await limpiar(); } catch { /* Mantener el impedimento original. */ }",
+          "                resultado('BLOQUEADO', e.message);",
+          "                pm.test(id + ' | BLOQUEADO: ' + e.message, () => pm.expect.fail(e.message));",
+          "                pm.execution.skipRequest();",
+          "            }",
+          "        },",
+          "        async despues() {",
+          "            let detalle = 'Verificaciones de API completas. Persistencia interna y UI fuera del alcance automático.';",
+          "            try { await verificar(pm.response); }",
+          "            catch (e) {",
+          "                detalle = e.message;",
+          "                if (!fallo) { fallo = true; pm.test(id + ' | Error de ejecución: ' + detalle, () => pm.expect.fail(detalle)); }",
+          "            } finally {",
+          "                await limpiar();",
+          "                resultado(fallo ? 'FALLÓ' : parcial ? 'PARCIAL' : 'APROBADO_API', detalle);",
+          "            }",
+          "        }",
+          "    };",
+          "}",
+          "",
+          "(async () => { await crearQA(pm).despues(); })();"
+        ]
+      }
     }
   ],
   "item": [
     {
-      "name": "Registro y acceso",
+      "name": "01 Registro",
       "item": [
         {
-          "name": "01 - Registrar usuario devuelve pre-auth - 200",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (!pm.variables.get('email')) throw new Error('Configura email con una casilla que pueda recibir el código 2FA.');",
-                  "if (!pm.variables.get('password')) throw new Error('Configura password (mínimo 8 caracteres, una mayúscula y un número).');",
-                  "['codigo','preAuthToken','accessToken','refreshToken','oldRefreshToken','refreshTokenDispositivoA','refreshTokenDispositivoB','accessTokenDispositivoB','refreshTokenRevocado'].forEach(k => pm.collectionVariables.unset(k));"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('Devuelve token pre-auth, no sesion', () => {",
-                  "  pm.expect(body.token).to.be.a('string').and.not.empty;",
-                  "  pm.expect(body.tipo).to.eql('Bearer');",
-                  "  pm.expect(body.mensaje).to.eql('Codigo de verificacion enviado');",
-                  "  pm.expect(body).to.not.have.property('accessToken');",
-                  "  pm.expect(body).to.not.have.property('refreshToken');",
-                  "});",
-                  "pm.collectionVariables.set('preAuthToken', body.token);"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-REG-001 — Registro válido",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": "{{baseUrl}}/auth/register",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Usuario de Prueba\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "register"
-              ]
-            }
-          }
-        },
-        {
-          "name": "02 - Acceso a /usuario/me sin token - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/usuario/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuario",
-                "me"
-              ]
-            }
-          }
-        },
-        {
-          "name": "03 - Token pre-auth no accede a /usuario/me - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
-                  "const body = pm.response.json();",
-                  "pm.test('NO_AUTENTICADO', () => pm.expect(body.codigo).to.eql('NO_AUTENTICADO'));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{preAuthToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/usuario/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuario",
-                "me"
-              ]
-            }
-          }
-        },
-        {
-          "name": "04 - Verificar codigo de registro devuelve access + refresh - 200",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (!pm.variables.get('codigo')) throw new Error('Carga la variable codigo con el ultimo codigo recibido por email antes de ejecutar este request.');"
-                ]
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
             },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('Devuelve par de tokens', () => {",
-                  "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
-                  "  pm.expect(body.refreshToken).to.be.a('string').and.not.empty;",
-                  "  pm.expect(body.tipo).to.eql('Bearer');",
-                  "  pm.expect(body.accessTokenExpiraEn).to.be.a('string').and.not.empty;",
-                  "});",
-                  "pm.collectionVariables.set('accessToken', body.accessToken);",
-                  "pm.collectionVariables.set('refreshToken', body.refreshToken);"
-                ]
-              }
-            }
-          ],
+            "description": "**ID:** AUT-REG-001\n\n**Precondiciones:** Email nuevo y contraseña válida\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Cuenta creada y desafío de verificación iniciado sin sesión definitiva\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-002 — Email duplicado",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{preAuthToken}}"
               }
             ],
+            "url": "{{baseUrl}}/auth/register",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/verificar-codigo",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "verificar-codigo"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-REG-002\n\n**Precondiciones:** Email ya registrado\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Rechazo sin crear otra cuenta ni revelar datos sensibles\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "05 - Acceder a /usuario/me con access token - 200",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('Perfil autenticado', () => pm.expect(body.email).to.eql(pm.variables.get('email')));"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-REG-003 — Email inválido",
           "request": {
-            "method": "GET",
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/usuario/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "usuario",
-                "me"
-              ]
-            }
-          }
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-003\n\n**Precondiciones:** Formato de email incorrecto\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Validación clara y ninguna cuenta creada\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-004 — Contraseña demasiado corta",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-004\n\n**Precondiciones:** Siete caracteres con mayúscula y número\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Validación de mínimo ocho caracteres y ninguna cuenta creada\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-005 — Falta el email",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-005\n\n**Precondiciones:** Contraseña informada y email vacío\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se identifica el campo requerido y no se crea cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-006 — Falta la contraseña",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-006\n\n**Precondiciones:** Email informado y contraseña vacía\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se identifica el campo requerido y no se crea cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-007 — Ambos campos vacíos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-007\n\n**Precondiciones:** Email y contraseña vacíos\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se indican ambos campos requeridos y no se crea cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-008 — Interrupción del registro",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-008\n\n**Precondiciones:** Cuenta creada pero verificación pendiente\n\n**Acción:** Cerrar el flujo antes de verificar\n\n**Esperado del CSV:** La cuenta sigue pendiente y puede retomarse desde login\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-009 — Continuidad sin salir",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-009\n\n**Precondiciones:** Registro válido en el mismo dispositivo\n\n**Acción:** Continuar tras registrar\n\n**Esperado del CSV:** Se presenta directamente el desafío de verificación\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-010 — Falta nombre",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-010\n\n**Precondiciones:** Email y contraseña válidos con nombre vacío\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se indica nombre obligatorio y no se crea cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-011 — Nombre y email vacíos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-011\n\n**Precondiciones:** Contraseña válida\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se indican ambos campos faltantes y no se crea cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-012 — Nombre y contraseña vacíos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-012\n\n**Precondiciones:** Email válido\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se indican ambos campos faltantes y no se crea cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-013 — Tres campos vacíos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-013\n\n**Precondiciones:** Nombre email y contraseña vacíos\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se indican los campos obligatorios y no se crea cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-014 — Contraseña sin mayúscula",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-014\n\n**Precondiciones:** Ocho caracteres o más con número y solo minúsculas\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se rechaza por falta de mayúscula\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-015 — Contraseña sin número",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-015\n\n**Precondiciones:** Ocho caracteres o más con mayúscula y sin dígitos\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se rechaza por falta de número\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-016 — Longitud mínima exacta",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-016\n\n**Precondiciones:** Contraseña de ocho caracteres con mayúscula y número\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se acepta la contraseña si los demás datos son válidos\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-REG-017 — Duplicado normalizado",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-REG-017\n\n**Precondiciones:** Email registrado con otra combinación de mayúsculas y espacios externos\n\n**Acción:** Enviar registro\n\n**Esperado del CSV:** Se rechaza como duplicado sin crear segunda cuenta\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Refresh rotativo",
+      "name": "02 Login",
       "item": [
         {
-          "name": "01 - Renovar con refresh valido rota token - 200",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "const anterior = pm.collectionVariables.get('refreshToken');",
-                  "pm.test('Devuelve nuevo par de tokens', () => {",
-                  "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
-                  "  pm.expect(body.refreshToken).to.be.a('string').and.not.empty;",
-                  "  pm.expect(body.refreshToken).to.not.eql(anterior);",
-                  "});",
-                  "pm.collectionVariables.set('oldRefreshToken', anterior);",
-                  "pm.collectionVariables.set('accessToken', body.accessToken);",
-                  "pm.collectionVariables.set('refreshToken', body.refreshToken);"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-LOG-001 — Credenciales válidas",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": "{{baseUrl}}/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-LOG-001\n\n**Precondiciones:** Usuario activo y contraseña correcta\n\n**Acción:** Iniciar sesión\n\n**Esperado del CSV:** Se inicia el desafío 2FA requerido sin conceder acceso antes de verificar\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "02 - Reutilizar refresh rotado revoca sesiones activas - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
-                  "const body = pm.response.json();",
-                  "pm.test('NO_AUTENTICADO', () => pm.expect(body.codigo).to.eql('NO_AUTENTICADO'));"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-LOG-002 — Email no registrado",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": "{{baseUrl}}/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{oldRefreshToken}}\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-LOG-002\n\n**Precondiciones:** Email inexistente\n\n**Acción:** Iniciar sesión\n\n**Esperado del CSV:** Acceso rechazado sin crear sesión\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "03 - Renovar con refresh inexistente - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
-                  "const body = pm.response.json();",
-                  "pm.test('NO_AUTENTICADO', () => pm.expect(body.codigo).to.eql('NO_AUTENTICADO'));",
-                  "pm.test('No revela existencia del token', () => pm.expect(body.mensaje).to.eql('Refresh token invalido'));"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-LOG-003 — Contraseña equivocada",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": "{{baseUrl}}/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"refresh-token-inexistente\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-LOG-003\n\n**Precondiciones:** Usuario existente y contraseña incorrecta\n\n**Acción:** Iniciar sesión\n\n**Esperado del CSV:** Acceso rechazado sin crear sesión\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-LOG-004 — Falta email",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-LOG-004\n\n**Precondiciones:** Contraseña informada y email vacío\n\n**Acción:** Iniciar sesión\n\n**Esperado del CSV:** Validación del campo y ninguna sesión\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-LOG-005 — Falta contraseña",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-LOG-005\n\n**Precondiciones:** Email informado y contraseña vacía\n\n**Acción:** Iniciar sesión\n\n**Esperado del CSV:** Validación del campo y ninguna sesión\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-LOG-006 — Ambos campos vacíos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-LOG-006\n\n**Precondiciones:** Email y contraseña vacíos\n\n**Acción:** Iniciar sesión\n\n**Esperado del CSV:** Validación de ambos campos y ninguna sesión\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Logout y multiples dispositivos",
+      "name": "03 Verificación 2FA",
       "item": [
         {
-          "name": "01 - Login dispositivo A devuelve pre-auth - 200",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.collectionVariables.set('preAuthToken', body.token);",
-                  "pm.collectionVariables.unset('codigo');"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-2FA-001 — Código correcto desde registro",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            "auth": {
+              "type": "noauth"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            }
-          }
-        },
-        {
-          "name": "02 - Verificar codigo dispositivo A - 200",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (!pm.variables.get('codigo')) throw new Error('Actualiza codigo con el ultimo codigo recibido por email para dispositivo A.');"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.collectionVariables.set('accessToken', body.accessToken);",
-                  "pm.collectionVariables.set('refreshTokenDispositivoA', body.refreshToken);",
-                  "pm.collectionVariables.set('codigo', '');"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
@@ -495,93 +1342,30 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{preAuthToken}}"
+                "value": "Bearer {{qa_token}}"
               }
             ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/verificar-codigo",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "verificar-codigo"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-2FA-001\n\n**Precondiciones:** Cuenta pendiente con código vigente\n\n**Acción:** Ingresar código correcto\n\n**Esperado del CSV:** Cuenta verificada y acceso concedido según el flujo\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "03 - Login dispositivo B devuelve pre-auth - 200",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.collectionVariables.set('preAuthToken', body.token);",
-                  "pm.collectionVariables.unset('codigo');"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-2FA-002 — Código correcto desde login",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            "auth": {
+              "type": "noauth"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            }
-          }
-        },
-        {
-          "name": "04 - Verificar codigo dispositivo B - 200",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (!pm.variables.get('codigo')) throw new Error('Actualiza codigo con el ultimo codigo recibido por email para dispositivo B.');"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.collectionVariables.set('accessTokenDispositivoB', body.accessToken);",
-                  "pm.collectionVariables.set('refreshTokenDispositivoB', body.refreshToken);",
-                  "pm.collectionVariables.set('codigo', '');"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
@@ -589,182 +1373,285 @@
               },
               {
                 "key": "Authorization",
-                "value": "Bearer {{preAuthToken}}"
+                "value": "Bearer {{qa_token}}"
               }
             ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"codigo\": \"{{codigo}}\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/verificar-codigo",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "verificar-codigo"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-2FA-002\n\n**Precondiciones:** Cuenta pendiente que abandonó el registro\n\n**Acción:** Iniciar login e ingresar código correcto\n\n**Esperado del CSV:** Se completa la verificación sin exigir nuevo registro\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "05 - Logout dispositivo A - 204",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 204', () => pm.response.to.have.status(204));",
-                  "pm.collectionVariables.set('refreshTokenRevocado', pm.collectionVariables.get('refreshTokenDispositivoA'));"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-2FA-003 — Código incorrecto",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{qa_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-2FA-003\n\n**Precondiciones:** Desafío vigente\n\n**Acción:** Ingresar código erróneo\n\n**Esperado del CSV:** No se concede acceso ni se verifica la cuenta\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-2FA-004 — Código vencido",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{qa_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-2FA-004\n\n**Precondiciones:** Código fuera de vigencia\n\n**Acción:** Ingresar código vencido\n\n**Esperado del CSV:** Se rechaza y se ofrece un camino de reenvío permitido\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-2FA-005 — Reenvío para estado pendiente",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{qa_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-2FA-005\n\n**Precondiciones:** Cuenta con verificación pendiente\n\n**Acción:** Solicitar nuevo código\n\n**Esperado del CSV:** Se emite nuevo desafío y el código anterior deja de ser utilizable\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-2FA-006 — Reenvío sin estado pendiente",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{qa_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "body": {
+              "mode": "raw",
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**ID:** AUT-2FA-006\n\n**Precondiciones:** Cuenta ya verificada\n\n**Acción:** Solicitar reenvío de verificación de registro\n\n**Esperado del CSV:** No se emite un código de registro nuevo\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Sesión",
+      "item": [
+        {
+          "name": "AUT-SES-001 — Acceso protegido con token válido",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{qa_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuario/me",
+            "description": "**ID:** AUT-SES-001\n\n**Precondiciones:** Sesión verificada y token vigente\n\n**Acción:** Consultar recurso protegido\n\n**Esperado del CSV:** Acceso autorizado solo al usuario del token\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-SES-002 — Sin token o token inválido",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshTokenDispositivoA}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
-              ]
-            }
-          }
+            "url": "{{baseUrl}}/usuario/me",
+            "description": "**ID:** AUT-SES-002\n\n**Precondiciones:** Recurso protegido\n\n**Acción:** Consultar sin credencial válida\n\n**Esperado del CSV:** Respuesta de autorización denegada sin datos\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "06 - Renovar despues de logout dispositivo A - 401",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
-                  "pm.test('NO_AUTENTICADO', () => pm.expect(pm.response.json().codigo).to.eql('NO_AUTENTICADO'));"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-SES-003 — Renovación normal",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": "{{baseUrl}}/auth/refresh",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshTokenDispositivoA}}\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-SES-003\n\n**Precondiciones:** Refresh token válido\n\n**Acción:** Renovar sesión\n\n**Esperado del CSV:** Se emite nueva pareja y el refresh anterior no puede volver a utilizarse\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "07 - Logout con refresh ya revocado - 204",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-SES-004 — Reutilización del refresh anterior",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": "{{baseUrl}}/auth/refresh",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshTokenRevocado}}\"\n}"
+              "raw": "{{qa_cuerpo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
-              ]
-            }
-          }
+            "description": "**ID:** AUT-SES-004\n\n**Precondiciones:** Refresh token ya rotado\n\n**Acción:** Renovar otra vez\n\n**Esperado del CSV:** Se rechaza y no se generan sesiones adicionales\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         },
         {
-          "name": "08 - Dispositivo B renueva despues de logout de A - 200",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "const body = pm.response.json();",
-                  "pm.test('B conserva sesion y rota refresh', () => {",
-                  "  pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
-                  "  pm.expect(body.refreshToken).to.be.a('string').and.not.empty;",
-                  "  pm.expect(body.refreshToken).to.not.eql(pm.collectionVariables.get('refreshTokenDispositivoB'));",
-                  "});",
-                  "pm.collectionVariables.set('accessTokenDispositivoB', body.accessToken);",
-                  "pm.collectionVariables.set('refreshTokenDispositivoB', body.refreshToken);"
-                ]
-              }
-            }
-          ],
+          "name": "AUT-SES-005 — Renovaciones simultáneas",
           "request": {
-            "method": "POST",
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshTokenDispositivoB}}\"\n}"
+            "url": "{{baseUrl}}/usuario/me",
+            "description": "**ID:** AUT-SES-005\n\n**Precondiciones:** Dos solicitudes con el mismo refresh\n\n**Acción:** Enviarlas simultáneamente\n\n**Esperado del CSV:** Como máximo una renovación prospera y se investiga cualquier doble emisión\n\n**Prioridad:** Crítica\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
+        },
+        {
+          "name": "AUT-SES-006 — Access token anterior durante su vigencia",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
-            }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{qa_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/usuario/me",
+            "description": "**ID:** AUT-SES-006\n\n**Precondiciones:** Access token previo aún no expirado tras renovar\n\n**Acción:** Consultar usuario/me\n\n**Esperado del CSV:** Se aplica la política de validez vigente hasta expiración y no se acepta uno expirado\n\n**Prioridad:** Alta\n\nPreparación automática y verificaciones adicionales mediante scripts de colección. Consultar la guía para partes manuales o bloqueadas."
+          },
+          "response": []
         }
       ]
     }

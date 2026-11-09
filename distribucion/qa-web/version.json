@@ -1,0 +1,70 @@
+{
+  "version": "qa-2026.10.25-01",
+  "seed": "qa-base-v1",
+  "plataforma": "linux/amd64",
+  "repositorios": {
+    "backend": {
+      "imagen": "estebancandioti/mismascotas-backend:qa-2026.10.25-01",
+      "digest": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "publica": true,
+      "comprobacion_anonima": true,
+      "dockerhub": "https://hub.docker.com/r/estebancandioti/mismascotas-backend"
+    },
+    "web": {
+      "imagen": "estebancandioti/mismascotas-web:qa-2026.10.25-01",
+      "digest": "sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630",
+      "publica": true,
+      "comprobacion_anonima": true,
+      "dockerhub": "https://hub.docker.com/r/estebancandioti/mismascotas-web"
+    },
+    "db-qa": {
+      "imagen": "estebancandioti/mismascotas-db-qa:qa-2026.10.25-01",
+      "digest": "sha256:e660f3924b5a95b59bdc5514cf548a9c6c00cde504e8eccd7908527ded3e42b1",
+      "publica": true,
+      "comprobacion_anonima": true,
+      "dockerhub": "https://hub.docker.com/r/estebancandioti/mismascotas-db-qa"
+    }
+  },
+  "origen_codigo_backend_web": "Builds históricos usados en QA. Commit de origen no verificado; no se atribuye el commit actual del checkout.",
+  "imagenes_locales_probadas": {
+    "backend": {
+      "referencia": "estebancandioti/mismascotas-backend:qa-2026.10.25-01",
+      "id_local": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "plataforma": "linux/amd64"
+    },
+    "web": {
+      "referencia": "estebancandioti/mismascotas-web:qa-2026.10.25-01",
+      "id_local": "sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630",
+      "plataforma": "linux/amd64"
+    },
+    "db-qa": {
+      "referencia": "estebancandioti/mismascotas-db-qa:qa-2026.10.25-01",
+      "id_local": "sha256:e660f3924b5a95b59bdc5514cf548a9c6c00cde504e8eccd7908527ded3e42b1",
+      "plataforma": "linux/amd64"
+    }
+  },
+  "verificaciones": {
+    "version": "qa-2026.10.25-01",
+    "fecha_utc": "2026-10-25T14:45:49.275657+00:00",
+    "volumen_inicial_vacio": true,
+    "conteos_iniciales": {
+      "usuarios": 6,
+      "mascotas": 15,
+      "eventos": 20,
+      "recordatorios": 15
+    },
+    "cuentas_login_2fa_verificadas": 6,
+    "web_login_http": 200,
+    "api_sin_token_http": 401,
+    "smtp_solo_mailpit": true,
+    "origen_commit_backend_web": "No verificado: se reutilizan exactamente las imágenes probadas",
+    "alcance_web": "Arranque y página de login. No se repitió la suite UI en esta instancia.",
+    "persistencia_tras_recrear_contenedores": true,
+    "seed_no_reaplicado_al_reiniciar": true
+  },
+  "archivos_sql_sha256": {
+    "DB/01-init.sql": "d17bce98a45aa9d007c83f27dd6cb6c11c7e69d43001f2c3192896565d482017",
+    "DB/02-seed.sql": "830979ae775993cb57663d3f785c50bece020bc3c274eb0f5fdcc3489b5c326c",
+    "DB/qa/restablecer-seed.sql": "cc68b5e7348ac4c30e52b3787ed34bf6f517e3c529bc7828ad2f30caba4bb4b7"
+  }
+}

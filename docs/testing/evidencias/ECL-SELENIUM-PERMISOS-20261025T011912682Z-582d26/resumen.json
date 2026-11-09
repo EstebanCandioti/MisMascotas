@@ -1,0 +1,30 @@
+{
+  "id_corrida": "ECL-SELENIUM-PERMISOS-20261025T011912682Z-582d26",
+  "tanda": "permisos",
+  "resultados": [
+    {
+      "id": "ECL-EDI-001",
+      "resultado": "Bloqueada",
+      "motivo": "El catálogo mantiene Pendiente de permisos para corrección permitida. Falta cerrar autorización y trazabilidad antes de ejecutar la mutación.",
+      "evidencia": "ECL-EDI-001__01/resultado.json"
+    },
+    {
+      "id": "ECL-EDI-002",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-EDI-002__01/resultado.json"
+    },
+    {
+      "id": "ECL-ELI-001",
+      "resultado": "Bloqueada",
+      "motivo": "El catálogo mantiene Pendiente de permisos para eliminación permitida y su semántica. No se ejecuta el borrado mientras siga pendiente.",
+      "evidencia": "ECL-ELI-001__01/resultado.json"
+    },
+    {
+      "id": "ECL-ELI-002",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-ELI-002__01/resultado.json"
+    }
+  ]
+}

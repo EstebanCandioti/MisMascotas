@@ -1,0 +1,12 @@
+{
+  "id_ejecucion": "MAS-WEB-20261025T002329845Z-9149f7__MAS-LIS-002__01",
+  "id_caso": "MAS-LIS-002",
+  "resultado": "Bloqueada",
+  "fecha_hora": "2026-10-24T21:23:33.989-03:00",
+  "fecha_corresponde_a": "Momento de la captura al interrumpirse la tanda, no inicio individual.",
+  "motivo": "Interrupción del ejecutor Web por argumentos duplicados al pasar contexto a los verificadores; no demuestra defecto de la aplicación.",
+  "comprobaciones": [],
+  "datos": "UUID y email del actor no conservados por el error de serialización. No se inventan.",
+  "evidencia_visual": "interfaz_al_fallar.png",
+  "ficha": "../entorno.json"
+}

@@ -1,0 +1,13 @@
+{
+  "historial_previo_conservado": true,
+  "filas_anteriores": 73,
+  "filas_nuevas": 39,
+  "total": 112,
+  "ids_duplicados": 0,
+  "enlaces_faltantes": 0,
+  "secretos_detectados": 0,
+  "defectos_abiertos": 12,
+  "defectos_instrumentacion_descartados": 3,
+  "seed_original_intacto": true,
+  "validado_con": "Lectura CSV independiente y Artifact Tool"
+}

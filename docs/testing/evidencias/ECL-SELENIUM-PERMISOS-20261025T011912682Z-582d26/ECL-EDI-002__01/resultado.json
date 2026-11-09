@@ -1,0 +1,311 @@
+{
+  "id_caso": "ECL-EDI-002",
+  "inicio": "2026-10-25T01:19:15.134Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "capa": "Selenium Web + API + SQL",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.ecl.44e992e724964faba3b6d7afc7088271@mismascotas.test",
+        "idUsuario": "f20c50c9-dda0-455e-b88f-b85313a75394",
+        "nombre": "QA Clínico ECL-EDI-002"
+      },
+      {
+        "email": "qa.ecl.d2bccf8da5ab4336a86df2df0d7537ca@mismascotas.test",
+        "idUsuario": "65dd3852-6f36-4c52-967e-c1b925c9d692",
+        "nombre": "QA Clínico ECL-EDI-002"
+      }
+    ],
+    "mascotas": [
+      {
+        "idMascota": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+        "nombre": "QA ECL-EDI-002 1"
+      }
+    ],
+    "eventos": [
+      "17529b42-518c-446b-8043-56da39b45e7d"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Selenium/API: tercero no puede PUT",
+      "cumple": true,
+      "esperado": 403,
+      "observado": {
+        "http": 403,
+        "respuesta": {
+          "codigo": "ACCESO_DENEGADO",
+          "mensaje": "No tenes permisos para realizar esta accion sobre esta mascota",
+          "timestamp": "2026-10-25T01:19:18.989919414Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Selenium/API: sin_token no puede PUT",
+      "cumple": true,
+      "esperado": 401,
+      "observado": {
+        "http": 401,
+        "respuesta": {
+          "codigo": "NO_AUTENTICADO",
+          "mensaje": "Token ausente o invalido",
+          "timestamp": "2026-10-25T01:19:18.999482060Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "SQL: evento, mascota y peso intactos tras rechazo",
+      "cumple": true,
+      "esperado": "Estado anterior conservado",
+      "observado": "Comparación SQL",
+      "defecto": ""
+    },
+    {
+      "nombre": "El evento original sigue accesible y sin cambios",
+      "cumple": true,
+      "esperado": {
+        "idEvento": "17529b42-518c-446b-8043-56da39b45e7d",
+        "mascotaId": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+        "registradoPorId": "f20c50c9-dda0-455e-b88f-b85313a75394",
+        "registradoPorNombre": "QA Clínico ECL-EDI-002",
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T15:00:00Z",
+        "nombre": "Vacuna ficticia QA",
+        "dosis": null,
+        "valorPeso": null,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": "Sin uso clínico.",
+        "creadoEn": "2026-10-25T01:19:17.126387792Z"
+      },
+      "observado": [
+        {
+          "idEvento": "17529b42-518c-446b-8043-56da39b45e7d",
+          "mascotaId": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+          "registradoPorId": "f20c50c9-dda0-455e-b88f-b85313a75394",
+          "registradoPorNombre": "QA Clínico ECL-EDI-002",
+          "tipo": "VACUNA",
+          "fecha": "2026-10-22T15:00:00Z",
+          "nombre": "Vacuna ficticia QA",
+          "dosis": null,
+          "valorPeso": null,
+          "motivo": null,
+          "diagnostico": null,
+          "observaciones": "Sin uso clínico.",
+          "creadoEn": "2026-10-25T01:19:17.126388Z"
+        }
+      ],
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "preparación",
+      "metodo": "POST",
+      "ruta": "/mascotas/16fc6e25-3172-4d8c-a0c6-3b484d81998f/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 201,
+      "respuesta": {
+        "idEvento": "17529b42-518c-446b-8043-56da39b45e7d",
+        "mascotaId": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+        "registradoPorId": "f20c50c9-dda0-455e-b88f-b85313a75394",
+        "registradoPorNombre": "QA Clínico ECL-EDI-002",
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T15:00:00Z",
+        "nombre": "Vacuna ficticia QA",
+        "dosis": null,
+        "valorPeso": null,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": "Sin uso clínico.",
+        "creadoEn": "2026-10-25T01:19:17.126387792Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "PUT",
+      "ruta": "/eventos-clinicos/17529b42-518c-446b-8043-56da39b45e7d",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Intento ajeno no permitido",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 403,
+      "respuesta": {
+        "codigo": "ACCESO_DENEGADO",
+        "mensaje": "No tenes permisos para realizar esta accion sobre esta mascota",
+        "timestamp": "2026-10-25T01:19:18.989919414Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "PUT",
+      "ruta": "/eventos-clinicos/17529b42-518c-446b-8043-56da39b45e7d",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Intento ajeno no permitido",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 401,
+      "respuesta": {
+        "codigo": "NO_AUTENTICADO",
+        "mensaje": "Token ausente o invalido",
+        "timestamp": "2026-10-25T01:19:18.999482060Z"
+      }
+    }
+  ],
+  "acciones_selenium": [],
+  "capturas": [
+    "antes.png",
+    "despues.png"
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+          "propietario_id": "f20c50c9-dda0-455e-b88f-b85313a75394",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-EDI-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:19:16.557579+00:00",
+          "actualizado_en": "2026-10-25T01:19:16.557579+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "17529b42-518c-446b-8043-56da39b45e7d",
+          "mascota_id": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+          "registrado_por_id": "f20c50c9-dda0-455e-b88f-b85313a75394",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": "Sin uso clínico.",
+          "tipo": "VACUNA",
+          "valor_peso": null,
+          "nombre": "Vacuna ficticia QA",
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-22T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:19:17.126388+00:00",
+          "actualizado_en": "2026-10-25T01:19:17.126388+00:00"
+        }
+      ]
+    },
+    "despues_rechazos": {
+      "mascotas": [
+        {
+          "id_mascota": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+          "propietario_id": "f20c50c9-dda0-455e-b88f-b85313a75394",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-EDI-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:19:16.557579+00:00",
+          "actualizado_en": "2026-10-25T01:19:16.557579+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "17529b42-518c-446b-8043-56da39b45e7d",
+          "mascota_id": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+          "registrado_por_id": "f20c50c9-dda0-455e-b88f-b85313a75394",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": "Sin uso clínico.",
+          "tipo": "VACUNA",
+          "valor_peso": null,
+          "nombre": "Vacuna ficticia QA",
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-22T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:19:17.126388+00:00",
+          "actualizado_en": "2026-10-25T01:19:17.126388+00:00"
+        }
+      ]
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+          "propietario_id": "f20c50c9-dda0-455e-b88f-b85313a75394",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-EDI-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:19:16.557579+00:00",
+          "actualizado_en": "2026-10-25T01:19:16.557579+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "17529b42-518c-446b-8043-56da39b45e7d",
+          "mascota_id": "16fc6e25-3172-4d8c-a0c6-3b484d81998f",
+          "registrado_por_id": "f20c50c9-dda0-455e-b88f-b85313a75394",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": "Sin uso clínico.",
+          "tipo": "VACUNA",
+          "valor_peso": null,
+          "nombre": "Vacuna ficticia QA",
+          "fecha_eliminacion": null,
+          "fecha": "2026-10-22T15:00:00+00:00",
+          "creado_en": "2026-10-25T01:19:17.126388+00:00",
+          "actualizado_en": "2026-10-25T01:19:17.126388+00:00"
+        }
+      ]
+    }
+  },
+  "limites": [],
+  "navegador": {
+    "herramienta": "Selenium WebDriver",
+    "version_selenium": "4.51.0",
+    "nombre": "MicrosoftEdge",
+    "version": "156.0.4314.42"
+  },
+  "fin": "2026-10-25T01:19:19.576Z",
+  "id_ejecucion": "ECL-SELENIUM-PERMISOS-20261025T011912682Z-582d26__ECL-EDI-002__01",
+  "fecha_hora": "2026-10-24T22:19:19.576-03:00",
+  "esperado_catalogo": "Acción denegada sin cambios",
+  "escenario": "Actor sin permiso",
+  "fundamento": "Acordado",
+  "ficha": "../entorno.json"
+}

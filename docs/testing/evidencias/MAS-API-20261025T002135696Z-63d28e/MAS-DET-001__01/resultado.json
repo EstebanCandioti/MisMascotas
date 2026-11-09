@@ -1,0 +1,195 @@
+{
+  "id_caso": "MAS-DET-001",
+  "inicio": "2026-10-25T00:21:43.143Z",
+  "resultado": "Fallida",
+  "motivo": "",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.mas.63bd131e759c4027b9f782d62380a9a6@mismascotas.test",
+        "idUsuario": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+        "plan": "Free"
+      }
+    ],
+    "mascotas": [
+      "26302a47-fa32-4207-8cb5-df8b19e040ef"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Detalle propio completo",
+      "cumple": false,
+      "esperado": {
+        "idMascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+        "propietarioId": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+        "nombre": "QA MAS-DET-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:43.661492148Z"
+      },
+      "observado": {
+        "http": 200,
+        "cuerpo": {
+          "idMascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+          "propietarioId": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+          "nombre": "QA MAS-DET-001",
+          "especie": "Perro",
+          "raza": null,
+          "fechaNacimiento": null,
+          "fechaAproximada": false,
+          "edadValor": null,
+          "edadUnidad": null,
+          "fotoPerfil": null,
+          "pesoActual": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "creadoEn": "2026-10-25T00:21:43.661492Z"
+        }
+      },
+      "defecto": "MAS-DETALLE"
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "preparación",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA MAS-DET-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+        "propietarioId": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+        "nombre": "QA MAS-DET-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:43.661492148Z"
+      }
+    },
+    {
+      "fase": "acción principal",
+      "metodo": "GET",
+      "ruta": "/mascotas/26302a47-fa32-4207-8cb5-df8b19e040ef",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+        "propietarioId": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+        "nombre": "QA MAS-DET-001",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-10-25T00:21:43.661492Z"
+      }
+    }
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+          "propietario_id": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA MAS-DET-001",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T00:21:43.661492+00:00",
+          "actualizado_en": "2026-10-25T00:21:43.661493+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [],
+      "recordatorios": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "26302a47-fa32-4207-8cb5-df8b19e040ef",
+          "propietario_id": "41d415ab-0d2c-4074-a634-4fa05efc5f40",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA MAS-DET-001",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T00:21:43.661492+00:00",
+          "actualizado_en": "2026-10-25T00:21:43.661493+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [],
+      "recordatorios": []
+    }
+  },
+  "limites": [
+    "Variante propietario. Los roles compartidos se bloquean en sus casos específicos. UI sin probar."
+  ],
+  "fin": "2026-10-25T00:21:44.021Z",
+  "capa": "API + SQL",
+  "id_ejecucion": "MAS-API-20261025T002135696Z-63d28e__MAS-DET-001__01",
+  "esperado_catalogo": "Datos correctos y acciones según rol",
+  "escenario": "Detalle autorizado",
+  "fecha_hora": "2026-10-24T21:21:44.021-03:00",
+  "ficha": "../entorno.json",
+  "versiones": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.325838952Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "contenedor_id": "f8120c5e0b2b51617183fabe2ae9551b1c69f9b1ffd8f3374937b0d5df1c3f3b",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:52.420525904Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.545241728Z"
+    }
+  }
+}

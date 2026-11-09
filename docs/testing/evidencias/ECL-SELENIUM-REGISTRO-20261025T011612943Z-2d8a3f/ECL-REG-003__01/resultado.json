@@ -1,0 +1,191 @@
+{
+  "id_caso": "ECL-REG-003",
+  "inicio": "2026-10-25T01:16:25.536Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "capa": "Selenium Web + API + SQL",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.ecl.7082bcc0a4b74b369f9d98bbdea7f42c@mismascotas.test",
+        "idUsuario": "f2fb9219-3fd6-47c0-aa65-68ee1d3c239d",
+        "nombre": "QA Clínico ECL-REG-003"
+      },
+      {
+        "email": "qa.ecl.9eca6b728f0f40669c4f25917d2c594f@mismascotas.test",
+        "idUsuario": "4dd221f2-536f-418d-a835-550a66250b83",
+        "nombre": "QA Clínico ECL-REG-003"
+      }
+    ],
+    "mascotas": [
+      {
+        "idMascota": "2c98dfe9-17dc-449d-ba31-84ed831ada21",
+        "nombre": "QA ECL-REG-003 1"
+      }
+    ],
+    "eventos": []
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Selenium/API: tercero no puede POST",
+      "cumple": true,
+      "esperado": 403,
+      "observado": {
+        "http": 403,
+        "respuesta": {
+          "codigo": "ACCESO_DENEGADO",
+          "mensaje": "No tenes permisos para realizar esta accion sobre esta mascota",
+          "timestamp": "2026-10-25T01:16:27.992064129Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Selenium/API: sin_token no puede POST",
+      "cumple": true,
+      "esperado": 401,
+      "observado": {
+        "http": 401,
+        "respuesta": {
+          "codigo": "NO_AUTENTICADO",
+          "mensaje": "Token ausente o invalido",
+          "timestamp": "2026-10-25T01:16:28.003824380Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "SQL: evento, mascota y peso intactos tras rechazo",
+      "cumple": true,
+      "esperado": "Estado anterior conservado",
+      "observado": "Comparación SQL",
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/2c98dfe9-17dc-449d-ba31-84ed831ada21/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Intento ajeno no permitido",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 403,
+      "respuesta": {
+        "codigo": "ACCESO_DENEGADO",
+        "mensaje": "No tenes permisos para realizar esta accion sobre esta mascota",
+        "timestamp": "2026-10-25T01:16:27.992064129Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/2c98dfe9-17dc-449d-ba31-84ed831ada21/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-10-22T12:00:00-03:00",
+        "nombre": "Intento ajeno no permitido",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 401,
+      "respuesta": {
+        "codigo": "NO_AUTENTICADO",
+        "mensaje": "Token ausente o invalido",
+        "timestamp": "2026-10-25T01:16:28.003824380Z"
+      }
+    }
+  ],
+  "acciones_selenium": [],
+  "capturas": [
+    "antes.png",
+    "despues.png"
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "2c98dfe9-17dc-449d-ba31-84ed831ada21",
+          "propietario_id": "f2fb9219-3fd6-47c0-aa65-68ee1d3c239d",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-003 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:16:26.06128+00:00",
+          "actualizado_en": "2026-10-25T01:16:26.06128+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_rechazos": {
+      "mascotas": [
+        {
+          "id_mascota": "2c98dfe9-17dc-449d-ba31-84ed831ada21",
+          "propietario_id": "f2fb9219-3fd6-47c0-aa65-68ee1d3c239d",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-003 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:16:26.06128+00:00",
+          "actualizado_en": "2026-10-25T01:16:26.06128+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "2c98dfe9-17dc-449d-ba31-84ed831ada21",
+          "propietario_id": "f2fb9219-3fd6-47c0-aa65-68ee1d3c239d",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-003 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-10-25T01:16:26.06128+00:00",
+          "actualizado_en": "2026-10-25T01:16:26.06128+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    }
+  },
+  "limites": [],
+  "navegador": {
+    "herramienta": "Selenium WebDriver",
+    "version_selenium": "4.51.0",
+    "nombre": "MicrosoftEdge",
+    "version": "156.0.4314.42"
+  },
+  "fin": "2026-10-25T01:16:28.523Z",
+  "id_ejecucion": "ECL-SELENIUM-REGISTRO-20261025T011612943Z-2d8a3f__ECL-REG-003__01",
+  "fecha_hora": "2026-10-24T22:16:28.523-03:00",
+  "esperado_catalogo": "Acceso denegado sin registro",
+  "escenario": "Mascota sin acceso",
+  "fundamento": "Acordado",
+  "ficha": "../entorno.json"
+}

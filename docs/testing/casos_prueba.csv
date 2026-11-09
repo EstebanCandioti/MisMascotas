@@ -1,0 +1,241 @@
+id;modulo;flujo;escenario;precondiciones_y_datos;accion;resultado_esperado;prioridad;tipo;fundamento
+AUT-REG-001;Autenticación;Registro;Registro válido;Email nuevo y contraseña válida;Enviar registro;Cuenta creada y desafío de verificación iniciado sin sesión definitiva;Crítica;Funcional;Acordado
+AUT-REG-002;Autenticación;Registro;Email duplicado;Email ya registrado;Enviar registro;Rechazo sin crear otra cuenta ni revelar datos sensibles;Alta;Validación;Acordado
+AUT-REG-003;Autenticación;Registro;Email inválido;Formato de email incorrecto;Enviar registro;Validación clara y ninguna cuenta creada;Media;Validación;Acordado
+AUT-REG-004;Autenticación;Registro;Contraseña demasiado corta;Siete caracteres con mayúscula y número;Enviar registro;Validación de mínimo ocho caracteres y ninguna cuenta creada;Alta;Validación;Acordado
+AUT-REG-005;Autenticación;Registro;Falta el email;Contraseña informada y email vacío;Enviar registro;Se identifica el campo requerido y no se crea cuenta;Alta;Validación;Acordado
+AUT-REG-006;Autenticación;Registro;Falta la contraseña;Email informado y contraseña vacía;Enviar registro;Se identifica el campo requerido y no se crea cuenta;Alta;Validación;Acordado
+AUT-REG-007;Autenticación;Registro;Ambos campos vacíos;Email y contraseña vacíos;Enviar registro;Se indican ambos campos requeridos y no se crea cuenta;Media;Validación;Acordado
+AUT-REG-008;Autenticación;Registro;Interrupción del registro;Cuenta creada pero verificación pendiente;Cerrar el flujo antes de verificar;La cuenta sigue pendiente y puede retomarse desde login;Alta;Recuperación;Acordado
+AUT-REG-009;Autenticación;Registro;Continuidad sin salir;Registro válido en el mismo dispositivo;Continuar tras registrar;Se presenta directamente el desafío de verificación;Alta;Funcional;Acordado
+AUT-REG-010;Autenticación;Registro;Falta nombre;Email y contraseña válidos con nombre vacío;Enviar registro;Se indica nombre obligatorio y no se crea cuenta;Media;Validación;Acordado
+AUT-REG-011;Autenticación;Registro;Nombre y email vacíos;Contraseña válida;Enviar registro;Se indican ambos campos faltantes y no se crea cuenta;Media;Validación;Acordado
+AUT-REG-012;Autenticación;Registro;Nombre y contraseña vacíos;Email válido;Enviar registro;Se indican ambos campos faltantes y no se crea cuenta;Media;Validación;Acordado
+AUT-REG-013;Autenticación;Registro;Tres campos vacíos;Nombre email y contraseña vacíos;Enviar registro;Se indican los campos obligatorios y no se crea cuenta;Media;Validación;Acordado
+AUT-REG-014;Autenticación;Registro;Contraseña sin mayúscula;Ocho caracteres o más con número y solo minúsculas;Enviar registro;Se rechaza por falta de mayúscula;Alta;Validación;Acordado
+AUT-REG-015;Autenticación;Registro;Contraseña sin número;Ocho caracteres o más con mayúscula y sin dígitos;Enviar registro;Se rechaza por falta de número;Alta;Validación;Acordado
+AUT-REG-016;Autenticación;Registro;Longitud mínima exacta;Contraseña de ocho caracteres con mayúscula y número;Enviar registro;Se acepta la contraseña si los demás datos son válidos;Alta;Límites;Diseñado por QA
+AUT-REG-017;Autenticación;Registro;Duplicado normalizado;Email registrado con otra combinación de mayúsculas y espacios externos;Enviar registro;Se rechaza como duplicado sin crear segunda cuenta;Alta;Integridad;Diseñado por QA
+AUT-LOG-001;Autenticación;Login;Credenciales válidas;Usuario activo y contraseña correcta;Iniciar sesión;Se inicia el desafío 2FA requerido sin conceder acceso antes de verificar;Crítica;Seguridad;Acordado
+AUT-LOG-002;Autenticación;Login;Email no registrado;Email inexistente;Iniciar sesión;Acceso rechazado sin crear sesión;Crítica;Seguridad;Acordado
+AUT-LOG-003;Autenticación;Login;Contraseña equivocada;Usuario existente y contraseña incorrecta;Iniciar sesión;Acceso rechazado sin crear sesión;Crítica;Seguridad;Acordado
+AUT-LOG-004;Autenticación;Login;Falta email;Contraseña informada y email vacío;Iniciar sesión;Validación del campo y ninguna sesión;Alta;Validación;Acordado
+AUT-LOG-005;Autenticación;Login;Falta contraseña;Email informado y contraseña vacía;Iniciar sesión;Validación del campo y ninguna sesión;Alta;Validación;Acordado
+AUT-LOG-006;Autenticación;Login;Ambos campos vacíos;Email y contraseña vacíos;Iniciar sesión;Validación de ambos campos y ninguna sesión;Media;Validación;Acordado
+AUT-2FA-001;Autenticación;Verificación;Código correcto desde registro;Cuenta pendiente con código vigente;Ingresar código correcto;Cuenta verificada y acceso concedido según el flujo;Crítica;Seguridad;Acordado
+AUT-2FA-002;Autenticación;Verificación;Código correcto desde login;Cuenta pendiente que abandonó el registro;Iniciar login e ingresar código correcto;Se completa la verificación sin exigir nuevo registro;Alta;Recuperación;Acordado
+AUT-2FA-003;Autenticación;Verificación;Código incorrecto;Desafío vigente;Ingresar código erróneo;No se concede acceso ni se verifica la cuenta;Crítica;Seguridad;Diseñado por QA
+AUT-2FA-004;Autenticación;Verificación;Código vencido;Código fuera de vigencia;Ingresar código vencido;Se rechaza y se ofrece un camino de reenvío permitido;Crítica;Seguridad;Diseñado por QA
+AUT-2FA-005;Autenticación;Verificación;Reenvío para estado pendiente;Cuenta con verificación pendiente;Solicitar nuevo código;Se emite nuevo desafío y el código anterior deja de ser utilizable;Crítica;Seguridad;Acordado
+AUT-2FA-006;Autenticación;Verificación;Reenvío sin estado pendiente;Cuenta ya verificada;Solicitar reenvío de verificación de registro;No se emite un código de registro nuevo;Alta;Seguridad;Acordado
+AUT-SES-001;Autenticación;Sesión;Acceso protegido con token válido;Sesión verificada y token vigente;Consultar recurso protegido;Acceso autorizado solo al usuario del token;Crítica;Seguridad;Acordado
+AUT-SES-002;Autenticación;Sesión;Sin token o token inválido;Recurso protegido;Consultar sin credencial válida;Respuesta de autorización denegada sin datos;Crítica;Seguridad;Acordado
+AUT-SES-003;Autenticación;Sesión;Renovación normal;Refresh token válido;Renovar sesión;Se emite nueva pareja y el refresh anterior no puede volver a utilizarse;Crítica;Seguridad;Acordado
+AUT-SES-004;Autenticación;Sesión;Reutilización del refresh anterior;Refresh token ya rotado;Renovar otra vez;Se rechaza y no se generan sesiones adicionales;Crítica;Seguridad;Acordado
+AUT-SES-005;Autenticación;Sesión;Renovaciones simultáneas;Dos solicitudes con el mismo refresh;Enviarlas simultáneamente;Como máximo una renovación prospera y se investiga cualquier doble emisión;Crítica;Concurrencia;Diseñado por QA
+AUT-SES-006;Autenticación;Sesión;Access token anterior durante su vigencia;Access token previo aún no expirado tras renovar;Consultar usuario/me;Se aplica la política de validez vigente hasta expiración y no se acepta uno expirado;Crítica;Seguridad;Acordado
+MAS-REG-001;Mascotas;Alta;Alta válida;Propietario bajo el cupo de su plan;Crear mascota con datos obligatorios;Mascota persistida y visible solo a personas autorizadas;Crítica;Funcional;Acordado
+MAS-REG-002;Mascotas;Alta;Campos obligatorios faltantes;Datos mínimos incompletos;Crear mascota;Validación por campo sin mascota parcial;Alta;Validación;Acordado
+MAS-REG-003;Mascotas;Alta;Valores inválidos o extremos;Fechas y textos en sus límites;Crear mascota;Se aceptan los valores válidos y se rechazan los inválidos sin truncado silencioso;Alta;Validación;Diseñado por QA
+MAS-REG-004;Mascotas;Alta;Cupo Free;Propietario Free con cinco mascotas activas;Crear una sexta mascota;Alta rechazada sin afectar las cinco existentes;Alta;Plan;Acordado
+MAS-REG-005;Mascotas;Alta;Alta Premium;Propietario Premium supera cinco mascotas;Crear otra mascota;Alta permitida sin límite Free;Alta;Plan;Acordado
+MAS-LIS-001;Mascotas;Listado;Listado propio y compartido;Usuario con mascotas propias y accesos aceptados;Abrir listado;Aparecen solo las mascotas accesibles sin duplicados;Crítica;Autorización;Acordado
+MAS-LIS-002;Mascotas;Listado;Estado vacío;Usuario sin mascotas accesibles;Abrir listado;Mensaje y acción inicial adecuados sin error;Media;Usabilidad;Diseñado por QA
+MAS-LIS-003;Mascotas;Listado;Invitación pendiente;Usuario con invitación no aceptada;Abrir listado;La mascota no aparece como accesible hasta aceptar;Crítica;Autorización;Acordado
+MAS-LIS-004;Mascotas;Listado;Revocación reciente;Acceso revocado mientras la pantalla estaba abierta;Actualizar o abrir detalle;La mascota desaparece y el detalle directo se deniega;Crítica;Autorización;Acordado
+MAS-DET-001;Mascotas;Detalle;Detalle autorizado;Propietario o usuario con acceso aceptado;Abrir detalle;Datos correctos y acciones según rol;Crítica;Autorización;Acordado
+MAS-DET-002;Mascotas;Detalle;Mascota ajena;Usuario sin acceso e ID conocido;Consultar detalle directo;Acceso denegado sin filtración de datos;Crítica;Seguridad;Acordado
+MAS-EDI-001;Mascotas;Edición;Edición por propietario;Propietario de la mascota;Modificar datos editables;Cambios persistidos sin alterar historia clínica;Alta;Funcional;Acordado
+MAS-EDI-002;Mascotas;Edición;Edición por colaborador;Familia o Cuidador con acceso;Modificar perfil básico por UI o API;Acción denegada sin cambios;Crítica;Autorización;Acordado
+MAS-EDI-003;Mascotas;Edición;Mascota ajena;Usuario sin acceso;Enviar edición directa;Acción denegada sin cambios;Crítica;Seguridad;Acordado
+MAS-EDI-004;Mascotas;Edición;Peso no se modifica como dato básico;Mascota con historial de pesos;Intentar editar peso desde perfil;Se deriva al flujo de carga de peso sin sobrescribir historia;Crítica;Integridad;Acordado
+MAS-ELI-001;Mascotas;Eliminación;Confirmación de borrado;Propietario con mascota activa;Solicitar y confirmar eliminación;Mascota queda eliminada lógicamente y no accesible en flujos activos;Crítica;Datos;Acordado
+MAS-ELI-002;Mascotas;Eliminación;Cancelar borrado;Propietario en confirmación;Cancelar;Mascota y relaciones permanecen sin cambios;Crítica;Funcional;Acordado
+MAS-ELI-003;Mascotas;Eliminación;Borrado por colaborador;Familia o Cuidador;Intentar eliminar por UI o API;Acción denegada;Crítica;Autorización;Acordado
+MAS-ELI-004;Mascotas;Eliminación;Pérdida de acceso compartido;Mascota eliminada lógicamente;Consultar desde cuentas vinculadas;Todos pierden acceso activo y se conserva el historial hasta la purga prevista;Crítica;Integridad;Acordado
+ECL-REG-001;Historial clínico;Alta;Evento clínico válido;Usuario con permiso y mascota accesible;Registrar evento;Evento aparece en historial de esa mascota con autoría y fecha;Crítica;Funcional;Acordado
+ECL-REG-002;Historial clínico;Alta;Datos requeridos inválidos;Evento con campos faltantes o fechas inválidas;Registrar evento;No se persiste y se señalan errores;Alta;Validación;Acordado
+ECL-REG-003;Historial clínico;Alta;Mascota sin acceso;ID de mascota ajena;Enviar evento directo;Acceso denegado sin registro;Crítica;Seguridad;Acordado
+ECL-REG-004;Historial clínico;Alta;Tipos clínicos soportados;Consulta vacuna tratamiento y otros tipos definidos;Registrar uno de cada tipo;Cada uno conserva campos específicos y aparece en historial;Alta;Cobertura;Diseñado por QA
+ECL-REG-005;Historial clínico;Alta;Carga inicial de peso;Mascota sin peso previo;Usar PUT de carga inicial;Queda primer peso en el historial y disponible para consultas clínicas;Alta;Funcional;Acordado
+ECL-REG-006;Historial clínico;Alta;Peso posterior distinto;Mascota con peso previo;Registrar nuevo peso;Se agrega un punto sin sobrescribir el previo;Crítica;Integridad;Acordado
+ECL-REG-007;Historial clínico;Alta;Peso fuera de rango;Valor nulo negativo o no numérico;Registrar peso;Rechazo sin alterar el historial;Alta;Validación;Diseñado por QA
+ECL-REG-008;Historial clínico;Alta;Dos pesos en distinta fecha;Mascota con registros históricos;Registrar peso de otra fecha;Se mantienen ambos registros y su orden cronológico;Alta;Integridad;Acordado
+ECL-REG-009;Historial clínico;Alta;Peso anterior a un registro más reciente;Mascota con peso reciente y fecha anterior válida;Registrar peso de fecha pasada;Se agrega al historial y el peso actual se calcula por fecha de medición más reciente no por fecha de carga;Crítica;Integridad;Acordado
+ECL-LIS-001;Historial clínico;Consulta;Historial completo;Mascota con distintos eventos;Abrir historial;Eventos correctos y ordenados sin omisiones;Crítica;Funcional;Acordado
+ECL-LIS-002;Historial clínico;Consulta;Filtros por tipo y fecha;Historial con eventos variados;Aplicar filtros;Solo resultados coincidentes y opción de limpiar;Media;Funcional;Diseñado por QA
+ECL-LIS-003;Historial clínico;Consulta;Evolución de peso;Al menos dos registros de peso;Abrir gráfico;Eje temporal y valores corresponden a las mediciones sin alterar datos;Alta;Datos;Acordado
+ECL-LIS-004;Historial clínico;Consulta;Acceso compartido;Familia o Cuidador aceptado;Consultar historial;Puede consultar según permisos sin editar perfil de mascota;Crítica;Autorización;Acordado
+ECL-EDI-001;Historial clínico;Edición;Corrección permitida;Actor con permiso de edición una vez definido;Modificar un evento;Se actualiza el evento correcto con trazabilidad sin alterar otros eventos;Alta;Integridad;Pendiente de permisos
+ECL-EDI-002;Historial clínico;Edición;Actor sin permiso;Usuario sin acceso o permiso de edición;Enviar cambio directo;Acción denegada sin cambios;Crítica;Autorización;Acordado
+ECL-ELI-001;Historial clínico;Eliminación;Eliminar evento permitido;Actor con permiso de eliminación una vez definido;Confirmar eliminación;Evento deja de aparecer en vista activa y queda trazabilidad exigida;Alta;Integridad;Pendiente de permisos
+ECL-ELI-002;Historial clínico;Eliminación;Eliminar evento ajeno sin permiso;Actor no autorizado;Enviar eliminación directa;Acción denegada y evento conservado;Crítica;Autorización;Acordado
+REC-ALT-001;Recordatorios;Alta;Recordatorio único válido;Propietario o Familia y fecha futura;Crear recordatorio;Se guarda y genera una ocurrencia futura;Crítica;Funcional;Acordado
+REC-ALT-002;Recordatorios;Alta;Recordatorio recurrente válido;Regla y próxima ocurrencia futura;Crear recordatorio;Se genera la serie según la regla sin duplicados;Crítica;Funcional;Acordado
+REC-ALT-003;Recordatorios;Alta;Faltan campos;Datos obligatorios incompletos;Crear recordatorio;Validación clara sin guardado parcial;Alta;Validación;Acordado
+REC-ALT-004;Recordatorios;Alta;Único en el pasado;Inicio anterior a ahora local;Crear recordatorio único;Alta rechazada sin ocurrencia;Alta;Validación;Acordado
+REC-ALT-005;Recordatorios;Alta;Recurrente iniciado en el pasado;Regla con próxima ocurrencia futura;Crear recurrente;Se acepta sin generar tareas retroactivas;Alta;Recurrencia;Acordado
+REC-ALT-006;Recordatorios;Alta;Recurrente terminado en el pasado;Sin ocurrencia futura;Crear recurrente;Alta rechazada;Alta;Validación;Acordado
+REC-ALT-007;Recordatorios;Alta;Cuidador intenta crear;Cuidador con acceso a mascota;Crear por UI o API;Acción denegada sin registro;Crítica;Autorización;Acordado
+REC-REC-001;Recordatorios;Recurrencia;Mensual desde día 31;Inicio 31 de enero de año común;Consultar febrero y marzo;Ocurre el 28 de febrero y vuelve al 31 de marzo;Alta;Recurrencia;Acordado
+REC-REC-002;Recordatorios;Recurrencia;Febrero bisiesto;Inicio día 31 y febrero de año bisiesto;Consultar serie;Ocurre el 29 de febrero y conserva ancla 31;Alta;Recurrencia;Acordado
+REC-REC-003;Recordatorios;Recurrencia;Intervalo mayor a un mes;Regla mensual cada varios meses;Consultar serie;Solo aparecen meses de la serie y se ajusta el día inexistente;Alta;Recurrencia;Acordado
+REC-REC-004;Recordatorios;Recurrencia;Límite de serie;Regla con fecha de fin;Consultar después del fin;No hay ocurrencias posteriores ni serie infinita materializada;Alta;Recurrencia;Diseñado por QA
+REC-LIS-001;Recordatorios;Listado;Lista activa y acceso;Usuario con mascotas accesibles;Abrir recordatorios;Solo aparecen recordatorios permitidos y activos según filtro;Crítica;Autorización;Acordado
+REC-LIS-002;Recordatorios;Listado;Sin resultados;Sin recordatorios o filtros sin coincidencias;Abrir lista;Estado vacío útil y sin error;Media;Usabilidad;Diseñado por QA
+REC-EDI-001;Recordatorios;Edición;Editar datos permitidos;Propietario o Familia y recordatorio existente;Modificar título o programación;Se actualizan las ocurrencias futuras sin corromper historial pasado;Crítica;Integridad;Acordado
+REC-EDI-002;Recordatorios;Edición;Editar recordatorio vencido;Recordatorio único ya vencido;Modificar solo título;No se aplica la regla de alta de fecha pasada;Alta;Validación;Acordado
+REC-EDI-003;Recordatorios;Edición;Edición no autorizada;Cuidador o usuario sin acceso;Enviar cambio directo;Acción denegada;Crítica;Autorización;Acordado
+REC-EST-001;Recordatorios;Estado;Desactivar recordatorio;Serie activa con pasado y futuro;Desactivar;No hay futuras tareas visibles y se conserva historial pasado;Alta;Integridad;Acordado
+REC-EST-002;Recordatorios;Estado;Reactivar recordatorio;Serie inactiva con próximas fechas;Reactivar;Vuelven solo las futuras según la regla sin duplicados;Alta;Integridad;Acordado
+REC-ELI-001;Recordatorios;Eliminación;Eliminar con historial;Serie con ocurrencias pasadas y futuras;Confirmar eliminación;Desaparecen futuras y se conserva historial pasado;Crítica;Integridad;Acordado
+REC-ELI-002;Recordatorios;Eliminación;Cancelar;Serie activa;Cancelar borrado;Nada cambia;Alta;Funcional;Acordado
+REC-TAR-001;Recordatorios;Tareas del día;Lista diaria;Varias ocurrencias y mascotas accesibles;Abrir tareas de la fecha;Lista solo de esa fecha y de mascotas autorizadas;Crítica;Funcional;Acordado
+REC-TAR-002;Recordatorios;Tareas del día;Confirmar una ocurrencia;Recurrencia con dos fechas pendientes;Confirmar una fecha;Solo esa ocurrencia queda confirmada con actor y hora;Crítica;Integridad;Acordado
+REC-TAR-003;Recordatorios;Tareas del día;Confirmación concurrente;Dos usuarios con acceso y misma tarea;Confirmar simultáneamente;Un estado final consistente sin doble confirmación incoherente;Alta;Concurrencia;Diseñado por QA
+REC-TAR-004;Recordatorios;Tareas del día;Desmarcar confirmación propia;Ocurrencia confirmada por el mismo actor;Desmarcar error;Se revierte esa ocurrencia y se audita sin alterar otras;Alta;Integridad;Acordado
+REC-TAR-005;Recordatorios;Tareas del día;Intento sin acceso;Usuario revocado o ajeno;Confirmar por petición directa;Acción denegada;Crítica;Seguridad;Acordado
+NOT-GEN-001;Notificaciones;Push;Propietario habilitado;Push app y dispositivo habilitados;Llegar a hora de ocurrencia;Recibe aviso de su mascota y puede abrir tarea correcta;Crítica;Integración;Acordado
+NOT-GEN-002;Notificaciones;Push;Push de app apagado;Propietario con push deshabilitado;Llegar a hora de ocurrencia;No se envía push y la tarea sigue visible;Alta;Preferencias;Acordado
+NOT-GEN-003;Notificaciones;Push;Sistema operativo bloquea push;Preferencia app activa y permiso OS denegado;Llegar a hora de ocurrencia;Se advierte bloqueo y no se afirma entrega exitosa;Media;Integración;Acordado
+NOT-GEN-004;Notificaciones;Push;Familia o Cuidador sin suscripción;Acceso aceptado y preferencia por mascota apagada;Llegar a hora;Puede ver la tarea pero no recibe push;Alta;Privacidad;Acordado
+NOT-GEN-005;Notificaciones;Push;Suscripción por mascota;Colaborador con dos mascotas accesibles;Activar push de solo una;Recibe solo avisos de esa mascota sin alterar preferencias ajenas;Alta;Preferencias;Acordado
+NOT-GEN-006;Notificaciones;Push;Revocación de acceso;Usuario suscripto a mascota revocada;Generar aviso posterior;No recibe avisos ni puede abrir contenido de la mascota;Crítica;Autorización;Acordado
+NOT-REA-001;Notificaciones;Reavisos;Tarea pendiente;Ocurrencia sin confirmar;Avanzar a T más 15 30 y 60 minutos;Se envía un reaviso en cada punto medido desde la hora original y ninguno adicional;Alta;Temporización;Acordado
+NOT-REA-002;Notificaciones;Reavisos;Confirmación antes de reaviso;Tarea pendiente con reaviso programado;Confirmar antes del siguiente punto;No salen reavisos restantes de esa ocurrencia;Alta;Temporización;Acordado
+NOT-REA-003;Notificaciones;Reavisos;Nueva ocurrencia;Serie con siguiente ocurrencia iniciada;Procesar avisos demorados;No se emiten reavisos tardíos de la anterior;Alta;Temporización;Acordado
+NOT-REA-004;Notificaciones;Reavisos;Doble procesamiento;Mismo aviso procesado dos veces;Reintentar despacho;No se duplica al destinatario el mismo aviso lógico;Alta;Idempotencia;Diseñado por QA
+CUI-INV-001;Cuidado compartido;Invitación;Propietario invita;Propietario con cupo y destinatario válido;Crear invitación Familia o Cuidador;Invitación pendiente creada para todas sus mascotas según la regla acordada;Crítica;Funcional;Acordado
+CUI-INV-002;Cuidado compartido;Invitación;Invitar sin propiedad;Familia Cuidador o usuario ajeno;Enviar invitación por API;Acción denegada;Crítica;Autorización;Acordado
+CUI-INV-003;Cuidado compartido;Invitación;Cupo Free cuenta pendientes;Propietario Free con tres plazas pendientes o aceptadas;Enviar otra invitación;Rechazo sin cuarta plaza;Alta;Plan;Acordado
+CUI-INV-004;Cuidado compartido;Invitación;Liberación del cupo;Invitación rechazada vencida cancelada o acceso revocado;Invitar a otra persona;La plaza liberada puede reutilizarse;Alta;Plan;Acordado
+CUI-INV-005;Cuidado compartido;Invitación;Invitación duplicada;Mismo propietario y destinatario con invitación pendiente o acceso vigente;Invitar de nuevo;No se crea segundo acceso ni se consume otra plaza;Alta;Idempotencia;Acordado
+CUI-INV-006;Cuidado compartido;Invitación;Límite Premium;Propietario Premium supera tres personas;Enviar nueva invitación;Se permite según plan Premium;Alta;Plan;Acordado
+CUI-INV-007;Cuidado compartido;Invitación;Vencimiento de 48 horas;Invitación pendiente en frontera exacta;Aceptar antes y después del límite;Antes es válida y al alcanzar vencimiento se rechaza sin acceso;Crítica;Temporización;Acordado
+CUI-INV-008;Cuidado compartido;Invitación;Cancelación;Propietario con invitación pendiente;Cancelar;No se puede aceptar luego y se libera cupo;Crítica;Integridad;Acordado
+CUI-ACE-001;Cuidado compartido;Respuesta;Aceptación;Destinatario correcto e invitación vigente;Aceptar;Acceso activo a todas las mascotas del propietario sin duplicados;Crítica;Autorización;Acordado
+CUI-ACE-002;Cuidado compartido;Respuesta;Rechazo;Destinatario correcto e invitación vigente;Rechazar;No hay acceso y se libera cupo;Alta;Integridad;Acordado
+CUI-ACE-003;Cuidado compartido;Respuesta;Respuesta por tercero;Token o invitación de otro destinatario;Aceptar o rechazar;Acción denegada;Crítica;Seguridad;Acordado
+CUI-ROL-001;Cuidado compartido;Roles;Propietario administra accesos;Propietario con colaborador activo;Cambiar o revocar acceso;Cambio aplicado solo por propietario con trazabilidad;Crítica;Autorización;Acordado
+CUI-ROL-002;Cuidado compartido;Roles;Colaborador administra accesos;Familia o Cuidador;Intentar cambiar rol o revocar a otro;Acción denegada;Crítica;Autorización;Acordado
+CUI-ROL-003;Cuidado compartido;Roles;Revocación conserva historia;Colaborador con eventos o confirmaciones anteriores;Revocar acceso;Pierde acceso futuro pero se conserva autoría de actuaciones pasadas;Crítica;Integridad;Acordado
+CUI-ROL-004;Cuidado compartido;Roles;Acceso no se revoca por mascota individual;Colaborador aceptado para propietario;Intentar quitar solo una mascota;El sistema mantiene alcance por propietario y no ofrece una falsa revocación parcial;Alta;Autorización;Acordado
+CAL-VIS-001;Calendario;Vistas;Vista mensual inicial;Usuario con varias mascotas accesibles;Abrir calendario;Se abre mes actual con ocurrencias de todas las mascotas autorizadas;Alta;Funcional;Acordado
+CAL-VIS-002;Calendario;Vistas;Cambiar mes semana listado;Fecha y filtros activos;Alternar vistas y regresar;Se conserva fecha filtros y conjunto de ocurrencias sin duplicados;Media;Funcional;Acordado
+CAL-VIS-003;Calendario;Vistas;Navegar mes y año;Ocurrencias próximas al cambio de fecha local;Navegar;Cada una aparece en su día de Argentina;Alta;Zona horaria;Acordado
+CAL-VIS-004;Calendario;Vistas;Estado vacío;Período sin ocurrencias;Abrir calendario;Se informa estado vacío y se orienta a crear recordatorio si tiene permiso;Media;Usabilidad;Acordado
+CAL-FIL-001;Calendario;Filtros;Filtrar mascota;Varias mascotas;Elegir una;Solo sus ocurrencias;Media;Funcional;Acordado
+CAL-FIL-002;Calendario;Filtros;Filtrar tipo;Varios tipos;Elegir tipo;Solo ocurrencias del tipo;Media;Funcional;Acordado
+CAL-FIL-003;Calendario;Filtros;Combinar filtros;Mascota y tipo seleccionados;Aplicar ambos;Intersección correcta sin eventos ajenos;Alta;Funcional;Acordado
+CAL-FIL-004;Calendario;Filtros;Filtro sin resultados;Combinación vacía;Aplicar filtros;Mensaje distinto de calendario vacío y opción de limpiar;Media;Usabilidad;Acordado
+CAL-FIL-005;Calendario;Filtros;Mascota sin acceso;ID de mascota ajena o revocada;Consultar calendario directo;Se deniega sin exponer ocurrencias;Crítica;Seguridad;Acordado
+CAL-DET-001;Calendario;Detalle;Abrir ocurrencia concreta;Día con varias ocurrencias;Elegir una;Datos de recordatorio mascota tipo fecha hora y estado de esa ocurrencia;Alta;Funcional;Acordado
+CAL-DET-002;Calendario;Detalle;Detalle solo lectura;Ocurrencia confirmable;Abrir detalle;No hay confirmación aquí y la acción está en tareas del día;Media;Funcional;Acordado
+CAL-DET-003;Calendario;Detalle;Pérdida de acceso;Calendario cargado antes de revocación;Abrir detalle;Se deniega y no se muestra información obsoleta;Crítica;Seguridad;Acordado
+CAL-DET-004;Calendario;Detalle;Cierre de detalle;Fecha vista y filtros activos;Cerrar detalle;Regresa al mismo contexto;Media;Usabilidad;Acordado
+CAL-ALT-001;Calendario;Alta rápida;Elegir día;Propietario o Familia;Tocar día y elegir crear recordatorio;Formulario abierto con fecha local precargada sin guardar nada;Alta;Funcional;Acordado
+CAL-ALT-002;Calendario;Alta rápida;Filtro por mascota;Mascota seleccionada;Iniciar alta;Mascota precargada y editable entre accesibles manteniendo fecha;Media;Funcional;Acordado
+CAL-ALT-003;Calendario;Alta rápida;Sin filtro por mascota;Varias mascotas accesibles;Iniciar alta;Se exige elegir mascota antes de guardar;Alta;Validación;Acordado
+CAL-ALT-004;Calendario;Alta rápida;Cancelar formulario;Alta abierta desde calendario;Salir sin guardar;No se crea recordatorio ni ocurrencia;Media;Integridad;Acordado
+CAL-ALT-005;Calendario;Alta rápida;Cuidador intenta alta;Cuidador con calendario visible;Buscar acción y usar ruta directa;No se ofrece ni permite crear;Crítica;Autorización;Acordado
+CAL-HIS-001;Calendario;Historial;Confirmación desde tareas;Ocurrencia visible pendiente;Confirmar en tareas del día y volver;Solo esa ocurrencia refleja estado confirmado;Alta;Integridad;Acordado
+CAL-HIS-002;Calendario;Historial;Pasada no confirmada;Ocurrencia anterior pendiente;Consultar fecha pasada;Se presenta como no confirmada nunca como cumplida;Alta;Integridad;Acordado
+CAL-HIS-003;Calendario;Historial;Desactivación o eliminación;Serie con pasado y futuro;Desactivar o eliminar recordatorio;Pasado queda visible y futuro desaparece;Alta;Integridad;Acordado
+CAL-HIS-004;Calendario;Historial;Serie sin fin;Recurrencia ilimitada;Consultar mes y cambiar período;Se calculan solo ocurrencias consultadas con respuesta acotada;Alta;Rendimiento;Acordado
+EXP-ACC-001;Exportación PDF;Acceso;Propietario exporta;Mascota propia con historial;Solicitar exportación;Se genera y descarga PDF completo sin costo;Alta;Funcional;CU12
+EXP-ACC-002;Exportación PDF;Acceso;Familia y Cuidador exportan;Acceso aceptado a la mascota;Solicitar exportación;Pueden descargar el mismo historial según acceso vigente;Alta;Autorización;CU12
+EXP-ACC-003;Exportación PDF;Acceso;Free exporta repetidamente;Propietario Free con historial;Exportar varias veces;No hay bloqueo por plan ni cupo de descargas;Media;Plan;CU12
+EXP-ACC-004;Exportación PDF;Acceso;Acceso revocado o mascota ajena;Usuario sin acceso e ID conocido;Solicitar PDF directo;Se deniega sin datos ni archivo;Crítica;Seguridad;CU12
+EXP-CON-001;Exportación PDF;Contenido;Datos de cabecera;Mascota con foto y propietario;Exportar;PDF muestra mascota propietario y fecha de generación correctos;Alta;Datos;CU12
+EXP-CON-002;Exportación PDF;Contenido;Foto ausente;Mascota sin foto;Exportar;PDF sigue siendo legible y no muestra imagen rota;Media;Presentación;CU12
+EXP-CON-003;Exportación PDF;Contenido;Historial completo;Mascota con consultas vacunas tratamientos y pesos;Exportar;Cada registro pertinente aparece una vez con fechas y orden consistentes;Crítica;Integridad;CU12
+EXP-CON-004;Exportación PDF;Contenido;Historial extenso;Registros suficientes para varias páginas;Exportar;No hay recortes superposiciones ni páginas ilegibles;Alta;Presentación;Diseñado por QA
+EXP-CON-005;Exportación PDF;Contenido;Sin registros;Mascota sin historial clínico;Solicitar exportación;Se informa que no hay datos para exportar y no se entrega un historial ficticio;Alta;Funcional;CU12
+EXP-SEG-001;Exportación PDF;Privacidad;Sin copia persistente en servidor;PDF generado exitosamente;Inspeccionar almacenamiento y vínculos tras descarga;No queda copia persistente accesible en servidor;Crítica;Privacidad;CU12
+EXP-SEG-002;Exportación PDF;Robustez;Falla o cancelación;Error de generación o usuario cancela;Intentar exportar;Se informa estado real sin archivo incompleto ni falso éxito;Alta;Resiliencia;CU12
+EXP-AUD-001;Exportación PDF;Auditoría;Exportación trazable;Exportación exitosa;Consultar evidencia de auditoría interna;Se registra actor mascota acción y fecha sin almacenar el PDF;Alta;Auditoría;CU12
+ALB-LIS-001;Álbumes y fotos;Lectura;Free consulta;Usuario Free con acceso a mascota con álbum;Abrir álbum y fotos;Contenido visible sin exigir Premium;Alta;Plan;CU16
+ALB-LIS-002;Álbumes y fotos;Lectura;Familia y Cuidador consultan;Acceso aceptado a mascota del álbum;Abrir listado y detalle;Pueden ver contenido autorizado pero no acciones de gestión;Alta;Autorización;Decisión aprobada
+ALB-LIS-003;Álbumes y fotos;Lectura;Álbum de varias mascotas;Álbum con dos mascotas del mismo propietario;Consultar desde cada mascota;Aparece el mismo álbum una vez por contexto sin copias divergentes;Alta;Integridad;Decisión aprobada
+ALB-LIS-004;Álbumes y fotos;Lectura;Sin álbumes;Mascota sin álbum;Abrir sección;Estado vacío claro con alta solo para propietario Premium;Media;Usabilidad;CU16
+ALB-LIS-005;Álbumes y fotos;Lectura;Acceso perdido;Colaborador revocado;Abrir foto o álbum por URL directa;Acceso denegado sin exponer binario o metadatos;Crítica;Privacidad;Decisión aprobada
+ALB-ALT-001;Álbumes y fotos;Alta de álbum;Álbum válido N:M;Propietario Premium con dos mascotas propias;Crear con nombre y ambas mascotas;Un único álbum vinculado a ambas y visible vacío;Alta;Funcional;Decisión aprobada
+ALB-ALT-002;Álbumes y fotos;Alta de álbum;Nombre ausente;Propietario Premium y mascota válida;Crear sin nombre;Rechazo sin álbum parcial;Media;Validación;CU16a
+ALB-ALT-003;Álbumes y fotos;Alta de álbum;Sin mascotas;Propietario Premium;Crear sin asociar mascota;Rechazo sin álbum parcial;Alta;Validación;Decisión aprobada
+ALB-ALT-004;Álbumes y fotos;Alta de álbum;Mascota ajena en selección;Propietario Premium con ID ajeno;Crear álbum con mascota ajena o mezcla;Rechazo completo sin filtrar datos ajenos;Crítica;Seguridad;Decisión aprobada
+ALB-ALT-005;Álbumes y fotos;Alta de álbum;Mascotas de distintos propietarios;Usuario con mascotas propias y compartidas;Intentar mezclar propietarios;Rechazo porque el álbum pertenece a un único propietario;Crítica;Integridad;Decisión aprobada
+ALB-ALT-006;Álbumes y fotos;Alta de álbum;Free intenta crear;Propietario Free;Usar UI o API;Acción bloqueada sin álbum;Alta;Plan;CU16a
+ALB-ALT-007;Álbumes y fotos;Alta de álbum;Colaborador intenta crear;Familia o Cuidador Premium con acceso;Usar UI o API;Acción bloqueada por no ser propietario;Alta;Autorización;Decisión aprobada
+ALB-ALT-008;Álbumes y fotos;Alta de álbum;Cancelar;Formulario con datos válidos;Cancelar alta;No se crea álbum;Media;Funcional;CU16a
+ALB-EDI-001;Álbumes y fotos;Edición de álbum;Nombre y descripción;Propietario Premium con álbum;Modificar nombre o descripción;Datos visibles actualizados sin alterar mascotas ni fotos;Media;Funcional;CU16b
+ALB-EDI-002;Álbumes y fotos;Edición de álbum;Asociaciones fijas;Álbum con dos mascotas;Intentar agregar quitar o sustituir mascotas por API;Acción rechazada y asociaciones originales intactas;Alta;Integridad;Decisión aprobada
+ALB-EDI-003;Álbumes y fotos;Edición de álbum;Free o colaborador edita;Propietario vencido o Familia o Cuidador;Enviar cambio directo;Acción denegada sin cambios;Alta;Autorización;Decisión aprobada
+ALB-ELI-001;Álbumes y fotos;Eliminación de álbum;Confirmación informada;Álbum con varias fotos;Solicitar borrado;Confirmación muestra nombre y cantidad real de fotos que se perderán;Alta;Usabilidad;CU16c
+ALB-ELI-002;Álbumes y fotos;Eliminación de álbum;Borrado confirmado;Propietario Premium con álbum;Confirmar borrado;Álbum y fotos se eliminan irreversiblemente sin enlaces ni archivos huérfanos;Crítica;Integridad;CU16c
+ALB-ELI-003;Álbumes y fotos;Eliminación de álbum;Cancelar borrado;Álbum con fotos;Cancelar;Álbum y fotos permanecen intactos;Crítica;Funcional;CU16c
+ALB-ELI-004;Álbumes y fotos;Eliminación de álbum;Falla de almacenamiento;Error al eliminar una foto;Confirmar borrado;No se anuncia éxito ni queda estado parcial inconsistente;Crítica;Resiliencia;CU16c
+ALB-ELI-005;Álbumes y fotos;Eliminación de álbum;Usuario sin permiso;Free o colaborador o ajeno;Enviar borrado directo;Acción denegada;Crítica;Autorización;Decisión aprobada
+FOT-ALT-001;Álbumes y fotos;Carga de fotos;Formatos admitidos;Archivos JPG PNG y HEIC válidos bajo límite;Subir cada uno;Se guarda y se puede visualizar cada formato;Alta;Compatibilidad;CU16
+FOT-ALT-002;Álbumes y fotos;Carga de fotos;Límite exacto de tamaño;Archivo válido de tamaño exactamente igual al límite en bytes que defina el contrato;Subir;Se acepta conforme al límite inclusivo;Media;Límites;CU16
+FOT-ALT-003;Álbumes y fotos;Carga de fotos;Excede el límite;Archivo válido un byte mayor que el límite del contrato;Subir;Se rechaza sin metadatos ni archivo parcial;Alta;Límites;CU16
+FOT-ALT-004;Álbumes y fotos;Carga de fotos;Formato no admitido;Video PDF u otro archivo;Subir;Se rechaza sin persistencia;Alta;Validación;CU16
+FOT-ALT-005;Álbumes y fotos;Carga de fotos;Extensión falsa;Contenido no imagen con extensión admitida;Subir;El servidor valida contenido real y rechaza;Crítica;Seguridad;Diseñado por QA
+FOT-ALT-006;Álbumes y fotos;Carga de fotos;Primera foto como portada;Álbum vacío;Subir primera imagen válida;Queda como portada y aparece en listas;Media;Funcional;CU16
+FOT-ALT-007;Álbumes y fotos;Carga de fotos;Álbum ajeno o colaborador;Usuario sin gestión;Subir foto por API;Acción denegada sin archivo;Crítica;Autorización;Decisión aprobada
+FOT-ELI-001;Álbumes y fotos;Eliminación de foto;Eliminar foto;Propietario Premium con foto;Confirmar eliminación;Foto y archivo se eliminan definitivamente del álbum;Alta;Integridad;CU16
+FOT-ELI-002;Álbumes y fotos;Eliminación de foto;Eliminar portada;Álbum con portada y otras fotos;Eliminar portada;La portada queda en estado consistente sin enlace roto;Media;Integridad;Diseñado por QA
+FOT-ELI-003;Álbumes y fotos;Eliminación de foto;Free o colaborador elimina;Usuario sin gestión;Solicitar eliminación directa;Acción denegada;Crítica;Autorización;Decisión aprobada
+PRE-PLA-001;Premium y pagos;Planes;Mostrar oferta;Usuario Free;Abrir planes;Se muestran precios vigentes mensual y anual y beneficios correctos;Alta;Presentación;CU26
+PRE-PAG-001;Premium y pagos;Pago;Checkout;Usuario Free elige período;Iniciar pago;Se abre flujo MercadoPago sin almacenar datos de tarjeta propios;Crítica;Integración;CU26
+PRE-PAG-002;Premium y pagos;Pago;Pago confirmado;Notificación auténtica de pago aprobado;Procesar notificación;Plan Premium activo con vencimiento correcto una sola vez;Crítica;Integración;CU26
+PRE-PAG-003;Premium y pagos;Pago;Pago pendiente;Pago iniciado sin confirmación;Consultar plan e intentar beneficio;Sigue Free y las acciones Premium se rechazan;Crítica;Seguridad;CU26
+PRE-PAG-004;Premium y pagos;Pago;Pago rechazado o cancelado;Pago no aprobado;Consultar plan;Sigue Free sin período Premium;Crítica;Integración;CU26
+PRE-PAG-005;Premium y pagos;Pago;Notificación falsificada;Webhook sin autenticidad verificable;Procesar;No activa ni extiende Premium;Crítica;Seguridad;Diseñado por QA
+PRE-PAG-006;Premium y pagos;Pago;Notificación duplicada;Mismo pago aprobado recibido dos veces;Procesar ambas;Una sola activación o extensión sin sumar dos períodos;Crítica;Idempotencia;Diseñado por QA
+PRE-PAG-007;Premium y pagos;Pago;Notificaciones fuera de orden;Eventos pendiente y aprobado del mismo pago desordenados;Procesar;El estado final refleja verificación del pago real y no retrocede por evento viejo;Crítica;Integridad;Diseñado por QA
+PRE-REN-001;Premium y pagos;Renovación;Renovación anticipada;Premium vigente con fecha futura y nuevo pago aprobado;Renovar;Nuevo período se suma al vencimiento previo sin perder días;Crítica;Integridad;Decisión aprobada
+PRE-REN-002;Premium y pagos;Renovación;Pago no aprobado;Premium vigente con intento de renovación fallido;Procesar fallo;Vencimiento previo no cambia;Crítica;Integridad;Decisión aprobada
+PRE-VEN-001;Premium y pagos;Vencimiento;Preservar datos;Cuenta Premium excede límites Free y vence;Consultar mascotas accesos álbumes fotos badges y perfil;Los datos existentes se conservan visibles según permisos;Crítica;Datos;Decisión aprobada
+PRE-VEN-002;Premium y pagos;Vencimiento;Bloquear nuevas acciones;Cuenta vencida con recursos existentes;Intentar crear álbum foto badge o exceder cupos Free;El servidor rechaza nuevas acciones exclusivas Premium sin borrar datos;Alta;Plan;Decisión aprobada
+PRE-VEN-003;Premium y pagos;Vencimiento;Reactivar;Cuenta vencida con recursos preservados y nuevo pago aprobado;Reactivar Premium;Recupera gestión de recursos conservados sin recrearlos;Alta;Recuperación;Decisión aprobada
+PRE-VEN-004;Premium y pagos;Vencimiento;PDF sigue gratis;Cuenta Free tras vencimiento;Exportar historial;Exportación disponible sin pago;Media;Plan;CU12
+BAD-LIS-001;Badges;Lectura;Badges visibles;Mascota con badges y usuarios con acceso;Abrir perfil;Propietario Familia y Cuidador ven texto y emoji sin efecto funcional;Media;Funcional;CU27
+BAD-ALT-001;Badges;Alta;Badge válido;Propietario Premium con menos de tres activas;Crear con texto y emoji opcional;Se agrega a esa mascota y aparece de inmediato;Media;Funcional;CU27
+BAD-ALT-002;Badges;Alta;Emoji opcional;Propietario Premium con cupo;Crear solo con texto válido;Se acepta y se muestra sin emoji;Media;Validación;CU27
+BAD-ALT-003;Badges;Alta;Texto obligatorio;Texto vacío o espacios;Crear badge;Se rechaza sin ocupar cupo;Media;Validación;CU27
+BAD-ALT-004;Badges;Alta;Límite de tres;Mascota con tres badges activas;Crear cuarta;Rechazo sin alterar las tres;Alta;Límites;CU27
+BAD-ALT-005;Badges;Alta;Concurrencia en último lugar;Mascota con dos badges y dos peticiones simultáneas;Crear dos;Como máximo una nueva badge queda activa;Alta;Concurrencia;Diseñado por QA
+BAD-ALT-006;Badges;Alta;Propietario Free;Plan Free;Crear badge por UI o API;Bloqueado sin nueva badge;Alta;Plan;CU27
+BAD-ALT-007;Badges;Alta;Familia o Cuidador Premium;Colaborador con plan propio Premium;Crear badge en mascota compartida;Denegado porque solo gestiona el propietario de esa mascota;Alta;Autorización;Decisión aprobada
+BAD-EDI-001;Badges;Edición;Editar sin consumir cupo;Propietario Premium con tres badges;Cambiar texto o emoji de una;Edición exitosa y siguen siendo tres;Media;Funcional;CU27
+BAD-EDI-002;Badges;Edición;Edición no autorizada;Colaborador o usuario ajeno;Enviar edición directa;Denegada sin cambios;Alta;Autorización;CU27
+BAD-ELI-001;Badges;Eliminación;Eliminar libera cupo;Propietario Premium con tres badges;Eliminar una y crear otra;Eliminación efectiva y nueva alta permitida;Media;Integridad;CU27
+BAD-ELI-002;Badges;Eliminación;Eliminación no autorizada;Free o colaborador o ajeno;Enviar borrado directo;Denegado sin cambios;Alta;Autorización;CU27
+CON-VIS-001;Configuración y perfil;Lectura;Datos personales y plan;Usuario autenticado;Abrir configuración;Nombre email plan y vencimiento se muestran correctos sin datos de otra cuenta;Crítica;Datos;CU10
+CON-VIS-002;Configuración y perfil;Lectura;Estado de push;Preferencia guardada;Abrir configuración;Toggle refleja el estado real;Media;Preferencias;CU10a
+CON-VIS-003;Configuración y perfil;Lectura;Falla parcial;Servicio de plan o notificaciones falla;Abrir configuración;Se muestra lo disponible y un error localizado sin datos inventados;Media;Resiliencia;CU10
+CON-EDI-001;Configuración y perfil;Edición;Editar nombre;Usuario autenticado y nombre válido;Guardar nombre nuevo;Se actualiza en perfil sin cambiar email ni identidad de cuenta;Media;Funcional;Decisión aprobada
+CON-EDI-002;Configuración y perfil;Edición;Nombre inválido;Nombre vacío o fuera de longitud definida;Guardar;Validación y nombre anterior conservado;Media;Validación;Diseñado por QA
+CON-EDI-003;Configuración y perfil;Edición;Avatar Free;Usuario Free con imagen de avatar admitida;Cambiar avatar;Avatar actualizado según política Free;Media;Plan;Decisión aprobada
+CON-EDI-004;Configuración y perfil;Edición;Foto Premium;Usuario Premium con foto admitida;Cambiar foto de perfil;Foto propia actualizada sin alterar avatar ni mascotas;Media;Plan;Decisión aprobada
+CON-EDI-005;Configuración y perfil;Edición;Foto Premium tras vencimiento;Foto existente y plan vencido;Consultar y subir otra foto;La foto previa sigue visible y la nueva acción Premium se bloquea;Alta;Plan;Decisión aprobada
+CON-EDI-006;Configuración y perfil;Edición;Email no editable;Usuario autenticado;Intentar cambiar email desde UI o API de perfil;No se modifica email por este flujo;Crítica;Seguridad;Decisión aprobada
+CON-EDI-007;Configuración y perfil;Edición;Editar cuenta ajena;Usuario con ID ajeno;Enviar petición directa;Acción denegada sin cambios;Crítica;Seguridad;Diseñado por QA
+CON-PUS-001;Configuración y perfil;Notificaciones;Desactivar push;Push de app activo;Apagar toggle;Preferencia se guarda enseguida y no salen nuevos avisos;Alta;Preferencias;CU10a
+CON-PUS-002;Configuración y perfil;Notificaciones;Activar push;Permiso OS concedido y preferencia apagada;Encender toggle;Preferencia se guarda y futuros avisos pueden entregarse;Alta;Preferencias;CU10a
+CON-PUS-003;Configuración y perfil;Notificaciones;Permiso OS bloqueado;Sistema operativo deniega notificaciones;Encender toggle;Se avisa la limitación y se ofrecen indicaciones sin prometer entrega;Media;Integración;CU10a
+CON-PUS-004;Configuración y perfil;Notificaciones;Falla al guardar;Error de servidor durante cambio;Cambiar toggle;Se revierte visualmente al estado persistido y se informa error;Alta;Resiliencia;CU10a
+CON-PUS-005;Configuración y perfil;Notificaciones;Aviso al desactivar;Push activo;Apagar toggle y cerrar aviso;Advertencia no bloqueante descartable y preferencia apagada;Media;Usabilidad;CU10a
+CON-NAV-001;Configuración y perfil;Navegación;Entradas de configuración;Usuario autenticado;Abrir notificaciones Premium y salida;Cada opción lleva al flujo correcto sin cambiar datos por navegar;Media;Usabilidad;CU10
+CON-SAL-001;Configuración y perfil;Cerrar sesión;Cierre confirmado;Sesión activa;Confirmar cierre;Se borra estado local y el token de renovación deja de ser utilizable en servidor;Crítica;Seguridad;CU10b
+CON-SAL-002;Configuración y perfil;Cerrar sesión;Cancelar cierre;Sesión activa;Cancelar en confirmación;La sesión sigue activa sin pérdida de datos locales;Alta;Funcional;CU10b
+CON-SAL-003;Configuración y perfil;Cerrar sesión;Otro dispositivo;Misma cuenta iniciada en dos dispositivos;Cerrar en uno;Solo ese dispositivo pierde la sesión;Alta;Seguridad;CU10b
+CON-SAL-004;Configuración y perfil;Cerrar sesión;Falla de revocación remota;Servidor no confirma revocación;Intentar cerrar;Se limpia acceso local pero el riesgo de token remoto no revocado queda detectado y no se afirma revocación;Crítica;Riesgo de seguridad;Pendiente de decisión
+AUD-REG-001;Auditoría;Registro;Mutación exitosa;Actor y entidad conocidos;Completar alta edición o eliminación;Una entrada contiene actor acción entidad y fecha correctos;Alta;Trazabilidad;CU24
+AUD-REG-002;Auditoría;Registro;Operación fallida;Mutación rechazada o revertida;Inspeccionar log;No figura como acción completada;Alta;Integridad;CU24
+AUD-REG-003;Auditoría;Registro;Acción del sistema;Proceso automático de vencimiento o purga;Ejecutar trabajo;Registro distingue actor sistema del usuario;Alta;Trazabilidad;CU24
+AUD-REG-004;Auditoría;Registro;Error al escribir log;Mutación principal exitosa y log temporalmente falla;Completar mutación;Operación principal no se revierte y el error queda pendiente de reintento sin perder trazabilidad;Alta;Resiliencia;CU24
+AUD-REG-005;Auditoría;Registro;Duplicación por reintento;Entrada pendiente y reintento;Procesar reintento;Se obtiene una entrada lógica sin duplicados contradictorios;Alta;Idempotencia;Diseñado por QA
+AUD-SEG-001;Auditoría;Integridad;Inmutabilidad;Usuario común con ID de entrada conocido;Intentar editar o borrar entrada;Acción denegada sin cambio;Crítica;Seguridad;CU24
+AUD-SEG-002;Auditoría;Privacidad;Datos sensibles;Mutación de contraseña pago o token;Inspeccionar registro interno;No se guardan secretos ni datos de tarjeta;Crítica;Privacidad;Diseñado por QA
+AUD-PUR-001;Auditoría;Purga;Purga definitiva de mascota;Mascota eliminada hace más de 30 días;Ejecutar purga;Se eliminan solo registros auditables ligados a esa mascota según política de retención;Alta;Datos;CU24

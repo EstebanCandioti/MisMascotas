@@ -1,0 +1,94 @@
+{
+  "id_caso": "MAS-LIS-002",
+  "inicio": "2026-10-25T00:24:46.435Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.mas.9f3a54dfaf774c96a0d4064ed107f102@mismascotas.test",
+        "idUsuario": "8da669ec-036e-4032-80b6-950eb2467541",
+        "plan": "Free"
+      }
+    ],
+    "mascotas": []
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Estado vacío visible sin error",
+      "cumple": true,
+      "esperado": "Mensaje vacío sin alertas",
+      "observado": "Mensaje mostrado y alertas consultadas",
+      "defecto": ""
+    },
+    {
+      "nombre": "API devuelve listado vacío",
+      "cumple": true,
+      "esperado": [],
+      "observado": [],
+      "defecto": ""
+    },
+    {
+      "nombre": "Acción inicial abre el formulario de alta",
+      "cumple": true,
+      "esperado": "Formulario visible",
+      "observado": "Formulario visible",
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    }
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [],
+      "eventos": [],
+      "recordatorios": []
+    }
+  },
+  "limites": [],
+  "capturas": [
+    "estado_vacio.png",
+    "accion_inicial.png"
+  ],
+  "fin": "2026-10-25T00:24:48.209Z",
+  "capa": "Web + API + SQL",
+  "id_ejecucion": "MAS-WEB-20261025T002445326Z-4b912d__MAS-LIS-002__01",
+  "esperado_catalogo": "Mensaje y acción inicial adecuados sin error",
+  "escenario": "Estado vacío",
+  "fecha_hora": "2026-10-24T21:24:48.209-03:00",
+  "ficha": "../entorno.json",
+  "versiones": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.325838952Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:7fee8a3682972dce716e39381a004a95fab96ffb5de6f5e033bf4128ea1968e4",
+      "contenedor_id": "f8120c5e0b2b51617183fabe2ae9551b1c69f9b1ffd8f3374937b0d5df1c3f3b",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:52.420525904Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-24T23:27:46.545241728Z"
+    },
+    "frontend-web-testing": {
+      "imagen_id": "sha256:3fe6d9c4c5fb3f7b9ff53349ba24bf34e5bbc32d5487a708126afa6a223fd630",
+      "contenedor_id": "8de82e36aa48cbdccaddbf1d1b9b30fcc1f9e597db40bd7a81d6f0ffd70747df",
+      "salud": "healthy",
+      "iniciado_en": "2026-10-25T00:14:19.528533211Z"
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "id_corrida": "PILOTO-AUT-REG-001-20261023T024311Z-db63cca6",
+  "id_caso": "AUT-REG-001",
+  "intento": 1,
+  "capa": "API",
+  "alcance_real": "Un solo caso existente; no se ejecuta el resto del plan referenciado en la ficha.",
+  "esperado": "Cuenta creada y desafio de verificacion iniciado sin sesion definitiva.",
+  "email_fixture": "qa.registro.cc3a5c37e5e34323aa484d85eeeb74b5@mismascotas.test",
+  "nombre_fixture": "QA Piloto Registro",
+  "credencial_referencia": "QA-USR-001 en cuentas_qa.md",
+  "ejecutor": "Codex mediante HTTP y consultas SQL de verificacion",
+  "solicitud": {
+    "metodo": "POST",
+    "ruta": "/auth/register",
+    "cuerpo": {
+      "nombre": "QA Piloto Registro",
+      "email": "qa.registro.cc3a5c37e5e34323aa484d85eeeb74b5@mismascotas.test",
+      "password": "[omitido]"
+    }
+  },
+  "comprobaciones": [
+    {
+      "verificacion": "Registro HTTP 200",
+      "cumple": true
+    },
+    {
+      "verificacion": "Se devuelve token previo, sin pareja definitiva de sesion",
+      "cumple": true
+    },
+    {
+      "verificacion": "Se persiste exactamente una cuenta con los datos enviados",
+      "cumple": true
+    },
+    {
+      "verificacion": "La clave no se almacena en texto y el hash tiene formato BCrypt",
+      "cumple": true
+    },
+    {
+      "verificacion": "El token identifica el desafio previo del usuario registrado",
+      "cumple": true
+    },
+    {
+      "verificacion": "El token previo no permite consultar datos protegidos",
+      "cumple": true
+    },
+    {
+      "verificacion": "Mailpit recibe un correo nuevo para el destinatario correcto con codigo de seis digitos",
+      "cumple": true
+    },
+    {
+      "verificacion": "Se guarda un desafio vigente y todavia no consumido",
+      "cumple": true
+    },
+    {
+      "verificacion": "El registro no emite un refresh ni inicia sesion definitiva",
+      "cumple": true
+    },
+    {
+      "verificacion": "El codigo enviado coincide con el generado para esta cuenta",
+      "cumple": true
+    }
+  ],
+  "inicio": "2026-10-22T23:46:17.056950-03:00",
+  "respuesta_registro": {
+    "http": 200,
+    "cuerpo": {
+      "token": "[omitido]",
+      "mensaje": "Codigo de verificacion enviado"
+    }
+  },
+  "cuenta_creada": [
+    {
+      "id": "a7d1030e-7a10-4938-a3bf-6c2caae4235b",
+      "email": "qa.registro.cc3a5c37e5e34323aa484d85eeeb74b5@mismascotas.test",
+      "nombre": "QA Piloto Registro",
+      "activo": true,
+      "premium": false,
+      "password_no_texto": true,
+      "formato_bcrypt": true
+    }
+  ],
+  "perfil_con_token_previo": {
+    "http": 401,
+    "cuerpo": {
+      "codigo": "[omitido]",
+      "mensaje": "Token de verificacion no valido para este endpoint",
+      "timestamp": "2026-10-23T02:46:26.710877190Z"
+    }
+  },
+  "correo": {
+    "mensaje_id": "6YD2qQvdmo4jOh4Qo5qMlI",
+    "destinatario": "qa.registro.cc3a5c37e5e34323aa484d85eeeb74b5@mismascotas.test",
+    "codigo": "[omitido]",
+    "conservado_en_mailpit": true
+  },
+  "estado_despues_registro": {
+    "codigos": 1,
+    "vigentes_sin_usar": 1,
+    "refresh": 0
+  },
+  "resultado": "Aprobada",
+  "limpieza": {
+    "usuario_temporal_retirado": true,
+    "usuarios_previos_conservados": true,
+    "correo_conservado_en_mailpit_para_revision_local": true,
+    "sin_reset_general": true
+  },
+  "fin": "2026-10-22T23:46:28.461223-03:00"
+}

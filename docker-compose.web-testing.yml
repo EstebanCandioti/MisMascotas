@@ -19,6 +19,23 @@ services:
     networks:
       - web-testing
 
+  mailpit-web-testing:
+    image: axllent/mailpit:v1.31.5
+    restart: unless-stopped
+    environment:
+      MP_DATABASE: /tmp/mailpit.db
+      MP_MAX_MESSAGES: "500"
+    ports:
+      - "127.0.0.1:${WEB_TESTING_MAILPIT_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    networks:
+      - web-testing
+
   backend-web-testing:
     build:
       context: ./backend
@@ -26,8 +43,19 @@ services:
     restart: unless-stopped
     env_file:
       - ./.env.web-testing
+    environment:
+      # El correo de QA se captura localmente, aunque el env_file tenga datos SMTP reales.
+      MAIL_HOST: mailpit-web-testing
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS_ENABLE: "false"
+      MAIL_SMTP_STARTTLS_REQUIRED: "false"
     depends_on:
       db-web-testing:
+        condition: service_healthy
+      mailpit-web-testing:
         condition: service_healthy
     ports:
       - "${WEB_TESTING_BACKEND_PORT:-8080}:8080"
