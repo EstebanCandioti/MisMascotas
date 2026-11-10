@@ -167,7 +167,11 @@ FROM (VALUES
 JOIN public.mascota m ON m.id_mascota =
     ('20000000-0000-4000-8000-' || lpad(datos.mascota::text, 12, '0'))::uuid
 JOIN public.estados e ON e.entidad = 'RECORDATORIO'
-    AND e.nombre = CASE WHEN n = 3 THEN 'INACTIVO' ELSE 'ACTIVO' END
+    AND e.nombre = CASE
+        WHEN n = 3 THEN 'INACTIVO'
+        WHEN n = 6 THEN 'COMPLETADO'
+        ELSE 'ACTIVO'
+    END
 CROSS JOIN qa_contexto c;
 
 -- Cualquier discrepancia impide COMMIT y revierte también el TRUNCATE.
@@ -224,7 +228,9 @@ BEGIN
     IF (SELECT count(*) FROM public.recordatorio WHERE modalidad = 'unica') <> 11
        OR (SELECT count(*) FROM public.recordatorio WHERE modalidad = 'recurrente') <> 4
        OR (SELECT count(*) FROM public.recordatorio r JOIN public.estados e ON e.id_estado = r.estado_id
-           WHERE e.entidad = 'RECORDATORIO' AND e.nombre = 'ACTIVO') <> 14
+           WHERE e.entidad = 'RECORDATORIO' AND e.nombre = 'ACTIVO') <> 13
+       OR (SELECT count(*) FROM public.recordatorio r JOIN public.estados e ON e.id_estado = r.estado_id
+           WHERE e.entidad = 'RECORDATORIO' AND e.nombre = 'COMPLETADO') <> 1
        OR (SELECT count(*) FROM public.recordatorio WHERE confirmado_por_id IS NOT NULL AND confirmado_en IS NOT NULL) <> 1
        OR EXISTS (SELECT 1 FROM public.recordatorio WHERE
            (confirmado_por_id IS NULL) <> (confirmado_en IS NULL)

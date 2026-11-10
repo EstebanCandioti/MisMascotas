@@ -1,0 +1,791 @@
+{
+  "id_caso": "ECL-REG-007",
+  "inicio": "2026-11-10T04:05:45.933Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "capa": "Selenium Web + API + SQL",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.ecl.b1c12ba5ea1743e6ae84b2b4c52659c9@mismascotas.test",
+        "idUsuario": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+        "nombre": "QA Clínico ECL-REG-007"
+      }
+    ],
+    "mascotas": [
+      {
+        "idMascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+        "nombre": "QA ECL-REG-007 1"
+      }
+    ],
+    "eventos": [
+      "5ebca0e6-c9b3-4bad-8acb-9606c358bf69",
+      "d7d34ed4-c6b6-45f9-ad8c-4b5c909c75db"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "peso_nulo: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "valorPeso: El valor de peso es obligatorio",
+          "timestamp": "2026-11-10T04:05:48.216400225Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_nulo: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_cero: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+          "timestamp": "2026-11-10T04:05:48.528183135Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_cero: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_negativo: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+          "timestamp": "2026-11-10T04:05:48.855823148Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_negativo: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_menor_minimo: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+          "timestamp": "2026-11-10T04:05:49.194312112Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_menor_minimo: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_mayor_maximo: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+          "timestamp": "2026-11-10T04:05:49.501861907Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_mayor_maximo: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_no_numerico: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "valorPeso: El valor de peso debe ser numerico",
+          "timestamp": "2026-11-10T04:05:49.840061256Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "peso_no_numerico: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "frontera_0_01: una sola fila clínica nueva",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "frontera_0_01: tipo, campos, fecha y autoría conservados",
+      "cumple": true,
+      "esperado": {
+        "tipo": "PESO",
+        "fecha": "2026-11-07T12:00:00-03:00",
+        "valorPeso": 0.01,
+        "autor": "734f4a78-9a4d-404f-8e17-ec14f30a7486"
+      },
+      "observado": {
+        "idEvento": "5ebca0e6-c9b3-4bad-8acb-9606c358bf69",
+        "mascotaId": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+        "registradoPorId": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+        "registradoPorNombre": "QA Clínico ECL-REG-007",
+        "tipo": "PESO",
+        "fecha": "2026-11-07T15:00:00Z",
+        "nombre": null,
+        "dosis": null,
+        "valorPeso": 0.01,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": null,
+        "creadoEn": "2026-11-10T04:05:50.448950Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "frontera_0_01: persistencia SQL e identidad de mascota/autor",
+      "cumple": true,
+      "esperado": {
+        "mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+        "autor": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+        "fecha": "2026-11-07T12:00:00-03:00"
+      },
+      "observado": {
+        "id_evento": "5ebca0e6-c9b3-4bad-8acb-9606c358bf69",
+        "mascota_id": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+        "registrado_por_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+        "id_cliente": null,
+        "diagnostico": null,
+        "dosis": null,
+        "motivo": null,
+        "observaciones": null,
+        "tipo": "PESO",
+        "valor_peso": 0.01,
+        "nombre": null,
+        "fecha_eliminacion": null,
+        "fecha": "2026-11-07T15:00:00+00:00",
+        "creado_en": "2026-11-10T04:05:50.44895+00:00",
+        "actualizado_en": "2026-11-10T04:05:50.448951+00:00"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "frontera_300: una sola fila clínica nueva",
+      "cumple": true,
+      "esperado": 1,
+      "observado": 1,
+      "defecto": ""
+    },
+    {
+      "nombre": "frontera_300: tipo, campos, fecha y autoría conservados",
+      "cumple": true,
+      "esperado": {
+        "tipo": "PESO",
+        "fecha": "2026-11-09T12:00:00-03:00",
+        "valorPeso": 300,
+        "autor": "734f4a78-9a4d-404f-8e17-ec14f30a7486"
+      },
+      "observado": {
+        "idEvento": "d7d34ed4-c6b6-45f9-ad8c-4b5c909c75db",
+        "mascotaId": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+        "registradoPorId": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+        "registradoPorNombre": "QA Clínico ECL-REG-007",
+        "tipo": "PESO",
+        "fecha": "2026-11-09T15:00:00Z",
+        "nombre": null,
+        "dosis": null,
+        "valorPeso": 300,
+        "motivo": null,
+        "diagnostico": null,
+        "observaciones": null,
+        "creadoEn": "2026-11-10T04:05:51.284533Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "frontera_300: persistencia SQL e identidad de mascota/autor",
+      "cumple": true,
+      "esperado": {
+        "mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+        "autor": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+        "fecha": "2026-11-09T12:00:00-03:00"
+      },
+      "observado": {
+        "id_evento": "d7d34ed4-c6b6-45f9-ad8c-4b5c909c75db",
+        "mascota_id": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+        "registrado_por_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+        "id_cliente": null,
+        "diagnostico": null,
+        "dosis": null,
+        "motivo": null,
+        "observaciones": null,
+        "tipo": "PESO",
+        "valor_peso": 300,
+        "nombre": null,
+        "fecha_eliminacion": null,
+        "fecha": "2026-11-09T15:00:00+00:00",
+        "creado_en": "2026-11-10T04:05:51.284533+00:00",
+        "actualizado_en": "2026-11-10T04:05:51.284533+00:00"
+      },
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/54d6e1e8-20a6-4458-8a1b-0918618fd798/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "valorPeso": null
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "valorPeso: El valor de peso es obligatorio",
+        "timestamp": "2026-11-10T04:05:48.216400225Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/54d6e1e8-20a6-4458-8a1b-0918618fd798/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "valorPeso": 0
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+        "timestamp": "2026-11-10T04:05:48.528183135Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/54d6e1e8-20a6-4458-8a1b-0918618fd798/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "valorPeso": -1
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+        "timestamp": "2026-11-10T04:05:48.855823148Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/54d6e1e8-20a6-4458-8a1b-0918618fd798/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "valorPeso": 0.009
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+        "timestamp": "2026-11-10T04:05:49.194312112Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/54d6e1e8-20a6-4458-8a1b-0918618fd798/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "valorPeso": 300.01
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "valorPeso: El valor de peso debe estar entre 0.01 y 300.00 kg",
+        "timestamp": "2026-11-10T04:05:49.501861907Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/54d6e1e8-20a6-4458-8a1b-0918618fd798/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "PESO",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "valorPeso": "no-es-numero"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "valorPeso: El valor de peso debe ser numerico",
+        "timestamp": "2026-11-10T04:05:49.840061256Z"
+      }
+    }
+  ],
+  "acciones_selenium": [
+    {
+      "accion": "Guardar formulario clínico mediante clic WebDriver",
+      "datos": {
+        "tipo": "PESO",
+        "fecha": "2026-11-07T12:00:00-03:00",
+        "valorPeso": 0.01
+      },
+      "fecha": "2026-11-10T04:05:50.391Z"
+    },
+    {
+      "accion": "Guardar formulario clínico mediante clic WebDriver",
+      "datos": {
+        "tipo": "PESO",
+        "fecha": "2026-11-09T12:00:00-03:00",
+        "valorPeso": 300
+      },
+      "fecha": "2026-11-10T04:05:51.234Z"
+    }
+  ],
+  "capturas": [
+    "antes.png",
+    "frontera_0_01_formulario.png",
+    "frontera_0_01_historial.png",
+    "frontera_300_formulario.png",
+    "frontera_300_historial.png",
+    "despues.png"
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_peso_nulo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_peso_nulo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_peso_cero": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_peso_cero": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_peso_negativo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_peso_negativo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_peso_menor_minimo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_peso_menor_minimo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_peso_mayor_maximo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_peso_mayor_maximo": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_peso_no_numerico": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_peso_no_numerico": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:46.53893+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "propietario_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-007 1",
+          "peso_actual": 300,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:05:46.538929+00:00",
+          "actualizado_en": "2026-11-10T04:05:51.290837+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [
+        {
+          "id_evento": "5ebca0e6-c9b3-4bad-8acb-9606c358bf69",
+          "mascota_id": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "registrado_por_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": null,
+          "tipo": "PESO",
+          "valor_peso": 0.01,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-11-07T15:00:00+00:00",
+          "creado_en": "2026-11-10T04:05:50.44895+00:00",
+          "actualizado_en": "2026-11-10T04:05:50.448951+00:00"
+        },
+        {
+          "id_evento": "d7d34ed4-c6b6-45f9-ad8c-4b5c909c75db",
+          "mascota_id": "54d6e1e8-20a6-4458-8a1b-0918618fd798",
+          "registrado_por_id": "734f4a78-9a4d-404f-8e17-ec14f30a7486",
+          "id_cliente": null,
+          "diagnostico": null,
+          "dosis": null,
+          "motivo": null,
+          "observaciones": null,
+          "tipo": "PESO",
+          "valor_peso": 300,
+          "nombre": null,
+          "fecha_eliminacion": null,
+          "fecha": "2026-11-09T15:00:00+00:00",
+          "creado_en": "2026-11-10T04:05:51.284533+00:00",
+          "actualizado_en": "2026-11-10T04:05:51.284533+00:00"
+        }
+      ]
+    }
+  },
+  "limites": [],
+  "navegador": {
+    "herramienta": "Selenium WebDriver",
+    "version_selenium": "4.51.0",
+    "nombre": "MicrosoftEdge",
+    "version": "157.0.4341.42"
+  },
+  "fin": "2026-11-10T04:05:52.026Z",
+  "id_ejecucion": "ECL-SELENIUM-PESOS-20261110T040545541Z-a0d710__ECL-REG-007__01",
+  "fecha_hora": "2026-11-10T01:05:52.026-03:00",
+  "esperado_catalogo": "Rechazo sin alterar el historial",
+  "escenario": "Peso fuera de rango",
+  "fundamento": "Diseñado por QA",
+  "ficha": "../entorno.json"
+}

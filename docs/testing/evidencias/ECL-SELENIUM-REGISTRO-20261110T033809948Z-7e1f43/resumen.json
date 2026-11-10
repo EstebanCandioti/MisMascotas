@@ -1,0 +1,12 @@
+{
+  "id_corrida": "ECL-SELENIUM-REGISTRO-20261110T033809948Z-7e1f43",
+  "tanda": "registro",
+  "resultados": [
+    {
+      "id": "ECL-REG-002",
+      "resultado": "Fallida",
+      "motivo": "",
+      "evidencia": "ECL-REG-002__01/resultado.json"
+    }
+  ]
+}

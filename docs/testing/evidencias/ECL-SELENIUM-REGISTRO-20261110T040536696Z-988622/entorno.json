@@ -1,0 +1,43 @@
+{
+  "capturada_en": "2026-11-10T01:05:36.975-03:00",
+  "proyecto": "mismascotas-web-testing",
+  "servicios": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:04.368078543Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:f97c2712e649ecfe37c05ea6c64b512745b6d46cf49063e6f3d9a7d6f4f6d711",
+      "contenedor_id": "07e63af3997e1c581c3a975ea16c024ded27de12aaf3dd7e92a8d9336a990caa",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:10.157467784Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:04.325612701Z"
+    },
+    "frontend-web-testing": {
+      "imagen_id": "sha256:dae325dbeb3d23a026bf74f9237f1c177a1cb026a7c92cd9b00ecb238a13de60",
+      "contenedor_id": "974f58da95e6fb759c75d1ec7ddff3cd66b1fc6bb1cb87fb259f57720974b09c",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:20.832191467Z"
+    }
+  },
+  "origen_build": "No verificado. No se atribuye el commit del checkout a las imágenes.",
+  "catalogo_sha256": "ddc07e3f32728d1b91ff7cffd2b6eecbab5393b3646f855152b5c7680741e147",
+  "selenium": "4.51.0",
+  "sql": "Solo lectura. Fixtures por API; no se modifica el seed.",
+  "sin_playwright": true,
+  "huella_seed_antes": "9683f978c6396b74a86bee64605b659b",
+  "id_corrida": "ECL-SELENIUM-REGISTRO-20261110T040536696Z-988622",
+  "tanda": "registro",
+  "ejecutor_sha256": "d683a88c08230bfaf7c4b0e693662535aab8aa6ed5679eab94c4877ad2bd3ef4",
+  "casos_sha256": "3d1e3707e2b84879665fae938e7f51da30c74e241620f626fbfeb8cbc8df5f19",
+  "selenium_adapter_sha256": "8b56d29d54884f0f2f697c675482d8aa892002b5ecf5e72c0ab77de7344660d7",
+  "huella_seed_despues": "9683f978c6396b74a86bee64605b659b",
+  "seed_original_intacto": true
+}

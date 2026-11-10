@@ -1,0 +1,1901 @@
+{
+  "id_caso": "MAS-REG-003",
+  "inicio": "2026-11-10T04:39:56.402Z",
+  "resultado": "Aprobada",
+  "motivo": "",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.mas.f5f3b4775ee343a19ee3ade18b5f1529@mismascotas.test",
+        "idUsuario": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "plan": "Free"
+      }
+    ],
+    "mascotas": [
+      "4acd7334-cb02-4e33-89b8-6b94d82a005e",
+      "3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+      "99f6c897-e233-4317-bef5-e0ac05cd5fee",
+      "5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+      "caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+      "1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+      "5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+      "59abf341-ee69-4f33-9cce-0b6c35192217"
+    ]
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Nombre de 100 caracteres: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Nombre de 100 caracteres: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "4acd7334-cb02-4e33-89b8-6b94d82a005e",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:57.854342909Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Nombre de 100 caracteres: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "4acd7334-cb02-4e33-89b8-6b94d82a005e",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:57.854342909Z"
+      },
+      "observado": {
+        "idMascota": "4acd7334-cb02-4e33-89b8-6b94d82a005e",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:57.854343Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Texto en límites exactos: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Texto en límites exactos: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+      },
+      "observado": {
+        "idMascota": "3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "creadoEn": "2026-11-10T04:39:57.950306451Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Texto en límites exactos: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "creadoEn": "2026-11-10T04:39:57.950306451Z"
+      },
+      "observado": {
+        "idMascota": "3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "creadoEn": "2026-11-10T04:39:57.950306Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad desconocida: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad desconocida: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "99f6c897-e233-4317-bef5-e0ac05cd5fee",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.001708112Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad desconocida: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "99f6c897-e233-4317-bef5-e0ac05cd5fee",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.001708112Z"
+      },
+      "observado": {
+        "idMascota": "99f6c897-e233-4317-bef5-e0ac05cd5fee",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.001708Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Nacimiento válido: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Nacimiento válido: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2020-02-29",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2020-02-29",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.049546175Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Nacimiento válido: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2020-02-29",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.049546175Z"
+      },
+      "observado": {
+        "idMascota": "5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2020-02-29",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.049546Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en dias: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en dias: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "dias",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "dias",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.094858198Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en dias: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "dias",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.094858198Z"
+      },
+      "observado": {
+        "idMascota": "caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "dias",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.094858Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en semanas: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en semanas: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "semanas",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "semanas",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.147215212Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en semanas: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "semanas",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.147215212Z"
+      },
+      "observado": {
+        "idMascota": "1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "semanas",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.147215Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en meses: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en meses: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "meses",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "meses",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.197294300Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en meses: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "meses",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.197294300Z"
+      },
+      "observado": {
+        "idMascota": "5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "meses",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.197294Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en anios: HTTP 201",
+      "cumple": true,
+      "esperado": 201,
+      "observado": 201,
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en anios: campos conservados sin truncar",
+      "cumple": true,
+      "esperado": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "observado": {
+        "idMascota": "59abf341-ee69-4f33-9cce-0b6c35192217",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.241875282Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad aproximada en anios: lectura posterior idéntica",
+      "cumple": true,
+      "esperado": {
+        "idMascota": "59abf341-ee69-4f33-9cce-0b6c35192217",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.241875282Z"
+      },
+      "observado": {
+        "idMascota": "59abf341-ee69-4f33-9cce-0b6c35192217",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.241875Z"
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "Nombre de 101 caracteres: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Nombre de 101 caracteres: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Especie de 51 caracteres: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Especie de 51 caracteres: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Raza de 101 caracteres: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Raza de 101 caracteres: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Notas de 256 caracteres: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Notas de 256 caracteres: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Fecha inexistente: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Fecha inexistente: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Fecha futura: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Fecha futura: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad negativa: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Edad negativa: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Unidad de edad inválida: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Unidad de edad inválida: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Peso cero: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Peso cero: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Peso negativo: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Peso negativo: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    },
+    {
+      "nombre": "Peso fuera del límite del formulario: error de validación controlado",
+      "cumple": true,
+      "esperado": "400 o 422",
+      "observado": 400,
+      "defecto": ""
+    },
+    {
+      "nombre": "Peso fuera del límite del formulario: sin alta parcial",
+      "cumple": true,
+      "esperado": 0,
+      "observado": 0,
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción principal",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "4acd7334-cb02-4e33-89b8-6b94d82a005e",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:57.854342909Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/4acd7334-cb02-4e33-89b8-6b94d82a005e",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "4acd7334-cb02-4e33-89b8-6b94d82a005e",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:57.854343Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/4acd7334-cb02-4e33-89b8-6b94d82a005e",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "acción: Texto en límites exactos",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "creadoEn": "2026-11-10T04:39:57.950306451Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "creadoEn": "2026-11-10T04:39:57.950306Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "acción: Edad desconocida",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "99f6c897-e233-4317-bef5-e0ac05cd5fee",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.001708112Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/99f6c897-e233-4317-bef5-e0ac05cd5fee",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "99f6c897-e233-4317-bef5-e0ac05cd5fee",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.001708Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/99f6c897-e233-4317-bef5-e0ac05cd5fee",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "acción: Nacimiento válido",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2020-02-29",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2020-02-29",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.049546175Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2020-02-29",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.049546Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "acción: Edad aproximada en dias",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "dias",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "dias",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.094858198Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "dias",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.094858Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "acción: Edad aproximada en semanas",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "semanas",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "semanas",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.147215212Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "semanas",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.147215Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "acción: Edad aproximada en meses",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "meses",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "meses",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.197294300Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "meses",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.197294Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "acción: Edad aproximada en anios",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 201,
+      "respuesta": {
+        "idMascota": "59abf341-ee69-4f33-9cce-0b6c35192217",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.241875282Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas/59abf341-ee69-4f33-9cce-0b6c35192217",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": {
+        "idMascota": "59abf341-ee69-4f33-9cce-0b6c35192217",
+        "propietarioId": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+        "nombre": "QA Válida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas",
+        "creadoEn": "2026-11-10T04:39:58.241875Z"
+      }
+    },
+    {
+      "fase": "aislamiento de variante",
+      "metodo": "DELETE",
+      "ruta": "/mascotas/59abf341-ee69-4f33-9cce-0b6c35192217",
+      "cuerpo": null,
+      "http": 204,
+      "respuesta": {}
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Nombre de 101 caracteres",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "nombre: No puede superar los 100 caracteres",
+        "timestamp": "2026-11-10T04:39:58.304681778Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Especie de 51 caracteres",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "especie: No puede superar los 50 caracteres",
+        "timestamp": "2026-11-10T04:39:58.339504616Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Raza de 101 caracteres",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "raza: No puede superar los 100 caracteres",
+        "timestamp": "2026-11-10T04:39:58.364444405Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Notas de 256 caracteres",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "notas: No puede superar los 255 caracteres",
+        "timestamp": "2026-11-10T04:39:58.393889944Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Fecha inexistente",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2026-02-30",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "fechaNacimiento: La fecha de nacimiento no tiene un formato valido o no existe",
+        "timestamp": "2026-11-10T04:39:58.429314416Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Fecha futura",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": "2999-01-01",
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "fechaNacimiento: La fecha de nacimiento no puede ser futura",
+        "timestamp": "2026-11-10T04:39:58.462718875Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Edad negativa",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": -1,
+        "edadUnidad": "anios",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "edadValor: La edad no puede ser negativa",
+        "timestamp": "2026-11-10T04:39:58.496492755Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Unidad de edad inválida",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": true,
+        "edadValor": 1,
+        "edadUnidad": "siglos",
+        "fotoPerfil": null,
+        "pesoActual": null,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "edadUnidad: La unidad de edad debe ser dias, semanas, meses o anios",
+        "timestamp": "2026-11-10T04:39:58.533495815Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Peso cero",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": 0,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "pesoActual: El peso debe ser mayor o igual a 0.01 kg",
+        "timestamp": "2026-11-10T04:39:58.562061405Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Peso negativo",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": -1,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "pesoActual: El peso debe ser mayor o igual a 0.01 kg",
+        "timestamp": "2026-11-10T04:39:58.594104889Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    },
+    {
+      "fase": "acción: Peso fuera del límite del formulario",
+      "metodo": "POST",
+      "ruta": "/mascotas",
+      "cuerpo": {
+        "nombre": "QA Inválida",
+        "especie": "Perro",
+        "raza": null,
+        "fechaNacimiento": null,
+        "fechaAproximada": false,
+        "edadValor": null,
+        "edadUnidad": null,
+        "fotoPerfil": null,
+        "pesoActual": 10000,
+        "notas": "Datos ficticios de QA Mascotas"
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "pesoActual: El peso debe ser menor o igual a 9999.99 kg",
+        "timestamp": "2026-11-10T04:39:58.620690369Z"
+      }
+    },
+    {
+      "fase": "verificación",
+      "metodo": "GET",
+      "ruta": "/mascotas",
+      "cuerpo": null,
+      "http": 200,
+      "respuesta": []
+    }
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [],
+      "eventos": [],
+      "recordatorios": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "1bbd9b1e-d4d8-46f7-8890-d9a768019df5",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": null,
+          "edad_valor": 1,
+          "edad_unidad": "semanas",
+          "especie": "Perro",
+          "nombre": "QA Válida",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": "2026-11-10T04:39:58.176975+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": true,
+          "creado_en": "2026-11-10T04:39:58.147215+00:00",
+          "actualizado_en": "2026-11-10T04:39:58.181552+00:00",
+          "foto_perfil": null
+        },
+        {
+          "id_mascota": "3f6b0099-be44-40ac-84ba-bd1c81d04f91",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
+          "nombre": "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ",
+          "peso_actual": null,
+          "raza": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+          "fecha_eliminacion": "2026-11-10T04:39:57.981914+00:00",
+          "notas": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:39:57.950306+00:00",
+          "actualizado_en": "2026-11-10T04:39:57.987085+00:00",
+          "foto_perfil": null
+        },
+        {
+          "id_mascota": "4acd7334-cb02-4e33-89b8-6b94d82a005e",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": "2026-11-10T04:39:57.930077+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:39:57.854343+00:00",
+          "actualizado_en": "2026-11-10T04:39:57.935937+00:00",
+          "foto_perfil": null
+        },
+        {
+          "id_mascota": "5627c9b9-9d97-4ca0-94cb-bdea133cef25",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": null,
+          "edad_valor": 1,
+          "edad_unidad": "meses",
+          "especie": "Perro",
+          "nombre": "QA Válida",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": "2026-11-10T04:39:58.224026+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": true,
+          "creado_en": "2026-11-10T04:39:58.197294+00:00",
+          "actualizado_en": "2026-11-10T04:39:58.228885+00:00",
+          "foto_perfil": null
+        },
+        {
+          "id_mascota": "59abf341-ee69-4f33-9cce-0b6c35192217",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": null,
+          "edad_valor": 1,
+          "edad_unidad": "anios",
+          "especie": "Perro",
+          "nombre": "QA Válida",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": "2026-11-10T04:39:58.270673+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": true,
+          "creado_en": "2026-11-10T04:39:58.241875+00:00",
+          "actualizado_en": "2026-11-10T04:39:58.275087+00:00",
+          "foto_perfil": null
+        },
+        {
+          "id_mascota": "5c24586a-3a1a-4c34-ad73-c56d5c126b7b",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": "2020-02-29",
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA Válida",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": "2026-11-10T04:39:58.076132+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:39:58.049546+00:00",
+          "actualizado_en": "2026-11-10T04:39:58.080628+00:00",
+          "foto_perfil": null
+        },
+        {
+          "id_mascota": "99f6c897-e233-4317-bef5-e0ac05cd5fee",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA Válida",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": "2026-11-10T04:39:58.03197+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T04:39:58.001708+00:00",
+          "actualizado_en": "2026-11-10T04:39:58.03616+00:00",
+          "foto_perfil": null
+        },
+        {
+          "id_mascota": "caa2c3e3-f078-45c5-84ea-0a3485e93ac4",
+          "propietario_id": "c0d69bd1-1944-4421-aca1-d2f8584a72f5",
+          "fecha_nacimiento": null,
+          "edad_valor": 1,
+          "edad_unidad": "dias",
+          "especie": "Perro",
+          "nombre": "QA Válida",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": "2026-11-10T04:39:58.126195+00:00",
+          "notas": "Datos ficticios de QA Mascotas",
+          "id_cliente": null,
+          "fecha_aproximada": true,
+          "creado_en": "2026-11-10T04:39:58.094858+00:00",
+          "actualizado_en": "2026-11-10T04:39:58.132009+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": [],
+      "recordatorios": []
+    }
+  },
+  "limites": [],
+  "fin": "2026-11-10T04:39:58.923Z",
+  "capa": "API + SQL",
+  "id_ejecucion": "MAS-API-20261110T043954159Z-a8e09e__MAS-REG-003__01",
+  "esperado_catalogo": "Se aceptan los valores válidos y se rechazan los inválidos sin truncado silencioso",
+  "escenario": "Valores inválidos o extremos",
+  "fecha_hora": "2026-11-10T01:39:58.924-03:00",
+  "ficha": "../entorno.json",
+  "versiones": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:04.368078543Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:efad92480330b580cbca2c5387ef395a9d29fd916a5d4463b978e6728d2ac09f",
+      "contenedor_id": "5729c94dbbf101f133fbd19fee0b6c0d95567367e5a6726aa5ae19adc1ea7c10",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:39:05.17742346Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:04.325612701Z"
+    }
+  }
+}

@@ -93,6 +93,27 @@ incluye interfaz o efectos internos pendientes. No se escribe automáticamente
   sola emisión y un rechazo 401. Detecta doble emisión HTTP; no demuestra ausencia
   de filas huérfanas en la base. Es una carrera real: una corrida aprobada no prueba
   por sí sola que el backend esté libre de carreras bajo otras intercalaciones.
+
+  Para complementar la respuesta HTTP, registrar el inicio y fin de la carrera y
+  consultar PostgreSQL con el correo ficticio creado por el caso. La ventana debe
+  comenzar después de emitir el refresh original y abarcar las dos solicitudes. La
+  consulta no expone tokens ni hashes:
+
+  ```sql
+  SELECT
+      count(*) AS reemplazos_creados,
+      count(*) FILTER (WHERE rt.revocado_en IS NOT NULL) AS reemplazos_revocados,
+      count(*) FILTER (WHERE rt.revocado_en IS NULL) AS reemplazos_activos
+  FROM refresh_token rt
+  JOIN usuario u ON u.id_usuario = rt.usuario_id
+  WHERE u.email = :email_qa
+    AND rt.creado_en >= :inicio_carrera
+    AND rt.creado_en <= :fin_carrera;
+  ```
+
+  Para la reutilización concurrente se espera un reemplazo creado, ese mismo
+  reemplazo revocado y ningún reemplazo activo: `1 / 1 / 0`. Registrar únicamente
+  esos conteos, los estados HTTP y el ID de ejecución.
 - **SES 006:** comprueba el access anterior después de renovar. Queda PARCIAL en la
   corrida rápida; para incluir rechazo posterior al vencimiento, activar
   `qa_esperar_vencimientos=true` y un límite de scripts superior a 20 minutos.

@@ -11,8 +11,8 @@ Se cubren los cinco tipos actuales y se conservan mascotas sin recordatorios par
 - **D0:** fecha local de restauración en Argentina. **T0:** instante de restauración.
 - Las horas de las tablas son de Argentina y se convierten a UTC al persistir. Las altas futuras empiezan desde D0 + 1 o después para que no venzan durante la preparación del entorno.
 - El creador de cada recordatorio es el propietario de su mascota. No se precargan accesos compartidos ni se atribuyen actuaciones a usuarios ajenos.
-- Todos comienzan sin eliminación lógica. El estado es `ACTIVO` salvo QA-REC-003, que es `INACTIVO`.
-- `confirmadoPor` y `confirmadoEn` son nulos salvo en QA-REC-006. La confirmación se trata separadamente del estado activo/inactivo.
+- Todos comienzan sin eliminación lógica. El estado es `ACTIVO` salvo QA-REC-003, que es `INACTIVO`, y QA-REC-006, que es `COMPLETADO`.
+- `confirmadoPor` y `confirmadoEn` son nulos salvo en QA-REC-006. Los recordatorios únicos confirmados usan el estado `COMPLETADO`; las series recurrentes conservan su estado global.
 - Los títulos y tipos se usan exactamente como aparecen en el catálogo.
 - La fecha y hora de fin son inclusivas, según decisión del responsable del proyecto: una ocurrencia exactamente igual a ese instante es la última permitida. No se extiende el límite automáticamente hasta el final del día si la hora guardada es otra.
 
@@ -34,7 +34,7 @@ Se cubren los cinco tipos actuales y se conservan mascotas sin recordatorios par
 
 Todos los únicos usan `modalidad=unica`, con intervalo, unidad, días de semana y fecha de fin nulos. QA-REC-004 y QA-REC-006 representan recordatorios históricos existentes: su `creado_en` será el día anterior a su inicio, a las 12:00 de Argentina. No deben crearse mediante una petición de alta con fecha pasada ni usarse para aprobar esa petición.
 
-QA-REC-006 mantiene `estado=ACTIVO` y los datos de confirmación indicados, conforme a la separación de campos del modelo actual. No se usa el estado global `COMPLETADO` para representar todas las fechas de una serie.
+QA-REC-006 mantiene `estado=COMPLETADO` y los datos de confirmación indicados. Esta transición se limita a recordatorios únicos; no se usa el estado global `COMPLETADO` para representar todas las fechas de una serie.
 
 Los homónimos QA-REC-001 y QA-REC-014 coinciden intencionalmente en título, nombre de mascota y hora, pero pertenecen a distintos propietarios. Las vacunas de Luna, Simón y Nala propietario B también coinciden en título y horario. Los IDs y permisos deben mantenerlos separados.
 
@@ -63,7 +63,7 @@ Los textos de medicación y pipeta son etiquetas ficticias para pruebas de progr
 | QA-USR-006 — Propietario B | 1 | 1 | 0 |
 | Total | 15 | 11 | 4 |
 
-- Hay 14 registros activos y uno inactivo. De los activos, uno tiene confirmación y 13 no la tienen.
+- Hay 13 registros activos, uno inactivo y un único completado. Solo QA-REC-006 tiene datos de confirmación.
 - Nala habitual QA-MAS-002, Milo QA-MAS-004 y Chispa QA-MAS-005 no tienen recordatorios.
 - Los tipos se distribuyen en seis visitas, tres vacunas, dos medicaciones, una pipeta y tres de tipo otro.
 - QA-REC-012 y QA-REC-013 permiten comprobar que la conversión a UTC no desplaza el día mostrado al usuario: las 23:55 locales pertenecen al día siguiente en UTC, pero deben conservar su fecha local en la interfaz.

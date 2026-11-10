@@ -1,0 +1,36 @@
+{
+  "id_corrida": "MAS-API-20261110T041054407Z-65de8e",
+  "capturada_en": "2026-11-10T01:10:54.412-03:00",
+  "capa": "api",
+  "proyecto": "mismascotas-web-testing",
+  "servicios": {
+    "db-web-testing": {
+      "imagen_id": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "contenedor_id": "6b9e8b5b8562e17e084b0806f97fdb4e789899c9a76efd3a419dbd2a4f7e1b50",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:04.368078543Z"
+    },
+    "backend-web-testing": {
+      "imagen_id": "sha256:f97c2712e649ecfe37c05ea6c64b512745b6d46cf49063e6f3d9a7d6f4f6d711",
+      "contenedor_id": "07e63af3997e1c581c3a975ea16c024ded27de12aaf3dd7e92a8d9336a990caa",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:10.157467784Z"
+    },
+    "mailpit-web-testing": {
+      "imagen_id": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "contenedor_id": "9bcb702fa7c863e3c7096f5be9a2679c092191cb36a33313e6c25632b846e857",
+      "salud": "healthy",
+      "iniciado_en": "2026-11-10T04:04:04.325612701Z"
+    }
+  },
+  "origen_build": "No verificado: el commit del checkout no se atribuye a las imágenes.",
+  "catalogo_sha256": "ddc07e3f32728d1b91ff7cffd2b6eecbab5393b3646f855152b5c7680741e147",
+  "ejecutor_sha256": "2118b85f0a964cdc3b1a2da2844376ed12b16ba23998679c9e594dd58b15d2b2",
+  "biblioteca_sha256": "f24e389011f2f67541074f917c5c35d7aabc0c92470ffabbf73443deb5132401",
+  "version_node": "v22.19.0",
+  "sin_restauracion": true,
+  "sql": "Solo lectura; fixtures nuevos por API. Seed original comparado antes/después.",
+  "huella_seed_antes": "9683f978c6396b74a86bee64605b659b",
+  "huella_seed_despues": "9683f978c6396b74a86bee64605b659b",
+  "seed_original_intacto": true
+}

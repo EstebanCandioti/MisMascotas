@@ -1,0 +1,1294 @@
+{
+  "id_caso": "ECL-REG-002",
+  "inicio": "2026-11-10T03:38:10.462Z",
+  "resultado": "Fallida",
+  "motivo": "",
+  "capa": "Selenium Web + API + SQL",
+  "datos": {
+    "usuarios": [
+      {
+        "email": "qa.ecl.22677904b9c449398b099061d64edf9d@mismascotas.test",
+        "idUsuario": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+        "nombre": "QA Clínico ECL-REG-002"
+      }
+    ],
+    "mascotas": [
+      {
+        "idMascota": "954df155-8bf6-44de-8a24-907f929a4883",
+        "nombre": "QA ECL-REG-002 1"
+      }
+    ],
+    "eventos": []
+  },
+  "comprobaciones": [
+    {
+      "nombre": "Selenium: campos vacíos impiden enviar formulario",
+      "cumple": true,
+      "esperado": [
+        "fecha",
+        "hora",
+        "nombre"
+      ],
+      "observado": [
+        "fecha",
+        "hora",
+        "nombre"
+      ],
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_vacio: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "tipo: El tipo de evento es obligatorio",
+          "timestamp": "2026-11-10T03:38:16.647098061Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_vacio: error identifica tipo",
+      "cumple": true,
+      "esperado": "tipo",
+      "observado": "tipo: El tipo de evento es obligatorio",
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_vacio: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_invalido: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "tipo: El tipo de evento no es valido",
+          "timestamp": "2026-11-10T03:38:17.017402381Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_invalido: error identifica tipo",
+      "cumple": true,
+      "esperado": "tipo",
+      "observado": "tipo: El tipo de evento no es valido",
+      "defecto": ""
+    },
+    {
+      "nombre": "tipo_invalido: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_ausente: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "fecha: La fecha es obligatoria",
+          "timestamp": "2026-11-10T03:38:17.417491074Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_ausente: error identifica fecha",
+      "cumple": true,
+      "esperado": "fecha",
+      "observado": "fecha: La fecha es obligatoria",
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_ausente: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "vacuna_sin_nombre: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "nombre: El nombre es obligatorio para vacunas",
+          "timestamp": "2026-11-10T03:38:17.774910056Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "vacuna_sin_nombre: error identifica nombre",
+      "cumple": true,
+      "esperado": "nombre",
+      "observado": "nombre: El nombre es obligatorio para vacunas",
+      "defecto": ""
+    },
+    {
+      "nombre": "vacuna_sin_nombre: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "medicacion_sin_nombre: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "nombre: El nombre es obligatorio para medicaciones",
+          "timestamp": "2026-11-10T03:38:18.103293602Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "medicacion_sin_nombre: error identifica nombre",
+      "cumple": true,
+      "esperado": "nombre",
+      "observado": "nombre: El nombre es obligatorio para medicaciones",
+      "defecto": ""
+    },
+    {
+      "nombre": "medicacion_sin_nombre: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "medicacion_sin_dosis: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "dosis: La dosis es obligatoria para medicaciones",
+          "timestamp": "2026-11-10T03:38:18.463752434Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "medicacion_sin_dosis: error identifica dosis",
+      "cumple": true,
+      "esperado": "dosis",
+      "observado": "dosis: La dosis es obligatoria para medicaciones",
+      "defecto": ""
+    },
+    {
+      "nombre": "medicacion_sin_dosis: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "consulta_sin_motivo: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "motivo: El motivo es obligatorio para consultas veterinarias",
+          "timestamp": "2026-11-10T03:38:18.823975955Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "consulta_sin_motivo: error identifica motivo",
+      "cumple": true,
+      "esperado": "motivo",
+      "observado": "motivo: El motivo es obligatorio para consultas veterinarias",
+      "defecto": ""
+    },
+    {
+      "nombre": "consulta_sin_motivo: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_futura: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_NEGOCIO",
+          "mensaje": "La fecha no puede ser posterior al dia actual.",
+          "timestamp": "2026-11-10T03:38:19.166958323Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_futura: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_no_parseable: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "fecha: La fecha no tiene un formato valido o no existe",
+          "timestamp": "2026-11-10T03:38:19.490368523Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_no_parseable: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_inexistente: rechazo de validación controlado",
+      "cumple": true,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 400,
+        "respuesta": {
+          "codigo": "ERROR_VALIDACION",
+          "mensaje": "fecha: La fecha no tiene un formato valido o no existe",
+          "timestamp": "2026-11-10T03:38:19.834146130Z"
+        }
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "fecha_inexistente: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "nombre_256: rechazo de validación controlado",
+      "cumple": false,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 500,
+        "respuesta": {
+          "codigo": "ERROR_INTERNO",
+          "mensaje": "Ocurrio un error inesperado",
+          "timestamp": "2026-11-10T03:38:20.188506161Z"
+        }
+      },
+      "defecto": "ECL-VAL-NOMBRE_256"
+    },
+    {
+      "nombre": "nombre_256: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "dosis_101: rechazo de validación controlado",
+      "cumple": false,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 500,
+        "respuesta": {
+          "codigo": "ERROR_INTERNO",
+          "mensaje": "Ocurrio un error inesperado",
+          "timestamp": "2026-11-10T03:38:20.539644132Z"
+        }
+      },
+      "defecto": "ECL-VAL-DOSIS_101"
+    },
+    {
+      "nombre": "dosis_101: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    },
+    {
+      "nombre": "observaciones_256: rechazo de validación controlado",
+      "cumple": false,
+      "esperado": "HTTP 400 o 422",
+      "observado": {
+        "http": 500,
+        "respuesta": {
+          "codigo": "ERROR_INTERNO",
+          "mensaje": "Ocurrio un error inesperado",
+          "timestamp": "2026-11-10T03:38:20.863547235Z"
+        }
+      },
+      "defecto": "ECL-VAL-OBSERVACIONES_256"
+    },
+    {
+      "nombre": "observaciones_256: sin persistencia ni alteración del peso",
+      "cumple": true,
+      "esperado": "Instantáneas SQL idénticas",
+      "observado": {
+        "eventos_antes": 0,
+        "eventos_despues": 0
+      },
+      "defecto": ""
+    }
+  ],
+  "solicitudes": [
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "tipo: El tipo de evento es obligatorio",
+        "timestamp": "2026-11-10T03:38:16.647098061Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "OTRO_INVENTADO",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "tipo: El tipo de evento no es valido",
+        "timestamp": "2026-11-10T03:38:17.017402381Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": null,
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "fecha: La fecha es obligatoria",
+        "timestamp": "2026-11-10T03:38:17.417491074Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "nombre: El nombre es obligatorio para vacunas",
+        "timestamp": "2026-11-10T03:38:17.774910056Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "MEDICACION",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "",
+        "dosis": "Dosis ficticia QA",
+        "observaciones": "Sin indicación veterinaria."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "nombre: El nombre es obligatorio para medicaciones",
+        "timestamp": "2026-11-10T03:38:18.103293602Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "MEDICACION",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "Tratamiento ficticio QA",
+        "dosis": "",
+        "observaciones": "Sin indicación veterinaria."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "dosis: La dosis es obligatoria para medicaciones",
+        "timestamp": "2026-11-10T03:38:18.463752434Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "CONSULTA_VETERINARIA",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "motivo": "",
+        "diagnostico": "Diagnóstico ficticio QA",
+        "observaciones": "Registro exclusivo de pruebas."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "motivo: El motivo es obligatorio para consultas veterinarias",
+        "timestamp": "2026-11-10T03:38:18.823975955Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-11-12T12:00:00-03:00",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_NEGOCIO",
+        "mensaje": "La fecha no puede ser posterior al dia actual.",
+        "timestamp": "2026-11-10T03:38:19.166958323Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "no-es-un-instante",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "fecha: La fecha no tiene un formato valido o no existe",
+        "timestamp": "2026-11-10T03:38:19.490368523Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-02-30T12:00:00Z",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 400,
+      "respuesta": {
+        "codigo": "ERROR_VALIDACION",
+        "mensaje": "fecha: La fecha no tiene un formato valido o no existe",
+        "timestamp": "2026-11-10T03:38:19.834146130Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "observaciones": "Sin uso clínico."
+      },
+      "http": 500,
+      "respuesta": {
+        "codigo": "ERROR_INTERNO",
+        "mensaje": "Ocurrio un error inesperado",
+        "timestamp": "2026-11-10T03:38:20.188506161Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "MEDICACION",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "Tratamiento ficticio QA",
+        "dosis": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "observaciones": "Sin indicación veterinaria."
+      },
+      "http": 500,
+      "respuesta": {
+        "codigo": "ERROR_INTERNO",
+        "mensaje": "Ocurrio un error inesperado",
+        "timestamp": "2026-11-10T03:38:20.539644132Z"
+      }
+    },
+    {
+      "origen": "Selenium executeAsyncScript / API directa",
+      "metodo": "POST",
+      "ruta": "/mascotas/954df155-8bf6-44de-8a24-907f929a4883/eventos-clinicos",
+      "cuerpo": {
+        "tipo": "VACUNA",
+        "fecha": "2026-11-08T12:00:00-03:00",
+        "nombre": "Vacuna ficticia QA",
+        "observaciones": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+      },
+      "http": 500,
+      "respuesta": {
+        "codigo": "ERROR_INTERNO",
+        "mensaje": "Ocurrio un error inesperado",
+        "timestamp": "2026-11-10T03:38:20.863547235Z"
+      }
+    }
+  ],
+  "acciones_selenium": [],
+  "capturas": [
+    "antes.png",
+    "campos_obligatorios.png",
+    "despues.png"
+  ],
+  "sql": {
+    "antes": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_tipo_vacio": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_tipo_vacio": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_tipo_invalido": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_tipo_invalido": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_fecha_ausente": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_fecha_ausente": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_vacuna_sin_nombre": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_vacuna_sin_nombre": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_medicacion_sin_nombre": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_medicacion_sin_nombre": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_medicacion_sin_dosis": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_medicacion_sin_dosis": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_consulta_sin_motivo": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_consulta_sin_motivo": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_fecha_futura": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_fecha_futura": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_fecha_no_parseable": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_fecha_no_parseable": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_fecha_inexistente": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_fecha_inexistente": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_nombre_256": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_nombre_256": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_dosis_101": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_dosis_101": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "antes_observaciones_256": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues_observaciones_256": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    },
+    "despues": {
+      "mascotas": [
+        {
+          "id_mascota": "954df155-8bf6-44de-8a24-907f929a4883",
+          "propietario_id": "c5f3996f-a8de-4f03-b5c0-b6523a1105e3",
+          "fecha_nacimiento": null,
+          "edad_valor": null,
+          "edad_unidad": null,
+          "especie": "Perro",
+          "nombre": "QA ECL-REG-002 1",
+          "peso_actual": null,
+          "raza": null,
+          "fecha_eliminacion": null,
+          "notas": "Fixture clínico ficticio",
+          "id_cliente": null,
+          "fecha_aproximada": false,
+          "creado_en": "2026-11-10T03:38:11.094709+00:00",
+          "actualizado_en": "2026-11-10T03:38:11.094711+00:00",
+          "foto_perfil": null
+        }
+      ],
+      "eventos": []
+    }
+  },
+  "limites": [],
+  "navegador": {
+    "herramienta": "Selenium WebDriver",
+    "version_selenium": "4.51.0",
+    "nombre": "MicrosoftEdge",
+    "version": "157.0.4341.42"
+  },
+  "fin": "2026-11-10T03:38:21.331Z",
+  "id_ejecucion": "ECL-SELENIUM-REGISTRO-20261110T033809948Z-7e1f43__ECL-REG-002__01",
+  "fecha_hora": "2026-11-10T00:38:21.331-03:00",
+  "esperado_catalogo": "No se persiste y se señalan errores",
+  "escenario": "Datos requeridos inválidos",
+  "fundamento": "Acordado",
+  "ficha": "../entorno.json"
+}

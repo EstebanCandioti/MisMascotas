@@ -1,160 +1,162 @@
 # Defectos consolidados de Mascotas
 
-**12 defectos abiertos en dos casos:** MAS-REG-003 y MAS-EDI-004. Se observaron en dos tandas API. Las funciones compartidas ausentes permanecen bloqueadas y no se cuentan como defectos ejecutados. No se modificó el producto.
+Solo comportamientos observados; las funciones ausentes se listan como bloqueos en `mascotas_postman.md`. Los defectos permanecen abiertos hasta una corrección y una nueva ejecución verificable.
 
-| Defecto | Caso | Comportamiento observado |
-|---|---|---|
-| [DEF-MAS-VAL-NOMBRE-DE-101-CARACTERES](#def-mas-val-nombre-de-101-caracteres) | MAS-REG-003 | Nombre de 101 caracteres provoca HTTP 500 |
-| [DEF-MAS-VAL-ESPECIE-DE-51-CARACTERES](#def-mas-val-especie-de-51-caracteres) | MAS-REG-003 | Especie de 51 caracteres provoca HTTP 500 |
-| [DEF-MAS-VAL-RAZA-DE-101-CARACTERES](#def-mas-val-raza-de-101-caracteres) | MAS-REG-003 | Raza de 101 caracteres provoca HTTP 500 |
-| [DEF-MAS-VAL-NOTAS-DE-256-CARACTERES](#def-mas-val-notas-de-256-caracteres) | MAS-REG-003 | Notas de 256 caracteres provoca HTTP 500 |
-| [DEF-MAS-VAL-FECHA-INEXISTENTE](#def-mas-val-fecha-inexistente) | MAS-REG-003 | Fecha inexistente provoca HTTP 500 |
-| [DEF-MAS-VAL-FECHA-FUTURA](#def-mas-val-fecha-futura) | MAS-REG-003 | Fecha futura se acepta con HTTP 201 |
-| [DEF-MAS-VAL-EDAD-NEGATIVA](#def-mas-val-edad-negativa) | MAS-REG-003 | Edad negativa se acepta con HTTP 201 |
-| [DEF-MAS-VAL-UNIDAD-DE-EDAD-INVALIDA](#def-mas-val-unidad-de-edad-invalida) | MAS-REG-003 | Unidad de edad inválida provoca HTTP 500 |
-| [DEF-MAS-VAL-PESO-CERO](#def-mas-val-peso-cero) | MAS-REG-003 | Peso cero se acepta con HTTP 201 |
-| [DEF-MAS-VAL-PESO-NEGATIVO](#def-mas-val-peso-negativo) | MAS-REG-003 | Peso negativo se acepta con HTTP 201 |
-| [DEF-MAS-VAL-PESO-FUERA-DEL-LIMITE-DEL-FORMULARIO](#def-mas-val-peso-fuera-del-limite-del-formulario) | MAS-REG-003 | Peso fuera del límite del formulario provoca HTTP 500 |
-| [DEF-MAS-PESO-BASICO](#def-mas-peso-basico) | MAS-EDI-004 | El perfil básico sobrescribe el peso sin crear una medición |
+| Defecto | Casos | Estado | Comportamiento |
+|---|---|---|---|
+| [DEF-MAS-PERSISTENCIA](#def-mas-persistencia) | MAS-REG-001, MAS-REG-003, MAS-REG-005 | Descartado: comparador QA | Alta válida: lectura posterior idéntica |
+| [DEF-MAS-VAL-NOMBRE-DE-101-CARACTERES](#def-mas-val-nombre-de-101-caracteres) | MAS-REG-003 | Abierto | Nombre de 101 caracteres provoca HTTP 500 |
+| [DEF-MAS-VAL-ESPECIE-DE-51-CARACTERES](#def-mas-val-especie-de-51-caracteres) | MAS-REG-003 | Abierto | Especie de 51 caracteres provoca HTTP 500 |
+| [DEF-MAS-VAL-RAZA-DE-101-CARACTERES](#def-mas-val-raza-de-101-caracteres) | MAS-REG-003 | Abierto | Raza de 101 caracteres provoca HTTP 500 |
+| [DEF-MAS-VAL-NOTAS-DE-256-CARACTERES](#def-mas-val-notas-de-256-caracteres) | MAS-REG-003 | Abierto | Notas de 256 caracteres provoca HTTP 500 |
+| [DEF-MAS-VAL-FECHA-INEXISTENTE](#def-mas-val-fecha-inexistente) | MAS-REG-003 | Abierto | Fecha inexistente provoca HTTP 500 |
+| [DEF-MAS-VAL-FECHA-FUTURA](#def-mas-val-fecha-futura) | MAS-REG-003 | Abierto | Fecha futura se acepta con HTTP 201 |
+| [DEF-MAS-VAL-EDAD-NEGATIVA](#def-mas-val-edad-negativa) | MAS-REG-003 | Abierto | Edad negativa se acepta con HTTP 201 |
+| [DEF-MAS-VAL-UNIDAD-DE-EDAD-INVALIDA](#def-mas-val-unidad-de-edad-invalida) | MAS-REG-003 | Abierto | Unidad de edad inválida provoca HTTP 500 |
+| [DEF-MAS-VAL-PESO-CERO](#def-mas-val-peso-cero) | MAS-REG-003 | Abierto | Peso cero se acepta con HTTP 201 |
+| [DEF-MAS-VAL-PESO-NEGATIVO](#def-mas-val-peso-negativo) | MAS-REG-003 | Abierto | Peso negativo se acepta con HTTP 201 |
+| [DEF-MAS-VAL-PESO-FUERA-DEL-LIMITE-DEL-FORMULARIO](#def-mas-val-peso-fuera-del-limite-del-formulario) | MAS-REG-003 | Abierto | Peso fuera del límite del formulario provoca HTTP 500 |
+| [DEF-MAS-DETALLE](#def-mas-detalle) | MAS-DET-001 | Descartado: comparador QA | Detalle propio completo |
+| [DEF-MAS-EDICION-AJENA](#def-mas-edicion-ajena) | MAS-EDI-003 | Descartado: comparador QA | Mascota propia sin cambios por el tercero |
+| [DEF-MAS-PESO-BASICO](#def-mas-peso-basico) | MAS-EDI-004 | Abierto | El perfil básico sobrescribe el peso sin crear una medición |
+
+## DEF-MAS-PERSISTENCIA
+
+Alta válida: lectura posterior idéntica. Falso positivo por comparación exacta de creadoEn entre nanosegundos de Java y microsegundos de PostgreSQL.
+
+Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración.
+
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-001__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-001__01/resultado.json): Alta válida: lectura posterior idéntica. Esperado: {"idMascota":"418fdd4d-daa5-473c-a232-10422989768d","propietarioId":"1790dfbb-143e-4b2f-8909-baa76eadcf28","nombre":"QA MAS-REG-001","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:38.034691071Z"}. Observado: {"idMascota":"418fdd4d-daa5-473c-a232-10422989768d","propietarioId":"1790dfbb-143e-4b2f-8909-baa76eadcf28","nombre":"QA MAS-REG-001","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:38.034691Z"}. Ejecutar --tanda api --caso MAS-REG-001. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Nombre de 100 caracteres: lectura posterior idéntica. Esperado: {"idMascota":"748380b7-f694-435e-a956-4470d1cb154e","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.079062077Z"}. Observado: {"idMascota":"748380b7-f694-435e-a956-4470d1cb154e","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"ÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁÁ","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.079062Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Texto en límites exactos: lectura posterior idéntica. Esperado: {"idMascota":"ecc4ff5a-e507-4010-94bc-433dba432adc","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ","especie":"EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE","raza":"RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR","fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN","creadoEn":"2026-10-25T00:21:40.117871250Z"}. Observado: {"idMascota":"ecc4ff5a-e507-4010-94bc-433dba432adc","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ","especie":"EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE","raza":"RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR","fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN","creadoEn":"2026-10-25T00:21:40.117871Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Edad desconocida: lectura posterior idéntica. Esperado: {"idMascota":"297bc64b-4b3c-4e17-a548-8ffc2640d585","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.157172050Z"}. Observado: {"idMascota":"297bc64b-4b3c-4e17-a548-8ffc2640d585","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.157172Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Nacimiento válido: lectura posterior idéntica. Esperado: {"idMascota":"0f55d017-c3a6-42ad-80af-83f24ebef176","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":"2020-02-29","fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.198321148Z"}. Observado: {"idMascota":"0f55d017-c3a6-42ad-80af-83f24ebef176","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":"2020-02-29","fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.198321Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Edad aproximada en dias: lectura posterior idéntica. Esperado: {"idMascota":"602d9ed7-5fe1-4d8d-bb49-e13feffd05b6","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"dias","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.236764701Z"}. Observado: {"idMascota":"602d9ed7-5fe1-4d8d-bb49-e13feffd05b6","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"dias","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.236765Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Edad aproximada en semanas: lectura posterior idéntica. Esperado: {"idMascota":"202199bc-66c4-42dd-aa75-25a4d1174326","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"semanas","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.275117550Z"}. Observado: {"idMascota":"202199bc-66c4-42dd-aa75-25a4d1174326","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"semanas","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.275118Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Edad aproximada en meses: lectura posterior idéntica. Esperado: {"idMascota":"2500e0ba-a306-4fd5-a0b8-395fa00de68e","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"meses","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.311626900Z"}. Observado: {"idMascota":"2500e0ba-a306-4fd5-a0b8-395fa00de68e","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"meses","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.311627Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Edad aproximada en anios: lectura posterior idéntica. Esperado: {"idMascota":"b31cafd9-0faf-4d69-8f30-c8f646bfae3e","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"anios","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.347057593Z"}. Observado: {"idMascota":"b31cafd9-0faf-4d69-8f30-c8f646bfae3e","propietarioId":"85e23662-e7a5-4ef2-b8c4-776d0b1a9719","nombre":"QA Válida","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":true,"edadValor":1,"edadUnidad":"anios","fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:40.347058Z"}. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-005__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-005__01/resultado.json): Alta Premium por encima del cupo: lectura posterior idéntica. Esperado: {"idMascota":"ca05f94c-60c5-4f21-8d94-4293720d87d8","propietarioId":"10000000-0000-4000-8000-000000000004","nombre":"QA MAS-REG-005","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:42.877407559Z"}. Observado: {"idMascota":"ca05f94c-60c5-4f21-8d94-4293720d87d8","propietarioId":"10000000-0000-4000-8000-000000000004","nombre":"QA MAS-REG-005","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:42.877408Z"}. Ejecutar --tanda api --caso MAS-REG-005. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-NOMBRE-DE-101-CARACTERES
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Nombre de 101 caracteres provoca HTTP 500. Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Nombre de 101 caracteres» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Nombre de 101 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Nombre de 101 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Nombre de 101 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-ESPECIE-DE-51-CARACTERES
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Especie de 51 caracteres provoca HTTP 500. Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Especie de 51 caracteres» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Especie de 51 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Especie de 51 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Especie de 51 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-RAZA-DE-101-CARACTERES
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Raza de 101 caracteres provoca HTTP 500. Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Raza de 101 caracteres» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Raza de 101 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Raza de 101 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Raza de 101 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-NOTAS-DE-256-CARACTERES
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Notas de 256 caracteres provoca HTTP 500. Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Notas de 256 caracteres» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Notas de 256 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Notas de 256 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Notas de 256 caracteres: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-FECHA-INEXISTENTE
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Fecha inexistente provoca HTTP 500. Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Fecha inexistente» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Fecha inexistente: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Fecha inexistente: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Fecha inexistente: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-FECHA-FUTURA
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Fecha futura se acepta con HTTP 201. Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Fecha futura» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Fecha futura: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Fecha futura: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Fecha futura: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Fecha futura: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Fecha futura: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Fecha futura: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-EDAD-NEGATIVA
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Edad negativa se acepta con HTTP 201. Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Edad negativa» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Edad negativa: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Edad negativa: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Edad negativa: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Edad negativa: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Edad negativa: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Edad negativa: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-UNIDAD-DE-EDAD-INVALIDA
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Unidad de edad inválida provoca HTTP 500. Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Unidad de edad inválida» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Unidad de edad inválida: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Unidad de edad inválida: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Unidad de edad inválida: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-PESO-CERO
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Peso cero se acepta con HTTP 201. Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Peso cero» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Peso cero: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Peso cero: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Peso cero: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Peso cero: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Peso cero: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Peso cero: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-PESO-NEGATIVO
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Peso negativo se acepta con HTTP 201. Se persiste una mascota con datos que deberían rechazarse; se retira lógicamente el fixture después de conservar evidencia.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 201.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Peso negativo» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Peso negativo: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Peso negativo: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Peso negativo: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Peso negativo: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Peso negativo: error de validación controlado. Esperado: "400 o 422". Observado: 201. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Peso negativo: sin alta parcial. Esperado: 0. Observado: 1. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-VAL-PESO-FUERA-DEL-LIMITE-DEL-FORMULARIO
 
-**Estado:** Abierto. **Caso:** MAS-REG-003.
-
 Peso fuera del límite del formulario provoca HTTP 500. Una entrada inválida del usuario termina como error interno en lugar de una validación controlada.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json). Esperado: "400 o 422". Observado: 500.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-REG-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-REG-003__01/resultado.json): Peso fuera del límite del formulario: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json): Peso fuera del límite del formulario: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01](evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json): Peso fuera del límite del formulario: error de validación controlado. Esperado: "400 o 422". Observado: 500. Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia.
 
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-REG-003`. Identificar la variante «Peso fuera del límite del formulario» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
+## DEF-MAS-DETALLE
+
+Detalle propio completo. Falso positivo por comparación exacta de creadoEn entre nanosegundos de Java y microsegundos de PostgreSQL.
+
+Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración.
+
+- [MAS-API-20261025T002135696Z-63d28e__MAS-DET-001__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-DET-001__01/resultado.json): Detalle propio completo. Esperado: {"idMascota":"26302a47-fa32-4207-8cb5-df8b19e040ef","propietarioId":"41d415ab-0d2c-4074-a634-4fa05efc5f40","nombre":"QA MAS-DET-001","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:43.661492148Z"}. Observado: {"http":200,"cuerpo":{"idMascota":"26302a47-fa32-4207-8cb5-df8b19e040ef","propietarioId":"41d415ab-0d2c-4074-a634-4fa05efc5f40","nombre":"QA MAS-DET-001","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:43.661492Z"}}. Ejecutar --tanda api --caso MAS-DET-001. Ver la variante y solicitudes saneadas en la evidencia.
+
+## DEF-MAS-EDICION-AJENA
+
+Mascota propia sin cambios por el tercero. Falso positivo por comparación exacta de creadoEn entre nanosegundos de Java y microsegundos de PostgreSQL.
+
+Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración.
+
+- [MAS-API-20261025T002135696Z-63d28e__MAS-EDI-003__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-EDI-003__01/resultado.json): Mascota propia sin cambios por el tercero. Esperado: {"idMascota":"9d792d28-026b-481c-b87e-58736e28f563","propietarioId":"8c0c7a59-73b0-408b-92a9-4d4b9cfbe3a3","nombre":"QA MAS-EDI-003","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:47.460508670Z"}. Observado: {"idMascota":"9d792d28-026b-481c-b87e-58736e28f563","propietarioId":"8c0c7a59-73b0-408b-92a9-4d4b9cfbe3a3","nombre":"QA MAS-EDI-003","especie":"Perro","raza":null,"fechaNacimiento":null,"fechaAproximada":false,"edadValor":null,"edadUnidad":null,"fotoPerfil":null,"pesoActual":null,"notas":"Datos ficticios de QA Mascotas","creadoEn":"2026-10-25T00:21:47.460509Z"}. Ejecutar --tanda api --caso MAS-EDI-003. Ver la variante y solicitudes saneadas en la evidencia.
 
 ## DEF-MAS-PESO-BASICO
 
-**Estado:** Abierto. **Caso:** MAS-EDI-004.
-
 El perfil básico sobrescribe el peso sin crear una medición. El perfil queda en 99 kg mientras el historial conserva su última medición de 10 kg.
 
-- [MAS-API-20261025T002135696Z-63d28e__MAS-EDI-004__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-EDI-004__01/resultado.json). Esperado: "El peso permanece 10 kg o se rechaza la modificación básica". Observado: {"httpPut":200,"pesoActual":99}.
-- [MAS-API-20261025T002313850Z-7bd9f5__MAS-EDI-004__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-EDI-004__01/resultado.json). Esperado: "El peso permanece 10 kg o se rechaza la modificación básica". Observado: {"httpPut":200,"pesoActual":99}.
-
-**Reproducción:** ejecutar `node scripts/qa/Ejecutar-MascotasQA.cjs --tanda api --caso MAS-EDI-004`. Identificar la variante «PUT del perfil no sobrescribe peso actual» en `solicitudes` y `comprobaciones` del JSON enlazado. La ficha `../entorno.json` de cada evidencia contiene las imágenes ejecutadas. Se usan actores y mascotas ficticios; los UUID y emails están en cada resultado.
-
-## Hallazgos descartados de la instrumentación
-
-Estos tres IDs se conservan para explicar los fallos de la primera tanda. **No son defectos abiertos del producto.**
-
-- **DEF-MAS-PERSISTENCIA** (MAS-REG-001, MAS-REG-003, MAS-REG-005): Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración. [Revisión del ejecutor](evidencias/MAS-API-20261025T002135696Z-63d28e/revision_ejecutor.md).
-- **DEF-MAS-DETALLE** (MAS-DET-001): Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración. [Revisión del ejecutor](evidencias/MAS-API-20261025T002135696Z-63d28e/revision_ejecutor.md).
-- **DEF-MAS-EDICION-AJENA** (MAS-EDI-003): Se revisaron los valores esperados y observados: solo cambia el redondeo temporal por debajo de un milisegundo. Se corrigió el comparador y se repite la tanda. Los registros históricos de la primera ejecución se conservan, con esta aclaración. [Revisión del ejecutor](evidencias/MAS-API-20261025T002135696Z-63d28e/revision_ejecutor.md).
-
-Las correcciones futuras requieren repetir sus casos, anexar evidencia y actualizar el estado del defecto. No se cierran por cambiar el esperado ni por tener una corrida de otra capa aprobada.
+- [MAS-API-20261025T002135696Z-63d28e__MAS-EDI-004__01](evidencias/MAS-API-20261025T002135696Z-63d28e/MAS-EDI-004__01/resultado.json): PUT del perfil no sobrescribe peso actual. Esperado: "El peso permanece 10 kg o se rechaza la modificación básica". Observado: {"httpPut":200,"pesoActual":99}. Ejecutar --tanda api --caso MAS-EDI-004. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261025T002313850Z-7bd9f5__MAS-EDI-004__01](evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-EDI-004__01/resultado.json): PUT del perfil no sobrescribe peso actual. Esperado: "El peso permanece 10 kg o se rechaza la modificación básica". Observado: {"httpPut":200,"pesoActual":99}. Ejecutar --tanda api --caso MAS-EDI-004. Ver la variante y solicitudes saneadas en la evidencia.
+- [MAS-API-20261110T041054407Z-65de8e__MAS-EDI-004__01](evidencias/MAS-API-20261110T041054407Z-65de8e/MAS-EDI-004__01/resultado.json): PUT del perfil no sobrescribe peso actual. Esperado: "El peso permanece 10 kg o se rechaza la modificación básica". Observado: {"httpPut":200,"pesoActual":99}. Ejecutar --tanda api --caso MAS-EDI-004. Ver la variante y solicitudes saneadas en la evidencia.

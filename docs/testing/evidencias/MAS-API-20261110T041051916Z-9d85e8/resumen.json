@@ -1,0 +1,11 @@
+{
+  "id_corrida": "MAS-API-20261110T041051916Z-9d85e8",
+  "tanda": "api",
+  "resultados": [
+    {
+      "id": "MAS-REG-003",
+      "resultado": "Fallida",
+      "evidencia": "MAS-REG-003__01/resultado.json"
+    }
+  ]
+}

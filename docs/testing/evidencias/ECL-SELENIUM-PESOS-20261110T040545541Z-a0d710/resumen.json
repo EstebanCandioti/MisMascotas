@@ -1,0 +1,12 @@
+{
+  "id_corrida": "ECL-SELENIUM-PESOS-20261110T040545541Z-a0d710",
+  "tanda": "pesos",
+  "resultados": [
+    {
+      "id": "ECL-REG-007",
+      "resultado": "Aprobada",
+      "motivo": "",
+      "evidencia": "ECL-REG-007__01/resultado.json"
+    }
+  ]
+}

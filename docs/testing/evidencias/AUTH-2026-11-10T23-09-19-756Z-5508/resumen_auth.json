@@ -1,0 +1,16 @@
+{
+  "inicio": "2026-11-10T23:09:19.756Z",
+  "fin": "2026-11-10T23:09:21.416Z",
+  "alcance": "API Auth; no certifica interfaz ni integridad SQL completa.",
+  "error_general": false,
+  "errores_ejecucion": 0,
+  "resultados": [
+    {
+      "id": "AUT-SES-003",
+      "estado": "APROBADO_API",
+      "verificaciones": 13,
+      "pendientes": 0,
+      "fallos": []
+    }
+  ]
+}

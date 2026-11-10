@@ -398,6 +398,14 @@
         "esperado": "400 o 422",
         "observado": 500,
         "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Nombre de 101 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
       }
     ]
   },
@@ -421,6 +429,14 @@
       {
         "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
         "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Especie de 51 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
         "comprobacion": "Especie de 51 caracteres: error de validación controlado",
         "esperado": "400 o 422",
         "observado": 500,
@@ -452,6 +468,14 @@
         "esperado": "400 o 422",
         "observado": 500,
         "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Raza de 101 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
       }
     ]
   },
@@ -479,6 +503,14 @@
         "esperado": "400 o 422",
         "observado": 500,
         "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Notas de 256 caracteres: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
       }
     ]
   },
@@ -502,6 +534,14 @@
       {
         "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
         "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha inexistente: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
         "comprobacion": "Fecha inexistente: error de validación controlado",
         "esperado": "400 o 422",
         "observado": 500,
@@ -549,6 +589,22 @@
         "esperado": 0,
         "observado": 1,
         "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha futura: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Fecha futura: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
       }
     ]
   },
@@ -592,6 +648,22 @@
         "esperado": 0,
         "observado": 1,
         "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad negativa: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Edad negativa: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
       }
     ]
   },
@@ -615,6 +687,14 @@
       {
         "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
         "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Unidad de edad inválida: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
         "comprobacion": "Unidad de edad inválida: error de validación controlado",
         "esperado": "400 o 422",
         "observado": 500,
@@ -662,6 +742,22 @@
         "esperado": 0,
         "observado": 1,
         "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso cero: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso cero: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
       }
     ]
   },
@@ -705,6 +801,22 @@
         "esperado": 0,
         "observado": 1,
         "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso negativo: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 201,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso negativo: sin alta parcial",
+        "esperado": 0,
+        "observado": 1,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
       }
     ]
   },
@@ -728,6 +840,14 @@
       {
         "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-REG-003__01",
         "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-REG-003__01/resultado.json",
+        "comprobacion": "Peso fuera del límite del formulario: error de validación controlado",
+        "esperado": "400 o 422",
+        "observado": 500,
+        "reproduccion": "Ejecutar --tanda api --caso MAS-REG-003. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041051916Z-9d85e8__MAS-REG-003__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041051916Z-9d85e8/MAS-REG-003__01/resultado.json",
         "comprobacion": "Peso fuera del límite del formulario: error de validación controlado",
         "esperado": "400 o 422",
         "observado": 500,
@@ -859,6 +979,17 @@
       {
         "id_ejecucion": "MAS-API-20261025T002313850Z-7bd9f5__MAS-EDI-004__01",
         "evidencia": "docs/testing/evidencias/MAS-API-20261025T002313850Z-7bd9f5/MAS-EDI-004__01/resultado.json",
+        "comprobacion": "PUT del perfil no sobrescribe peso actual",
+        "esperado": "El peso permanece 10 kg o se rechaza la modificación básica",
+        "observado": {
+          "httpPut": 200,
+          "pesoActual": 99
+        },
+        "reproduccion": "Ejecutar --tanda api --caso MAS-EDI-004. Ver la variante y solicitudes saneadas en la evidencia."
+      },
+      {
+        "id_ejecucion": "MAS-API-20261110T041054407Z-65de8e__MAS-EDI-004__01",
+        "evidencia": "docs/testing/evidencias/MAS-API-20261110T041054407Z-65de8e/MAS-EDI-004__01/resultado.json",
         "comprobacion": "PUT del perfil no sobrescribe peso actual",
         "esperado": "El peso permanece 10 kg o se rechaza la modificación básica",
         "observado": {

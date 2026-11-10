@@ -1,0 +1,11 @@
+{
+  "id_corrida": "MAS-API-20261110T043959521Z-4e9d3f",
+  "tanda": "api",
+  "resultados": [
+    {
+      "id": "MAS-EDI-004",
+      "resultado": "Aprobada",
+      "evidencia": "MAS-EDI-004__01/resultado.json"
+    }
+  ]
+}
