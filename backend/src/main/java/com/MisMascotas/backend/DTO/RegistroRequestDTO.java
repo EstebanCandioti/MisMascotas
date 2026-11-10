@@ -1,5 +1,6 @@
 package com.MisMascotas.backend.DTO;
 
+import com.MisMascotas.backend.Util.NormalizadorEmail;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -18,4 +19,8 @@ public record RegistroRequestDTO(
         @Pattern(regexp = ".*[A-Z].*", message = "La contrasenia debe tener al menos una mayuscula")
         @Pattern(regexp = ".*\\d.*", message = "La contrasenia debe tener al menos un numero")
         String password) {
+
+    public RegistroRequestDTO {
+        email = NormalizadorEmail.normalizar(email);
+    }
 }

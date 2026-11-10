@@ -15,6 +15,7 @@ import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
 import com.MisMascotas.backend.Exception.LimiteMascotasAlcanzadoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
+import com.MisMascotas.backend.Repository.EventoClinicoRepository;
 import com.MisMascotas.backend.Repository.MascotaRepository;
 import com.MisMascotas.backend.Repository.UsuarioRepository;
 
@@ -29,6 +30,7 @@ public class MascotaService {
     private final MascotaRepository mascotaRepository;
     private final UsuarioRepository usuarioRepository;
     private final AccesoMascotaService accesoMascotaService;
+    private final EventoClinicoRepository eventoClinicoRepository;
 
     @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.CREATE)
     @Transactional
@@ -85,6 +87,8 @@ public class MascotaService {
     @Transactional
     public MascotaResponseDTO editar(UUID id, MascotaRequestDTO request, UUID usuarioAutenticadoId) {
         Mascota mascota = accesoMascotaService.verificarAcceso(id, usuarioAutenticadoId);
+        var ultimaMedicionPeso = eventoClinicoRepository
+                .findFirstByMascota_IdMascotaAndTipoAndFechaEliminacionIsNullOrderByFechaDesc(id, "PESO");
 
         mascota.setNombre(request.nombre());
         mascota.setEspecie(request.especie());
@@ -94,7 +98,9 @@ public class MascotaService {
         mascota.setEdadValor(request.edadValor());
         mascota.setEdadUnidad(request.edadUnidad());
         mascota.setFotoPerfil(request.fotoPerfil());
-        mascota.setPesoActual(request.pesoActual());
+        mascota.setPesoActual(ultimaMedicionPeso.isPresent()
+                ? ultimaMedicionPeso.get().getValorPeso()
+                : request.pesoActual());
         mascota.setNotas(request.notas());
 
         Mascota actualizada = mascotaRepository.save(mascota);

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -11,11 +12,17 @@ import org.springframework.data.repository.query.Param;
 
 import com.MisMascotas.backend.Entity.RefreshToken;
 
+import jakarta.persistence.LockModeType;
+
 public interface RefreshTokenRepository extends Repository<RefreshToken, UUID> {
 
     RefreshToken save(RefreshToken refreshToken);
 
     Optional<RefreshToken> findByTokenHash(String tokenHash);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select rt from RefreshToken rt where rt.tokenHash = :tokenHash")
+    Optional<RefreshToken> findByTokenHashConBloqueo(@Param("tokenHash") String tokenHash);
 
     @Modifying
     @Query("""

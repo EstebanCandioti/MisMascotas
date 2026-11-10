@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import tools.jackson.core.JacksonException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -89,6 +92,32 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION", mensaje);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        if (contieneErrorEnCampo(ex, "fecha")) {
+            return buildResponse(
+                    HttpStatus.BAD_REQUEST,
+                    "ERROR_VALIDACION",
+                    "fecha: La fecha no tiene un formato valido o no existe");
+        }
+
+        if (contieneErrorEnCampo(ex, "fechaNacimiento")) {
+            return buildResponse(
+                    HttpStatus.BAD_REQUEST,
+                    "ERROR_VALIDACION",
+                    "fechaNacimiento: La fecha de nacimiento no tiene un formato valido o no existe");
+        }
+
+        if (contieneErrorEnCampo(ex, "valorPeso")) {
+            return buildResponse(
+                    HttpStatus.BAD_REQUEST,
+                    "ERROR_VALIDACION",
+                    "valorPeso: El valor de peso debe ser numerico");
+        }
+
+        return handleGenericException(ex);
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
         return buildResponse(HttpStatus.UNAUTHORIZED, "NO_AUTENTICADO", "Credenciales invalidas");
@@ -106,6 +135,19 @@ public class GlobalExceptionHandler {
 
     private String formatearErrorCampo(FieldError error) {
         return error.getField() + ": " + error.getDefaultMessage();
+    }
+
+    private boolean contieneErrorEnCampo(Throwable error, String campo) {
+        Throwable causa = error;
+        while (causa != null) {
+            if (causa instanceof JacksonException jacksonException
+                    && jacksonException.getPath().stream()
+                            .anyMatch(referencia -> campo.equals(referencia.getPropertyName()))) {
+                return true;
+            }
+            causa = causa.getCause();
+        }
+        return false;
     }
 
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String codigo, String mensaje) {

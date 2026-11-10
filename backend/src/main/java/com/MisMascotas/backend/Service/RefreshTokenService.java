@@ -40,7 +40,7 @@ public class RefreshTokenService {
 
     @Transactional(noRollbackFor = RefreshTokenInvalidoException.class)
     public RefreshTokenEmitido renovar(String tokenEnClaro) {
-        RefreshToken tokenActual = buscarPorValorEnClaro(tokenEnClaro);
+        RefreshToken tokenActual = buscarPorValorEnClaroConBloqueo(tokenEnClaro);
         Usuario usuario = tokenActual.getUsuario();
 
         if (tokenActual.getRevocadoEn() != null) {
@@ -92,6 +92,12 @@ public class RefreshTokenService {
     private RefreshToken buscarPorValorEnClaro(String tokenEnClaro) {
         String tokenHash = hashearToken(tokenEnClaro);
         return refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new RefreshTokenInvalidoException(MENSAJE_TOKEN_INVALIDO));
+    }
+
+    private RefreshToken buscarPorValorEnClaroConBloqueo(String tokenEnClaro) {
+        String tokenHash = hashearToken(tokenEnClaro);
+        return refreshTokenRepository.findByTokenHashConBloqueo(tokenHash)
                 .orElseThrow(() -> new RefreshTokenInvalidoException(MENSAJE_TOKEN_INVALIDO));
     }
 

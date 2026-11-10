@@ -28,6 +28,8 @@ public class RecordatorioService {
 
     private static final String ENTIDAD_RECORDATORIO = "RECORDATORIO";
     private static final String ESTADO_ACTIVO = "ACTIVO";
+    private static final String ESTADO_COMPLETADO = "COMPLETADO";
+    private static final String MODALIDAD_UNICA = "unica";
 
     private final RecordatorioRepository recordatorioRepository;
     private final EstadoRepository estadoRepository;
@@ -128,6 +130,9 @@ public class RecordatorioService {
         Usuario usuarioRef = entityManager.getReference(Usuario.class, usuarioAutenticadoId);
         recordatorio.setConfirmadoPor(usuarioRef);
         recordatorio.setConfirmadoEn(Instant.now());
+        if (esUnico(recordatorio) && tieneEstado(recordatorio, ESTADO_ACTIVO)) {
+            recordatorio.setEstado(buscarEstadoRecordatorio(ESTADO_COMPLETADO));
+        }
 
         Recordatorio recordatorioActualizado = recordatorioRepository.save(recordatorio);
 
@@ -142,6 +147,9 @@ public class RecordatorioService {
 
         recordatorio.setConfirmadoPor(null);
         recordatorio.setConfirmadoEn(null);
+        if (esUnico(recordatorio) && tieneEstado(recordatorio, ESTADO_COMPLETADO)) {
+            recordatorio.setEstado(buscarEstadoRecordatorio(ESTADO_ACTIVO));
+        }
 
         Recordatorio recordatorioActualizado = recordatorioRepository.save(recordatorio);
 
@@ -175,6 +183,16 @@ public class RecordatorioService {
 
     private String normalizarTipo(String tipo) {
         return tipo == null ? null : tipo.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private boolean esUnico(Recordatorio recordatorio) {
+        return recordatorio.getModalidad() != null
+                && MODALIDAD_UNICA.equals(recordatorio.getModalidad().trim().toLowerCase(Locale.ROOT));
+    }
+
+    private boolean tieneEstado(Recordatorio recordatorio, String nombreEstado) {
+        return recordatorio.getEstado() != null
+                && nombreEstado.equals(normalizarEstado(recordatorio.getEstado().getNombre()));
     }
 
     private RecordatorioResponseDTO mapToResponse(Recordatorio recordatorio) {

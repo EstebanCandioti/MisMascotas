@@ -27,6 +27,7 @@ import com.MisMascotas.backend.Repository.UsuarioRepository;
 import com.MisMascotas.backend.Security.JwtService;
 import com.MisMascotas.backend.Security.JwtService.TokenAcceso;
 import com.MisMascotas.backend.Service.RefreshTokenService.RefreshTokenEmitido;
+import com.MisMascotas.backend.Util.NormalizadorEmail;
 
 @Service
 public class AuthService {
@@ -60,7 +61,7 @@ public class AuthService {
     }
 
     public LoginResponseDTO registrar(RegistroRequestDTO request) {
-        String emailNormalizado = request.email().trim().toLowerCase();
+        String emailNormalizado = NormalizadorEmail.normalizar(request.email());
         if (usuarioRepository.existsByEmail(emailNormalizado)) {
             throw new IllegalArgumentException("El email ya esta registrado");
         }
@@ -89,7 +90,7 @@ public class AuthService {
             throw new BadCredentialsException("Credenciales invalidas");
         }
 
-        Usuario usuario = usuarioRepository.findByEmail(request.email().trim().toLowerCase());
+        Usuario usuario = usuarioRepository.findByEmail(NormalizadorEmail.normalizar(request.email()));
         if (usuario == null || !usuario.isActivo()
                 || !passwordEncoder.matches(request.password(), usuario.getPasswordHash())) {
             throw new BadCredentialsException("Credenciales invalidas");
