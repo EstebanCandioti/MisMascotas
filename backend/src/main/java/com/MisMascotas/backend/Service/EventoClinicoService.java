@@ -37,6 +37,9 @@ public class EventoClinicoService {
     private static final String TIPO_MEDICACION = "MEDICACION";
     private static final String TIPO_CONSULTA_VETERINARIA = "CONSULTA_VETERINARIA";
     private static final String TIPO_PESO = "PESO";
+    private static final int LONGITUD_MAXIMA_NOMBRE = 255;
+    private static final int LONGITUD_MAXIMA_DOSIS = 100;
+    private static final int LONGITUD_MAXIMA_OBSERVACIONES = 255;
     private static final BigDecimal PESO_MINIMO_KG = new BigDecimal("0.01");
     private static final BigDecimal PESO_MAXIMO_KG = new BigDecimal("300.00");
     private static final ZoneId ZONA_ARGENTINA = ZoneId.of("America/Argentina/Buenos_Aires");
@@ -146,6 +149,10 @@ public class EventoClinicoService {
             errores.add("tipo: El tipo de evento no es valido");
         }
 
+        validarLongitud(errores, "nombre", request.nombre(), LONGITUD_MAXIMA_NOMBRE);
+        validarLongitud(errores, "dosis", request.dosis(), LONGITUD_MAXIMA_DOSIS);
+        validarLongitud(errores, "observaciones", request.observaciones(), LONGITUD_MAXIMA_OBSERVACIONES);
+
         if (TIPO_VACUNA.equals(tipoNormalizado) && estaEnBlanco(request.nombre())) {
             errores.add("nombre: El nombre es obligatorio para vacunas");
         }
@@ -201,6 +208,12 @@ public class EventoClinicoService {
 
     private boolean estaEnBlanco(String valor) {
         return valor == null || valor.isBlank();
+    }
+
+    private void validarLongitud(List<String> errores, String campo, String valor, int longitudMaxima) {
+        if (valor != null && valor.codePointCount(0, valor.length()) > longitudMaxima) {
+            errores.add(campo + ": No puede superar los " + longitudMaxima + " caracteres");
+        }
     }
 
     private void validarFechaNoFutura(Instant fecha) {
