@@ -33,3 +33,7 @@ build/
 .vscode/
 
 .env
+/config/application.properties
+
+# Configuración local; la plantilla pública vive en configuracion/.
+/src/main/resources/application.properties

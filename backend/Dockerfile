@@ -6,6 +6,8 @@ COPY pom.xml ./
 RUN mvn dependency:go-offline -B
 
 COPY src ./src
+# Docker usa la plantilla pública; la configuración local no entra al contexto.
+COPY configuracion/application.properties ./src/main/resources/application.properties
 RUN mvn package -DskipTests -B
 
 FROM eclipse-temurin:21-jre-alpine

@@ -16,6 +16,10 @@ import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 public interface LogAuditoriaRepository extends Repository<LogAuditoria, UUID> {
     LogAuditoria save(LogAuditoria logAuditoria);
 
+    LogAuditoria saveAndFlush(LogAuditoria logAuditoria);
+
+    boolean existsByIdEventoPendiente(UUID idEventoPendiente);
+
     List<LogAuditoria> findByEntidadAfectadaAndIdEntidadOrderByFechaHoraDesc(String entidadAfectada, UUID idEntidad);
 
     List<LogAuditoria> findByActor_IdUsuarioOrderByFechaHoraDesc(UUID actorId);

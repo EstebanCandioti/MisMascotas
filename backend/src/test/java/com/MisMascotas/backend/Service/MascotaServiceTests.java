@@ -1,7 +1,10 @@
 package com.MisMascotas.backend.Service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -20,7 +23,9 @@ import com.MisMascotas.backend.DTO.MascotaRequestDTO;
 import com.MisMascotas.backend.DTO.MascotaResponseDTO;
 import com.MisMascotas.backend.Entity.EventoClinico;
 import com.MisMascotas.backend.Entity.Mascota;
+import com.MisMascotas.backend.Entity.TipoAccionAuditoria;
 import com.MisMascotas.backend.Entity.Usuario;
+import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Repository.EventoClinicoRepository;
 import com.MisMascotas.backend.Repository.MascotaRepository;
 import com.MisMascotas.backend.Repository.UsuarioRepository;
@@ -36,6 +41,8 @@ class MascotaServiceTests {
     private AccesoMascotaService accesoMascotaService;
     @Mock
     private EventoClinicoRepository eventoClinicoRepository;
+    @Mock
+    private EventoAuditoriaPendienteService eventoAuditoriaPendienteService;
 
     private MascotaService mascotaService;
     private UUID mascotaId;
@@ -48,7 +55,8 @@ class MascotaServiceTests {
                 mascotaRepository,
                 usuarioRepository,
                 accesoMascotaService,
-                eventoClinicoRepository);
+                eventoClinicoRepository,
+                eventoAuditoriaPendienteService);
         mascotaId = UUID.randomUUID();
         usuarioId = UUID.randomUUID();
 
@@ -90,6 +98,26 @@ class MascotaServiceTests {
                         mascotaId,
                         "PESO");
         verifyNoMoreInteractions(eventoClinicoRepository);
+        verify(eventoAuditoriaPendienteService).encolar(
+                usuarioId,
+                "mascota",
+                TipoAccionAuditoria.UPDATE,
+                mascotaId,
+                new MascotaResponseDTO(
+                        mascotaId,
+                        usuarioId,
+                        "Mascota anterior",
+                        "Perro",
+                        null,
+                        null,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null),
+                respuesta);
     }
 
     @Test
@@ -108,6 +136,44 @@ class MascotaServiceTests {
                 usuarioId);
 
         assertEquals(new BigDecimal("99.00"), respuesta.pesoActual());
+    }
+
+    @Test
+    void editarRechazadaPorPermisosNoEncolaAuditoria() {
+        when(accesoMascotaService.verificarAcceso(mascotaId, usuarioId))
+                .thenThrow(new AccesoDenegadoException("Sin permisos"));
+
+        assertThrows(AccesoDenegadoException.class, () -> mascotaService.editar(
+                mascotaId,
+                requestEdicion(new BigDecimal("12.00")),
+                usuarioId));
+
+        verifyNoInteractions(eventoAuditoriaPendienteService, eventoClinicoRepository, mascotaRepository);
+    }
+
+    @Test
+    void unFalloAlEncolarSePropagaParaRevertirLaEdicion() {
+        when(accesoMascotaService.verificarAcceso(mascotaId, usuarioId)).thenReturn(mascota);
+        when(eventoClinicoRepository
+                .findFirstByMascota_IdMascotaAndTipoAndFechaEliminacionIsNullOrderByFechaDesc(
+                        mascotaId,
+                        "PESO"))
+                .thenReturn(Optional.empty());
+        when(mascotaRepository.save(mascota)).thenReturn(mascota);
+        doThrow(new IllegalStateException("No se pudo persistir la auditoria"))
+                .when(eventoAuditoriaPendienteService)
+                .encolar(
+                        org.mockito.ArgumentMatchers.eq(usuarioId),
+                        org.mockito.ArgumentMatchers.eq("mascota"),
+                        org.mockito.ArgumentMatchers.eq(TipoAccionAuditoria.UPDATE),
+                        org.mockito.ArgumentMatchers.eq(mascotaId),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any());
+
+        assertThrows(IllegalStateException.class, () -> mascotaService.editar(
+                mascotaId,
+                requestEdicion(new BigDecimal("12.00")),
+                usuarioId));
     }
 
     private MascotaRequestDTO requestEdicion(BigDecimal pesoActual) {

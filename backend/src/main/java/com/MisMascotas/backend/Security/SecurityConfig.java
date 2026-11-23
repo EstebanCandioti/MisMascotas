@@ -38,7 +38,7 @@ public class SecurityConfig {
             "/auth/verificar-codigo",
             "/auth/refresh",
             "/auth/logout",
-            "/pagos/webhook"
+            "/webhooks/mercado-pago"
     };
 
     private final JwtFilter jwtFilter;

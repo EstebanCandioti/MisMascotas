@@ -84,7 +84,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         || "/auth/verificar-codigo".equals(path)
                         || "/auth/refresh".equals(path)
                         || "/auth/logout".equals(path)
-                        || "/pagos/webhook".equals(path));
+                        || "/webhooks/mercado-pago".equals(path));
     }
 
     private void escribirError(HttpServletResponse response, int status, String codigo, String mensaje) throws IOException {

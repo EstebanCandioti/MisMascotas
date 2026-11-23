@@ -67,6 +67,7 @@ Adjuntos y almacenamiento de archivos, si entran en alcance.
 Álbum asociado a varias mascotas (N:M en el contrato de la API). Requiere cambio de DTO y UI de selección múltiple en ambos fronts.
 En paralelo — Pagos
 MercadoPago, webhook y plan premium real. No depende del camino crítico, así que puede repartirse.
+Ciclo de cuotas y suscripciones implementado por etapas: clasificación, comprobaciones de respaldo, renovaciones idempotentes, cambios remotos y vencimiento. Aplicación manual en Supabase pendiente. Ver docs/procesador_notificaciones_mercadopago.md y docs/qa_ciclo_suscripciones.md para contrato, migración y evidencia.
 Pre-entrega
 Rotar los tres secretos (SMTP, base de datos, firma de tokens) y sacarlos del repositorio. Rotar es obligatorio: sacarlos del archivo no los borra del historial.
 Rate limiting en los endpoints de autenticación.

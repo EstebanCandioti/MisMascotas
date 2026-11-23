@@ -60,6 +60,9 @@ public class LogAuditoria {
     @Column(name = "fecha_hora", nullable = false, updatable = false)
     private Instant fechaHora;
 
+    @Column(name = "evento_pendiente_id", unique = true)
+    private UUID idEventoPendiente;
+
     @PrePersist
     protected void onCreate() {
         if (fechaHora == null) {

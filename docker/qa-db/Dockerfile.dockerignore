@@ -1,0 +1,24 @@
+**
+!backend/
+!backend/src/
+!backend/src/main/
+!backend/src/main/resources/
+!backend/src/main/resources/db/
+!backend/src/main/resources/db/migration/
+!backend/src/main/resources/db/migration/B9__esquema_actual.sql
+!DB/
+!DB/qa/
+!DB/qa/restablecer-seed.sql
+!docker/
+!docker/qa-db/
+!docker/qa-db/Dockerfile
+!docker/qa-db/02-seed-qa.sh
+
+# Exclusiones explícitas para evitar enviar configuración local al build.
+**/.env*
+**/target/**
+**/node_modules/**
+**/.git/**
+**/*.log
+backend/config/**
+backend/src/main/resources/application.properties
