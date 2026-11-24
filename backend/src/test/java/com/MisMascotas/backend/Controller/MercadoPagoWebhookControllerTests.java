@@ -56,6 +56,8 @@ class MercadoPagoWebhookControllerTests {
     @MockitoBean private JwtService jwt;
     @MockitoBean private SuscripcionService suscripciones;
     @MockitoBean private UsuarioAutenticadoService autenticado;
+    @MockitoBean private com.MisMascotas.backend.Service.SuscripcionConsultaService consulta;
+    @MockitoBean private com.MisMascotas.backend.Service.SuscripcionCancelacionService cancelacion;
 
     @BeforeEach
     void preparar() {

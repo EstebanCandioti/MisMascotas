@@ -20,5 +20,13 @@ public interface PagoRepository extends JpaRepository<Pago, UUID> {
             """)
     boolean existePagoAprobado(@org.springframework.data.repository.query.Param("id") UUID idSuscripcion);
 
+    @org.springframework.data.jpa.repository.Query("""
+            select distinct p.suscripcion.idSuscripcion from Pago p
+            where p.suscripcion.usuario.idUsuario = :usuarioId
+              and p.estadoCatalogo.entidad = 'PAGO' and p.estadoCatalogo.nombre = 'APROBADO'
+            """)
+    java.util.Set<UUID> buscarSuscripcionesConPagoAprobado(
+            @org.springframework.data.repository.query.Param("usuarioId") UUID usuarioId);
+
     List<Pago> findBySuscripcion_IdSuscripcionOrderByFechaPagoAsc(UUID idSuscripcion);
 }
