@@ -8,3 +8,5 @@ target/
 *.log
 .env
 HELP.md
+/config/
+/src/main/resources/application.properties

@@ -28,28 +28,31 @@ CREATE TABLE public.codigo_verificacion (
   CONSTRAINT codigo_verificacion_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuario(id_usuario)
 );
 CREATE TABLE public.suscripcion (
+    estado_mercadopago varchar(30),
+    actualizada_mercadopago_en timestamptz,
   id_suscripcion uuid NOT NULL,
   usuario_id uuid NOT NULL,
   fecha_vencimiento timestamp with time zone,
   proximo_recargo timestamp with time zone,
   fecha_cancelacion timestamp with time zone,
-  id_suscripcion_mercadopago character varying,
+  id_suscripcion_mercadopago character varying UNIQUE,
   tipo_plan character varying NOT NULL,
   estado_id integer NOT NULL,
   fecha_inicio timestamp with time zone NOT NULL DEFAULT now(),
-  estado character varying NOT NULL,
   CONSTRAINT suscripcion_pkey PRIMARY KEY (id_suscripcion),
   CONSTRAINT suscripcion_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuario(id_usuario),
   CONSTRAINT suscripcion_estado_id_fkey FOREIGN KEY (estado_id) REFERENCES public.estados(id_estado)
 );
+CREATE INDEX idx_suscripcion_usuario_plan_estado
+  ON public.suscripcion (usuario_id, tipo_plan, estado_id);
 CREATE TABLE public.pago (
+    id_factura_mercadopago varchar(150),
   id_pago uuid NOT NULL,
   suscripcion_id uuid NOT NULL,
   estado_id integer NOT NULL,
-  id_transaccion_mercadopago character varying,
+  id_transaccion_mercadopago character varying UNIQUE,
   monto numeric NOT NULL,
   fecha_pago timestamp with time zone NOT NULL DEFAULT now(),
-  estado character varying NOT NULL,
   CONSTRAINT pago_pkey PRIMARY KEY (id_pago),
   CONSTRAINT pago_suscripcion_id_fkey FOREIGN KEY (suscripcion_id) REFERENCES public.suscripcion(id_suscripcion),
   CONSTRAINT pago_estado_id_fkey FOREIGN KEY (estado_id) REFERENCES public.estados(id_estado)
@@ -202,6 +205,25 @@ CREATE TABLE public.foto (
   CONSTRAINT foto_album_id_fkey FOREIGN KEY (album_id) REFERENCES public.album(id_album),
   CONSTRAINT foto_subida_por_id_fkey FOREIGN KEY (subida_por_id) REFERENCES public.usuario(id_usuario)
 );
+CREATE TABLE public.evento_auditoria_pendiente (
+  id_evento uuid NOT NULL,
+  actor_id uuid,
+  entidad_afectada character varying NOT NULL,
+  tipo_accion character varying NOT NULL,
+  id_entidad uuid,
+  valor_anterior text,
+  valor_nuevo text,
+  fecha_evento timestamp with time zone NOT NULL DEFAULT now(),
+  procesado_en timestamp with time zone,
+  intentos_procesamiento integer NOT NULL DEFAULT 0,
+  ultimo_intento_en timestamp with time zone,
+  ultimo_error text,
+  CONSTRAINT evento_auditoria_pendiente_pkey PRIMARY KEY (id_evento),
+  CONSTRAINT evento_auditoria_pendiente_actor_id_fkey FOREIGN KEY (actor_id) REFERENCES public.usuario(id_usuario)
+);
+CREATE INDEX idx_evento_auditoria_pendiente_sin_procesar
+  ON public.evento_auditoria_pendiente (fecha_evento, id_evento)
+  WHERE procesado_en IS NULL;
 CREATE TABLE public.log_auditoria (
   id_log uuid NOT NULL,
   actor_id uuid,
@@ -211,8 +233,10 @@ CREATE TABLE public.log_auditoria (
   fecha_hora timestamp with time zone NOT NULL DEFAULT now(),
   entidad_afectada character varying NOT NULL,
   tipo_accion character varying NOT NULL,
+  evento_pendiente_id uuid UNIQUE,
   CONSTRAINT log_auditoria_pkey PRIMARY KEY (id_log),
-  CONSTRAINT log_auditoria_actor_id_fkey FOREIGN KEY (actor_id) REFERENCES public.usuario(id_usuario)
+  CONSTRAINT log_auditoria_actor_id_fkey FOREIGN KEY (actor_id) REFERENCES public.usuario(id_usuario),
+  CONSTRAINT log_auditoria_evento_pendiente_id_fkey FOREIGN KEY (evento_pendiente_id) REFERENCES public.evento_auditoria_pendiente(id_evento)
 );
 CREATE TABLE public.refresh_token (
   id_refresh_token uuid NOT NULL,
@@ -226,3 +250,91 @@ CREATE TABLE public.refresh_token (
   CONSTRAINT refresh_token_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuario(id_usuario),
   CONSTRAINT refresh_token_reemplazado_por_fkey FOREIGN KEY (reemplazado_por) REFERENCES public.refresh_token(id_refresh_token)
 );
+
+-- Aplicacion manual e independiente en Supabase; no requiere seed ni otras tablas.
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS public.notificacion_mercado_pago (
+    id_notificacion text NOT NULL,
+    topico text NOT NULL,
+    id_recurso text NOT NULL,
+    recibida_en timestamp with time zone NOT NULL DEFAULT now(),
+    procesada_en timestamp with time zone,
+    CONSTRAINT notificacion_mercado_pago_pkey PRIMARY KEY (id_notificacion)
+);
+
+-- El recurso puede repetirse: la deduplicacion corresponde solo a id_notificacion.
+CREATE INDEX IF NOT EXISTS idx_notificacion_mercado_pago_pendiente
+    ON public.notificacion_mercado_pago (recibida_en, id_notificacion)
+    WHERE procesada_en IS NULL;
+
+-- Bandeja interna: los clientes de la Data API no gestionan notificaciones.
+ALTER TABLE public.notificacion_mercado_pago ENABLE ROW LEVEL SECURITY;
+
+-- PostgreSQL de testing puede no tener los roles de la Data API de Supabase.
+DO $permisos$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+        REVOKE ALL PRIVILEGES ON TABLE public.notificacion_mercado_pago FROM anon;
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+        REVOKE ALL PRIVILEGES ON TABLE public.notificacion_mercado_pago FROM authenticated;
+    END IF;
+END;
+$permisos$;
+
+COMMIT;
+
+BEGIN;
+
+ALTER TABLE public.notificacion_mercado_pago
+    ADD COLUMN IF NOT EXISTS intentos_temporales integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS primer_fallo_temporal_en timestamp with time zone,
+    ADD COLUMN IF NOT EXISTS intentos_pendientes integer NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS primera_comprobacion_pendiente_en timestamp with time zone,
+    ADD COLUMN IF NOT EXISTS proximo_procesamiento_en timestamp with time zone DEFAULT now(),
+    ADD COLUMN IF NOT EXISTS ultimo_motivo text,
+    ADD COLUMN IF NOT EXISTS estado_procesamiento text NOT NULL DEFAULT 'PENDIENTE';
+
+-- Permite aplicar esta version sobre una base con la propuesta anterior.
+ALTER TABLE public.notificacion_mercado_pago
+    ALTER COLUMN proximo_procesamiento_en DROP NOT NULL,
+    DROP COLUMN IF EXISTS reservado_hasta,
+    DROP COLUMN IF EXISTS id_reserva;
+
+UPDATE public.notificacion_mercado_pago
+SET estado_procesamiento = 'COMPLETADA', proximo_procesamiento_en = NULL
+WHERE procesada_en IS NOT NULL;
+
+-- Una nueva ejecucion de la migracion conserva los reintentos ya programados.
+UPDATE public.notificacion_mercado_pago
+SET proximo_procesamiento_en = COALESCE(recibida_en, now())
+WHERE procesada_en IS NULL
+  AND estado_procesamiento = 'PENDIENTE'
+  AND proximo_procesamiento_en IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_notificacion_mercado_pago_planificada
+    ON public.notificacion_mercado_pago (proximo_procesamiento_en, recibida_en)
+    WHERE procesada_en IS NULL AND estado_procesamiento = 'PENDIENTE';
+
+COMMIT;
+
+BEGIN;
+ALTER TABLE public.suscripcion
+    ADD COLUMN IF NOT EXISTS reemplazada boolean NOT NULL DEFAULT false,
+    ADD COLUMN IF NOT EXISTS estado_mercadopago varchar(30),
+    ADD COLUMN IF NOT EXISTS actualizada_mercadopago_en timestamptz;
+ALTER TABLE public.pago ADD COLUMN IF NOT EXISTS id_factura_mercadopago varchar(150);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pago_factura_mercadopago
+    ON public.pago (id_factura_mercadopago);
+ALTER TABLE public.notificacion_mercado_pago
+    ADD COLUMN IF NOT EXISTS estado_factura_mp text,
+    ADD COLUMN IF NOT EXISTS estado_pago_mp text,
+    ADD COLUMN IF NOT EXISTS detalle_pago_mp text,
+    ADD COLUMN IF NOT EXISTS id_pago_mp text,
+    ADD COLUMN IF NOT EXISTS intento_mp integer,
+    ADD COLUMN IF NOT EXISTS fecha_debito_mp timestamptz,
+    ADD COLUMN IF NOT EXISTS proximo_reintento_mp timestamptz;
+CREATE INDEX IF NOT EXISTS idx_notificacion_mp_recurso
+    ON public.notificacion_mercado_pago (topico, id_recurso);
+COMMIT;

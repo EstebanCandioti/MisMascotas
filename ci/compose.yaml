@@ -1,0 +1,18 @@
+name: mismascotas-ci
+
+services:
+  db:
+    image: postgres:17.6
+    environment:
+      POSTGRES_DB: qa_notificaciones_mercado_pago
+      POSTGRES_USER: qa_ci
+      POSTGRES_PASSWORD: clave-ficticia-exclusiva-ci
+    ports:
+      - '127.0.0.1:35437:5432'
+    healthcheck:
+      # La conexión TCP espera al servidor definitivo; Flyway inicializa el esquema.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 5s

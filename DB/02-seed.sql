@@ -12,6 +12,7 @@ INSERT INTO public.estados (entidad, nombre) VALUES
     ('PAGO', 'PENDIENTE'),
     ('PAGO', 'RECHAZADO'),
     ('SUSCRIPCION', 'ACTIVA'),
+    ('SUSCRIPCION', 'PENDIENTE'),
     ('SUSCRIPCION', 'CANCELADA'),
     ('SUSCRIPCION', 'VENCIDA'),
     ('MASCOTA', 'ACTIVA');

@@ -31,6 +31,7 @@ public class MascotaService {
     private final UsuarioRepository usuarioRepository;
     private final AccesoMascotaService accesoMascotaService;
     private final EventoClinicoRepository eventoClinicoRepository;
+    private final EventoAuditoriaPendienteService eventoAuditoriaPendienteService;
 
     @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.CREATE)
     @Transactional
@@ -83,10 +84,10 @@ public class MascotaService {
         return mapToResponse(mascota);
     }
 
-    @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.UPDATE)
     @Transactional
     public MascotaResponseDTO editar(UUID id, MascotaRequestDTO request, UUID usuarioAutenticadoId) {
         Mascota mascota = accesoMascotaService.verificarAcceso(id, usuarioAutenticadoId);
+        MascotaResponseDTO valorAnterior = mapToResponse(mascota);
         var ultimaMedicionPeso = eventoClinicoRepository
                 .findFirstByMascota_IdMascotaAndTipoAndFechaEliminacionIsNullOrderByFechaDesc(id, "PESO");
 
@@ -104,7 +105,15 @@ public class MascotaService {
         mascota.setNotas(request.notas());
 
         Mascota actualizada = mascotaRepository.save(mascota);
-        return mapToResponse(actualizada);
+        MascotaResponseDTO valorNuevo = mapToResponse(actualizada);
+        eventoAuditoriaPendienteService.encolar(
+                usuarioAutenticadoId,
+                "mascota",
+                TipoAccionAuditoria.UPDATE,
+                id,
+                valorAnterior,
+                valorNuevo);
+        return valorNuevo;
     }
 
     @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.DELETE)

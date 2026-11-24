@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,15 +51,31 @@ public class Suscripcion {
     @Column(name = "fecha_cancelacion")
     private Instant fechaCancelacion;
 
-    @Column(name = "id_suscripcion_mercadopago", length = 150)
+    @Column(name = "id_suscripcion_mercadopago", length = 150, unique = true)
     private String idSuscripcionMercadopago;
+
+    @Column(name = "reemplazada", nullable = false)
+    private boolean reemplazada;
+
+    // Estado de autorizacion de cobros remoto, independiente de la cobertura pagada.
+    @Column(name = "estado_mercadopago", length = 30)
+    private String estadoMercadopago;
+
+    @Column(name = "actualizada_mercadopago_en")
+    private Instant actualizadaMercadopagoEn;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estado_id", nullable = false)
     private Estado estadoCatalogo;
 
-
     @OneToMany(mappedBy = "suscripcion")
     private List<Pago> pagos = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        if (fechaInicio == null) {
+            fechaInicio = Instant.now();
+        }
+    }
 }
 
