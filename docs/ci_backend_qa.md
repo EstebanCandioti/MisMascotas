@@ -21,8 +21,9 @@ por sí sola una entrega nueva para testers.
 - `backend/configuracion/application.properties`: plantilla pública para CI y Docker.
 - `backend/src/test/resources/application-ci.properties`: configuración ficticia para las pruebas.
 - `docker/qa-db/Dockerfile`: PostgreSQL con la base actual B9 y el seed qa-base-v2.
-- `ci/verificar_imagen_qa.py`: validación del seed, arranque del backend, Premium y persistencia.
+- `ci/verificar_imagen_qa.py`: validación del seed, arranque del backend, Premium, cuidado compartido, SMTP con Mailpit y persistencia.
 - `ci/verificar_premium_qa.py`: nueve escenarios por HTTP del backend empaquetado; usa datos y JWT sintéticos exclusivos del entorno aislado.
+- `ci/verificar_cuidado_qa.py`: gestión, cupo Free, visibilidad y revocación por HTTP; consulta de cualquier fecha, confirmación diaria para todos los perfiles e indicadores temporales. Verifica correos en Mailpit. Usa cuentas sintéticas y retira sus recordatorios y vínculos antes de limpiar las cuentas.
 
 ## Configuración en GitHub y Docker Hub
 
@@ -69,20 +70,20 @@ pruebas; las reglas de negocio siguen usando sus zonas explícitas.
 La configuración `ci` usa credenciales ficticias, desactiva los procesadores
 periódicos y dirige MP/correo a localhost sin servicios externos. Las pruebas
 del ciclo sustituyen Mercado Pago por un proveedor simulado. No se realizan
-cobros ni se envían correos.
+cobros ni se envían correos externos. `CuidadoCorreoPostgresIT` usa el listener real con transporte SMTP simulado.
 
 Se ejecuta:
 
 ```bash
 cd backend
-bash mvnw -B -ntp -DreuseForks=false '-Dtest=*Tests,SuscripcionCicloPostgresIT,MigracionesPostgresIT,SuscripcionConsultaPostgresIT,SuscripcionCancelacionPostgresIT,SuscripcionPrimerCobroPostgresIT,MascotaPremiumPostgresIT,UsuarioPremiumPostgresIT' verify
+bash mvnw -B -ntp -DreuseForks=false '-Dtest=*Tests,SuscripcionCicloPostgresIT,MigracionesPostgresIT,SuscripcionConsultaPostgresIT,SuscripcionCancelacionPostgresIT,SuscripcionPrimerCobroPostgresIT,MascotaPremiumPostgresIT,UsuarioPremiumPostgresIT,CuidadoCompartidoBasePostgresIT,CuidadoCompartidoPostgresIT,CuidadoPermisosPostgresIT,CuidadoCorreoPostgresIT' verify
 ```
 
-Esto incluye las clases `*Tests` y las siete integraciones PostgreSQL listadas:
+Esto incluye las clases `*Tests` y las once integraciones PostgreSQL listadas:
 ciclo, migraciones, consulta, cancelación, primer cobro, límite de mascotas y perfil
-con login/refresh reales. Se habilitan con `RUN_POSTGRES_CICLO_IT`,
+con login/refresh reales, base, gestión HTTP, matriz de permisos y correos después del commit de cuidado compartido. Se habilitan con `RUN_POSTGRES_CICLO_IT`,
 `RUN_POSTGRES_MIGRACIONES_IT`, `RUN_POSTGRES_CONSULTA_IT`,
-`RUN_POSTGRES_PRIMER_COBRO_IT` y `RUN_POSTGRES_PREMIUM_IT`, todos en `true`.
+`RUN_POSTGRES_PRIMER_COBRO_IT`, `RUN_POSTGRES_PREMIUM_IT` y `RUN_POSTGRES_CUIDADO_IT`, todos en `true`.
 Se verifican concurrencia e idempotencia de cobros y vencimientos, rollback de
 auditoría y coherencia del Premium efectivo entre perfil, suscripción y cupo.
 Las demás clases `*PostgresIT` no están incluidas en esta selección.
@@ -97,8 +98,7 @@ de una sexta mascota y prueba aislamiento entre cuentas. Son fixtures SQL locale
 no se envían notificaciones ni cobros a MP. Las sesiones completas se verifican en
 `UsuarioPremiumPostgresIT`; esta comprobación Docker firma JWT con la clave ficticia
 de ese contenedor. Las fixtures se retiran antes de comprobar persistencia.
-Usa recursos temporales etiquetados y un puerto efímero publicado exclusivamente
-en `127.0.0.1`. Si falla, no se habilita la publicación.
+También inicia `axllent/mailpit:v1.31.5` en la misma red temporal. El backend entrega por SMTP a ese contenedor; se comprueban destinatarios, contenido y enlaces mediante su API. No se usa un proveedor externo. Los puertos efímeros de backend y Mailpit se publican exclusivamente en `127.0.0.1`; los recursos llevan etiquetas únicas y se eliminan al finalizar. Si falla, no se habilita la publicación.
 
 Cada clase utiliza su propia JVM para evitar que el logging configurado por las
 pruebas MVC contamine las comprobaciones de privacidad del cliente HTTP. No se

@@ -130,7 +130,7 @@ class EventoClinicoServiceTests {
         usuario.setIdUsuario(usuarioId);
         usuario.setNombre("Usuario QA");
 
-        when(accesoMascotaService.verificarAcceso(mascotaId, usuarioId)).thenReturn(mascota);
+        when(accesoMascotaService.verificarGestionSalud(mascotaId, usuarioId)).thenReturn(mascota);
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
         when(eventoClinicoRepository.save(any(EventoClinico.class)))
                 .thenAnswer(invocacion -> invocacion.getArgument(0));

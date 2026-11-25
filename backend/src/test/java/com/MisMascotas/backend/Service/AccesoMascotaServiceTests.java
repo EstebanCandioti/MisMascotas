@@ -22,18 +22,20 @@ import com.MisMascotas.backend.Entity.Usuario;
 import com.MisMascotas.backend.Exception.AccesoDenegadoException;
 import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
 import com.MisMascotas.backend.Repository.MascotaRepository;
+import com.MisMascotas.backend.Repository.AccesoCompartidoRepository;
 
 @ExtendWith(MockitoExtension.class)
 class AccesoMascotaServiceTests {
 
     @Mock
     private MascotaRepository mascotaRepository;
+    @Mock private AccesoCompartidoRepository accesos;
 
     private AccesoMascotaService accesoMascotaService;
 
     @BeforeEach
     void setUp() {
-        accesoMascotaService = new AccesoMascotaService(mascotaRepository);
+        accesoMascotaService = new AccesoMascotaService(mascotaRepository, accesos);
     }
 
     @Test
@@ -83,13 +85,13 @@ class AccesoMascotaServiceTests {
     void obtenerMascotasAccesiblesDelegaElListadoActivoDelPropietario() {
         UUID usuarioId = UUID.randomUUID();
         List<Mascota> mascotas = List.of(crearMascota(usuarioId));
-        when(mascotaRepository.findByPropietario_IdUsuarioAndFechaEliminacionIsNull(usuarioId))
+        when(mascotaRepository.findAccesibles(usuarioId))
                 .thenReturn(mascotas);
 
         List<Mascota> resultado = accesoMascotaService.obtenerMascotasAccesibles(usuarioId);
 
         assertEquals(mascotas, resultado);
-        verify(mascotaRepository).findByPropietario_IdUsuarioAndFechaEliminacionIsNull(usuarioId);
+        verify(mascotaRepository).findAccesibles(usuarioId);
     }
 
     private Mascota crearMascota(UUID propietarioId) {

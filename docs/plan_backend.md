@@ -9,12 +9,12 @@ Módulos funcionando (9): Auth con 2FA, refresh tokens y logout · Usuario (/me)
 Módulos sin construir (4):
 
 Módulo	Estado
-Cuidado compartido (CU4, CU25)	La entidad AccesoCompartido no existe; Invitacion sin service
+Cuidado compartido (CU4, CU25)	C01 a C13 implementadas y verificadas al 25/11/2026: persistencia, invitaciones, gestión de vínculos, permisos por operación, recordatorios del día y emails después del commit. Corrección de recordatorios: todos consultan cualquier fecha y confirman solo en el día correspondiente, sin límite por hora, con indicadores temporales. Suite CI: 727 pruebas aprobadas; Docker con Mailpit aprobado. Colección Postman manual preparada; pendiente C14: revisión de entrega, cierre de Postman y PR. Ver docs/cuidado_compartido.md y docs/cuidado_compartido_api.md.
 Pagos y suscripciones (CU26)	SuscripcionService vacío; Pago sin service ni controller
 Calendario (CU15)	No existe
 Exportación PDF (CU12)	No existe
 
-Pendientes transversales: notificaciones push (bloqueado por development build del front), adjuntos (bloqueado por decisión de almacenamiento), endpoint de recordatorios del día (CU11, RN-051).
+Pendientes transversales: notificaciones push (bloqueado por development build del front), adjuntos (bloqueado por decisión de almacenamiento). El endpoint de recordatorios del día quedó implementado en C11; la recurrencia y programación de avisos siguen pendientes.
 
 CU9 (historial y evolución) probablemente ya esté cubierto con GET /mascotas/{id}/eventos-clinicos?tipo=peso. Confirmar contra el CU.
 
@@ -58,9 +58,9 @@ Motor de recurrencia: cálculo del próximo disparo y expansión de ocurrencias.
 Endpoint de recordatorios del día (CU11, RN-051).
 Calendario: GET /calendario?desde=&hasta= con fechas obligatorias; el resto de los filtros los aplica el front.
 Fase 4 — Cuidado compartido
-Entidades Invitacion y AccesoCompartido, más el estado RECHAZADA que falta en la tabla estados.
-Flujo de invitación (CU4) y gestión (CU25).
-Abrir permisos por perfil, sobre el componente centralizado de la fase 0.
+Desglose verificable C01 a C14 en [cuidado_compartido.md](cuidado_compartido.md).
+Primero persistencia y migración; después invitaciones, bandejas, respuestas y gestión.
+Integrar permisos por operación y módulo conservando `AccesoMascotaService`; ampliar una lectura no debe habilitar escrituras.
 Fase 5 — Lo que queda
 Exportación PDF (CU12).
 Adjuntos y almacenamiento de archivos, si entran en alcance.

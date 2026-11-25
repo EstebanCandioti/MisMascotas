@@ -19,6 +19,35 @@ public class EmailService {
         this.mailSenderProvider = mailSenderProvider;
     }
 
+    /** El listener llama a este método fuera de la transacción que reserva o concede acceso. */
+    public boolean enviarNotificacionCuidado(NotificacionCuidado aviso, String enlace) {
+        JavaMailSender sender = mailSenderProvider.getIfAvailable();
+        if (sender == null) {
+            logger.warn("SMTP no configurado para la notificacion de cuidado {}", aviso.invitacionId());
+            return false;
+        }
+        try {
+            var mensaje = new SimpleMailMessage();
+            mensaje.setTo(aviso.emailDestino());
+            if (aviso.tipo() == NotificacionCuidado.Tipo.INVITACION) {
+                mensaje.setSubject("Invitacion de cuidado - MisMascotas");
+                mensaje.setText(aviso.nombrePropietario() + " te invito a compartir el cuidado de sus mascotas con el perfil "
+                        + aviso.perfil() + ".\nLa invitacion vence el " + aviso.expiraEn()
+                        + ".\n\nVer invitacion: " + enlace
+                        + "\n\nInicia sesion con tu cuenta para aceptar o rechazar desde la web. Abrir este enlace no concede acceso.");
+            } else {
+                mensaje.setSubject("Respuesta a tu invitacion - MisMascotas");
+                mensaje.setText(aviso.nombreInvitado() + (aviso.tipo() == NotificacionCuidado.Tipo.ACEPTADA ? " acepto" : " rechazo")
+                        + " tu invitacion de cuidado compartido.\n\nVer detalle: " + enlace);
+            }
+            sender.send(mensaje);
+            return true;
+        } catch (Exception ex) {
+            logger.warn("Fallo SMTP de cuidado para invitacion {}: {}", aviso.invitacionId(), ex.getClass().getSimpleName());
+            return false;
+        }
+    }
+
     @Async
     public void enviarCodigoVerificacion(String email, String codigo) {
         JavaMailSender mailSender = mailSenderProvider.getIfAvailable();

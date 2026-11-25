@@ -3,12 +3,17 @@ package com.MisMascotas.backend.Service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +26,7 @@ import com.MisMascotas.backend.Entity.Estado;
 import com.MisMascotas.backend.Entity.Mascota;
 import com.MisMascotas.backend.Entity.Recordatorio;
 import com.MisMascotas.backend.Entity.Usuario;
+import com.MisMascotas.backend.Exception.ReglaNegocioException;
 import com.MisMascotas.backend.Repository.EstadoRepository;
 import com.MisMascotas.backend.Repository.RecordatorioRepository;
 
@@ -39,6 +45,7 @@ class RecordatorioServiceTests {
     private EntityManager entityManager;
 
     private RecordatorioService recordatorioService;
+    private final Instant ahora = Instant.parse("2030-01-02T02:30:00Z");
 
     @BeforeEach
     void setUp() {
@@ -46,7 +53,8 @@ class RecordatorioServiceTests {
                 recordatorioRepository,
                 estadoRepository,
                 accesoMascotaService,
-                entityManager);
+                entityManager,
+                Clock.fixed(ahora, ZoneOffset.UTC));
     }
 
     @Test
@@ -90,16 +98,15 @@ class RecordatorioServiceTests {
     }
 
     @Test
-    void confirmarUnicoInactivoNoLoReactivaNiLoCompleta() {
+    void confirmarUnicoInactivoSeRechazaSinModificarlo() {
         UUID usuarioId = UUID.randomUUID();
         Recordatorio recordatorio = prepararRecordatorio("unica", "INACTIVO");
-        prepararBusqueda(recordatorio);
-        when(entityManager.getReference(Usuario.class, usuarioId)).thenReturn(crearUsuario(usuarioId));
-
-        RecordatorioResponseDTO respuesta = recordatorioService.confirmar(
-                recordatorio.getIdRecordatorio(), usuarioId);
-
-        assertEquals("INACTIVO", respuesta.estado());
+        when(recordatorioRepository.findByIdRecordatorioAndFechaEliminacionIsNull(recordatorio.getIdRecordatorio()))
+                .thenReturn(Optional.of(recordatorio));
+        assertThrows(ReglaNegocioException.class, () -> recordatorioService.confirmar(recordatorio.getIdRecordatorio(), usuarioId));
+        assertEquals("INACTIVO", recordatorio.getEstado().getNombre());
+        assertNull(recordatorio.getConfirmadoEn());
+        verify(recordatorioRepository, never()).save(recordatorio);
         verify(estadoRepository, never()).findByEntidadAndNombre("RECORDATORIO", "COMPLETADO");
         verify(estadoRepository, never()).findByEntidadAndNombre("RECORDATORIO", "ACTIVO");
     }
@@ -148,8 +155,31 @@ class RecordatorioServiceTests {
         recordatorio.setMascota(crearMascota());
         recordatorio.setCreadoPor(crearUsuario(UUID.randomUUID()));
         recordatorio.setModalidad(modalidad);
+        recordatorio.setFechaHoraInicio(ahora);
         recordatorio.setEstado(crearEstado(estadoNombre));
         return recordatorio;
+    }
+
+    @Test
+    void confirmacionRepetidaNoSobrescribeLaAutoria() {
+        var r = prepararRecordatorio("unica", "COMPLETADO");
+        var autor = crearUsuario(UUID.randomUUID());
+        r.setConfirmadoPor(autor); r.setConfirmadoEn(ahora.minusSeconds(60));
+        when(recordatorioRepository.findByIdRecordatorioAndFechaEliminacionIsNull(r.getIdRecordatorio())).thenReturn(Optional.of(r));
+        assertThrows(ReglaNegocioException.class, () -> recordatorioService.confirmar(r.getIdRecordatorio(), UUID.randomUUID()));
+        assertEquals(autor, r.getConfirmadoPor());
+        assertEquals(ahora.minusSeconds(60), r.getConfirmadoEn());
+        verify(recordatorioRepository, never()).save(r);
+    }
+
+    @Test
+    void unCompletadoDeAyerConservaSuIndicacionYNoSePuedeConfirmar() {
+        var r = prepararRecordatorio("unica", "COMPLETADO");
+        r.setFechaHoraInicio(ahora.minusSeconds(86400));
+        when(recordatorioRepository.findByIdRecordatorioAndFechaEliminacionIsNull(r.getIdRecordatorio())).thenReturn(Optional.of(r));
+        var respuesta = recordatorioService.obtenerPorId(r.getIdRecordatorio(), UUID.randomUUID());
+        assertEquals("COMPLETADO", respuesta.situacionTemporal());
+        assertFalse(respuesta.puedeConfirmar());
     }
 
     private Mascota crearMascota() {

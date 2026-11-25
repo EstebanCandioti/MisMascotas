@@ -17,23 +17,26 @@ BEGIN
     END IF;
 END $$;
 
--- Se conserva el catálogo de B9__esquema_actual.sql, pero se exige coincidencia
--- exacta. Un cambio estructural/de catálogo debe revisarse, no esconderse.
+-- Catálogos conocidos: B9 (15 estados) o B9 + V10 (RECHAZADA, 16 estados).
+-- No se admiten otros estados ni se retiran los agregados por la migración.
 DO $$
+DECLARE cantidad_esperada integer;
 BEGIN
-    IF (SELECT count(*) FROM public.estados) <> 15 OR EXISTS (
+    cantidad_esperada := CASE WHEN EXISTS (SELECT 1 FROM public.estados
+        WHERE entidad='INVITACION' AND nombre='RECHAZADA') THEN 16 ELSE 15 END;
+    IF (SELECT count(*) FROM public.estados) <> cantidad_esperada OR EXISTS (
         SELECT entidad, nombre FROM public.estados
         EXCEPT SELECT * FROM (VALUES
             ('RECORDATORIO', 'ACTIVO'), ('RECORDATORIO', 'INACTIVO'),
             ('RECORDATORIO', 'COMPLETADO'), ('INVITACION', 'PENDIENTE'),
             ('INVITACION', 'ACEPTADA'), ('INVITACION', 'EXPIRADA'),
-            ('INVITACION', 'CANCELADA'), ('PAGO', 'APROBADO'),
+            ('INVITACION', 'CANCELADA'), ('INVITACION', 'RECHAZADA'), ('PAGO', 'APROBADO'),
             ('PAGO', 'PENDIENTE'), ('PAGO', 'RECHAZADO'),
             ('SUSCRIPCION', 'ACTIVA'), ('SUSCRIPCION', 'PENDIENTE'), ('SUSCRIPCION', 'CANCELADA'),
             ('SUSCRIPCION', 'VENCIDA'), ('MASCOTA', 'ACTIVA')
         ) AS esperado(entidad, nombre)
-    ) OR (SELECT count(DISTINCT (entidad, nombre)) FROM public.estados) <> 15 THEN
-        RAISE EXCEPTION 'Catálogo de estados distinto del esperado; revisar la base B9';
+    ) OR (SELECT count(DISTINCT (entidad, nombre)) FROM public.estados) <> cantidad_esperada THEN
+        RAISE EXCEPTION 'Catálogo de estados distinto del esperado; revisar la base B9/V10';
     END IF;
 END $$;
 

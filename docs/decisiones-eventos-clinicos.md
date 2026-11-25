@@ -2,7 +2,7 @@
 
 ## Decisiones implementadas
 
-- Autorizacion: todas las operaciones de eventos clinicos quedan limitadas al propietario de la mascota. Cuando exista cuidado compartido, las condiciones de Familia y Cuidador deben agregarse en los metodos privados de autorizacion de `EventoClinicoService`.
+- Autorización: propietario y Familia gestionan eventos clínicos; Cuidador consulta. `AccesoMascotaService` centraliza la lectura y gestión de salud. La sesión conserva al actor real para autoría y auditoría; no se suplanta al propietario.
 - Borrado: la eliminacion de eventos clinicos es logica mediante `fechaEliminacion`. Las consultas, ediciones y eliminaciones posteriores excluyen esos registros y los tratan como no encontrados.
 - Fecha del evento: `fecha` usa `Instant`, alineado con la columna `timestamptz`. En la API viaja como ISO-8601 con zona/offset, por ejemplo `2026-10-01T15:30:00Z`.
 - Tipos soportados: se aceptan como texto y se normalizan a `VACUNA`, `MEDICACION`, `CONSULTA_VETERINARIA` y `PESO`. La normalizacion tolera acentos, espacios y guiones.
@@ -15,5 +15,4 @@
 ## Pendientes
 
 - Adjuntos: fuera del alcance por ahora. No forman parte del contrato de request/response de eventos clinicos hasta resolver el almacenamiento de archivos, persistencia en `adjunto` y exposicion segura de URLs. Segun RN-026, los formatos aceptados serian JPG, PNG, PDF y HEIC, con un tamano maximo de 10 MB.
-- Permisos ampliados: falta integrar Familia y Cuidador cuando exista el modulo de cuidado compartido.
 - Grafico de evolucion: no se implementa aca; se alimentara consultando los eventos clinicos de tipo `PESO`.

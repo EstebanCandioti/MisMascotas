@@ -70,7 +70,7 @@ public class MascotaService {
 
     @Transactional(readOnly = true)
     public MascotaResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
-        Mascota mascota = accesoMascotaService.verificarAcceso(id, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarLectura(id, usuarioAutenticadoId);
         return mapToResponse(mascota);
     }
 

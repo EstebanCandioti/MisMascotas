@@ -41,7 +41,7 @@ public class BadgeService {
 
     @Transactional(readOnly = true)
     public List<BadgeResponseDTO> listarPorMascota(UUID mascotaId, UUID usuarioAutenticadoId) {
-        Mascota mascota = accesoMascotaService.verificarAcceso(mascotaId, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarLectura(mascotaId, usuarioAutenticadoId);
 
         return badgeRepository.findByMascotaIdMascotaAndFechaEliminacionIsNull(mascotaId)
                 .stream()
@@ -52,7 +52,7 @@ public class BadgeService {
     @Transactional(readOnly = true)
     public BadgeResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
         Badge badge = buscarBadgeActiva(id);
-        accesoMascotaService.verificarAcceso(badge.getMascota(), usuarioAutenticadoId);
+        accesoMascotaService.verificarLectura(badge.getMascota(), usuarioAutenticadoId);
         return mapToResponse(badge);
     }
 

@@ -54,15 +54,15 @@ class MigracionesPostgresIT {
     @Test
     void baseVaciaSeInicializaYReiniciarNoDuplicaCatalogoNiBorraDatos() throws Exception {
         migrar(false);
-        assertThat(versionesExitosas()).isEqualTo(1);
+        assertThat(versionesExitosas()).isEqualTo(3);
         assertThat(sql.queryForObject("SELECT script FROM flyway_schema_history WHERE version='9'", String.class))
                 .isEqualTo("B9__esquema_actual.sql");
-        assertThat(sql.queryForObject("SELECT count(*) FROM estados", Integer.class)).isEqualTo(15);
+        assertThat(sql.queryForObject("SELECT count(*) FROM estados", Integer.class)).isEqualTo(16);
         UUID usuario = usuario();
         String huella = huella();
         migrar(false);
-        assertThat(versionesExitosas()).isEqualTo(1);
-        assertThat(sql.queryForObject("SELECT count(*) FROM estados", Integer.class)).isEqualTo(15);
+        assertThat(versionesExitosas()).isEqualTo(3);
+        assertThat(sql.queryForObject("SELECT count(*) FROM estados", Integer.class)).isEqualTo(16);
         assertThat(sql.queryForObject("SELECT nombre FROM usuario WHERE id_usuario = ?", String.class, usuario))
                 .isEqualTo("Usuario conservado");
         assertThat(huella()).isEqualTo(huella);
@@ -162,7 +162,7 @@ class MigracionesPostgresIT {
     }
 
     @Test
-    void baseActualInicializadaPorLaImagenSoloRegistraElPuntoDePartida() throws Exception {
+    void baseActualInicializadaPorLaImagenRegistraElPuntoDePartidaYAplicaV10() throws Exception {
         sql.execute(recurso("db/migration/B9__esquema_actual.sql"));
         UUID id = usuario();
         String antes = huella();
@@ -170,9 +170,12 @@ class MigracionesPostgresIT {
         assertThat(sql.queryForObject("SELECT type FROM flyway_schema_history WHERE version='9'", String.class))
                 .isEqualTo("BASELINE");
         assertThat(sql.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE version::int < 9", Integer.class)).isZero();
-        assertThat(huella()).isEqualTo(antes);
+        assertThat(huella()).isNotEqualTo(antes);
+        assertThat(sql.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE version='10' AND success", Integer.class)).isEqualTo(1);
+        String actualizada = huella();
         assertThat(sql.queryForObject("SELECT nombre FROM usuario WHERE id_usuario=?", String.class, id)).isEqualTo("Usuario conservado");
         migrar(true);
+        assertThat(huella()).isEqualTo(actualizada);
         assertThat(sql.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE version='9'", Integer.class)).isEqualTo(1);
     }
 
@@ -192,9 +195,82 @@ class MigracionesPostgresIT {
         Flyway futuro = Flyway.configure().dataSource(fuente(url)).defaultSchema("public")
                 .cleanDisabled(true).locations("classpath:db/migration", "classpath:db/futuro").load();
         new MigracionesQaConfig().migracionVerificada(true).migrate(futuro);
-        assertThat(sql.queryForObject("SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(10);
+        assertThat(sql.queryForObject("SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(12);
         assertThat(sql.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='usuario' AND column_name='detalle_qa_prueba'", Integer.class)).isEqualTo(1);
         assertThat(sql.queryForObject("SELECT nombre FROM usuario WHERE id_usuario=?", String.class, id)).isEqualTo("Usuario conservado");
+    }
+
+    @Test
+    void v10ConservaVinculosNormalizaEmailsYCompletaSoloLosPlazosFaltantes() throws Exception {
+        sql.execute(recurso("db/migration/B9__esquema_actual.sql"));
+        var dueno = usuario(); var invitado = usuario();
+        var invitacion = UUID.randomUUID(); var acceso = UUID.randomUUID();
+        sql.update("""
+                INSERT INTO invitacion(id_invitacion,propietario_id,email_invitado,perfil,estado_id,creado_en)
+                VALUES (?,?,'  INVITADO@EXAMPLE.TEST  ','Familia',
+                    (SELECT id_estado FROM estados WHERE entidad='INVITACION' AND nombre='PENDIENTE'),'2030-01-01T12:00:00Z')
+                """, invitacion, dueno);
+        sql.update("""
+                INSERT INTO acceso_compartido(id_acceso,propietario_id,invitado_id,perfil,fecha_ingreso)
+                VALUES (?,?,?,'Familia','2030-01-01T12:00:00Z')
+                """, acceso, dueno, invitado);
+        migrar(true);
+        assertThat(sql.queryForObject("SELECT email_invitado FROM invitacion WHERE id_invitacion=?", String.class, invitacion))
+                .isEqualTo("invitado@example.test");
+        assertThat(sql.queryForObject("SELECT expira_en FROM invitacion WHERE id_invitacion=?", java.sql.Timestamp.class, invitacion).toInstant())
+                .isEqualTo(Instant.parse("2030-01-03T12:00:00Z"));
+        assertThat(sql.queryForObject("SELECT perfil FROM acceso_compartido WHERE id_acceso=?", String.class, acceso)).isEqualTo("Familia");
+        assertThat(sql.queryForObject("SELECT count(*) FROM usuario", Integer.class)).isEqualTo(2);
+        var despues = huella(); migrar(false);
+        assertThat(huella()).isEqualTo(despues);
+        assertThat(sql.queryForObject("SELECT count(*) FROM estados WHERE entidad='INVITACION' AND nombre='RECHAZADA'", Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    void accesosDuplicadosDetienenV10SinBorrarDatosYPermitenRetomarla() throws Exception {
+        sql.execute(recurso("db/migration/B9__esquema_actual.sql"));
+        // Simula datos inconsistentes en una V9 ya registrada cuyo índice fue retirado manualmente.
+        Flyway.configure().dataSource(fuente(url)).defaultSchema("public").baselineVersion("9").load().baseline();
+        sql.execute("ALTER TABLE acceso_compartido DROP CONSTRAINT acceso_compartido_propietario_invitado_key");
+        var dueno = usuario(); var invitado = usuario();
+        var primero = UUID.randomUUID(); var segundo = UUID.randomUUID();
+        for (var id : java.util.List.of(primero, segundo))
+            sql.update("INSERT INTO acceso_compartido(id_acceso,propietario_id,invitado_id) VALUES (?,?,?)", id, dueno, invitado);
+        assertThatThrownBy(() -> migrar(false)).isInstanceOf(FlywayException.class).hasMessageContaining("duplicados");
+        assertThat(sql.queryForObject("SELECT count(*) FROM acceso_compartido", Integer.class)).isEqualTo(2);
+        assertThat(sql.queryForObject("SELECT count(*) FROM estados WHERE entidad='INVITACION' AND nombre='RECHAZADA'", Integer.class)).isZero();
+        assertThat(sql.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE version='10'", Integer.class)).isZero();
+        sql.update("UPDATE acceso_compartido SET activo=false WHERE id_acceso=?", segundo);
+        migrar(false);
+        assertThat(sql.queryForObject("SELECT count(*) FROM acceso_compartido", Integer.class)).isEqualTo(2);
+        assertThat(sql.queryForObject("SELECT count(*) FROM acceso_compartido WHERE activo", Integer.class)).isEqualTo(1);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"email", "plazo"})
+    void invitacionesInvalidasDetienenLaMigracionSinCambiarElRegistro(String caso) throws Exception {
+        sql.execute(recurso("db/migration/B9__esquema_actual.sql"));
+        var id = UUID.randomUUID(); var dueno = usuario();
+        String email = "email".equals(caso) ? "  " : "invitado@example.test";
+        sql.update("""
+                INSERT INTO invitacion(id_invitacion,propietario_id,email_invitado,estado_id,creado_en,expira_en)
+                VALUES (?,?,?,(SELECT id_estado FROM estados WHERE entidad='INVITACION' AND nombre='PENDIENTE'),
+                    '2030-01-01T12:00:00Z',?)
+                """, id, dueno, email, "plazo".equals(caso) ? java.sql.Timestamp.from(Instant.parse("2030-01-01T12:00:00Z")) : null);
+        assertThatThrownBy(() -> migrar(true)).isInstanceOf(FlywayException.class).hasMessageContaining("plazo invalido");
+        assertThat(sql.queryForObject("SELECT email_invitado FROM invitacion WHERE id_invitacion=?", String.class, id)).isEqualTo(email);
+        assertThat(sql.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE version='10'", Integer.class)).isZero();
+    }
+
+    @Test
+    void seedQaAdmiteV10SinRetirarElNuevoEstado() throws Exception {
+        migrar(false);
+        String seed = Files.readString(Path.of("../DB/qa/restablecer-seed.sql")).replaceAll("(?m)^\\\\.*$", "");
+        sql.execute("SET mismascotas.entorno = 'qa-web';\n" + seed);
+        assertThat(sql.queryForObject("SELECT count(*) FROM usuario", Integer.class)).isEqualTo(6);
+        assertThat(sql.queryForObject("SELECT count(*) FROM mascota", Integer.class)).isEqualTo(15);
+        assertThat(sql.queryForObject("SELECT count(*) FROM estados", Integer.class)).isEqualTo(16);
+        assertThat(sql.queryForObject("SELECT count(*) FROM estados WHERE entidad='INVITACION' AND nombre='RECHAZADA'", Integer.class)).isEqualTo(1);
     }
 
     private void migrar(boolean adoptar) throws IOException {
