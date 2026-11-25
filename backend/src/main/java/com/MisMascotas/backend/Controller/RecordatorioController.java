@@ -21,6 +21,11 @@ public class RecordatorioController {
     private final RecordatorioService recordatorioService;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
 
+    @GetMapping("/recordatorios/hoy")
+    public ResponseEntity<List<RecordatorioResponseDTO>> hoy(Principal principal) {
+        return ResponseEntity.ok(recordatorioService.listarHoy(usuarioAutenticadoService.obtenerIdUsuario(principal)));
+    }
+
     @PostMapping("/mascotas/{mascotaId}/recordatorios")
     public ResponseEntity<RecordatorioResponseDTO> crear(@PathVariable UUID mascotaId,
                                                          @Valid @RequestBody RecordatorioRequestDTO request,

@@ -59,7 +59,7 @@ public class AlbumService {
 
     @Transactional(readOnly = true)
     public List<AlbumResponseDTO> listarPorMascota(UUID mascotaId, UUID usuarioAutenticadoId) {
-        Mascota mascota = accesoMascotaService.verificarAcceso(mascotaId, usuarioAutenticadoId);
+        Mascota mascota = accesoMascotaService.verificarLectura(mascotaId, usuarioAutenticadoId);
 
         List<AlbumMascota> relaciones = albumMascotaRepository.findByMascotaIdActivos(mascotaId);
 
@@ -67,6 +67,7 @@ public class AlbumService {
                 .filter(rel -> rel.getAlbum().getFechaEliminacion() == null)
                 .map(rel -> {
                     Album album = rel.getAlbum();
+                    validarAccesoAlbum(album, usuarioAutenticadoId, false);
                     int fotosCount = fotoRepository.countFotosActivasPorAlbum(album.getIdAlbum());
                     return mapToResponse(album, mascotaId, fotosCount);
                 })
@@ -76,7 +77,7 @@ public class AlbumService {
     @Transactional(readOnly = true)
     public AlbumResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
         Album album = buscarAlbumActivo(id);
-        validarAccesoAlbum(album, usuarioAutenticadoId);
+        validarAccesoAlbum(album, usuarioAutenticadoId, false);
         return mapToResponse(album, obtenerMascotaPrincipalId(id), fotoRepository.countFotosActivasPorAlbum(id));
     }
 
@@ -134,18 +135,25 @@ public class AlbumService {
 
 
     private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId) {
+        validarAccesoAlbum(album, usuarioAutenticadoId, true);
+    }
+
+    private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId, boolean escritura) {
         List<AlbumMascota> relaciones = albumMascotaRepository.findAllByAlbumIdActivos(album.getIdAlbum());
         if (relaciones.isEmpty()) {
             throw new RecursoNoEncontradoException("Album no encontrado con ID: " + album.getIdAlbum());
         }
 
-        relaciones.forEach(rel -> accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId));
+        relaciones.forEach(rel -> {
+            if (escritura) accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId);
+            else accesoMascotaService.verificarLectura(rel.getMascota(), usuarioAutenticadoId);
+        });
     }
 
 
     private UUID obtenerMascotaPrincipalId(UUID albumId) {
-        return albumMascotaRepository.findByAlbumIdActivo(albumId)
-                .map(rel -> rel.getMascota().getIdMascota())
+        return albumMascotaRepository.findAllByAlbumIdActivos(albumId).stream()
+                .map(rel -> rel.getMascota().getIdMascota()).sorted().findFirst()
                 .orElse(null);
     }
 

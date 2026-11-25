@@ -2,13 +2,13 @@
 
 ## Autorizacion actual
 
-Albumes, fotos y badges validan acceso solo por propietario de la mascota asociada.
+Álbumes, fotos y badges permiten lectura al propietario y a sus invitados activos Familia/Cuidador. Las escrituras siguen siendo exclusivas del propietario.
 
-- Badges: el usuario autenticado debe ser propietario de la mascota del badge.
-- Albumes: el usuario autenticado debe ser propietario de todas las mascotas activas asociadas al album. Si el album no tiene mascotas activas asociadas, se trata como no encontrado.
+- Badges: se valida lectura o escritura sobre la mascota del badge según la operación.
+- Álbumes: el actor debe tener el permiso de lectura/escritura sobre todas las mascotas activas asociadas, también en listados. Si el álbum no tiene mascotas activas asociadas, se trata como no encontrado. Con varias mascotas, `mascotaId` representa la primera por UUID para mantener el DTO actual.
 - Fotos: el acceso se deriva del album que contiene la foto.
 
-Esta decision es temporal hasta implementar cuidado compartido. Cuando existan perfiles Familia y Cuidador, la validacion debera ampliarse agregando condiciones al metodo centralizado de cada service.
+La autorización se delega en `AccesoMascotaService`; no se amplía el permiso de escritura por el solo hecho de compartir la lectura.
 
 ## Restricciones por plan pendientes
 
@@ -19,11 +19,11 @@ La documentacion funcional indica que estas funciones son exclusivas del plan pr
 - Crear y eliminar badges.
 - Limite de tres badges activas por mascota.
 
-Estado actual relevado: no hay validaciones de plan premium ni limite de badges en `AlbumService`, `FotoService` ni `BadgeService`. La visualizacion queda disponible para usuarios autenticados con acceso por propietario.
+Estado actual: no hay validaciones de plan premium ni límite de badges en `AlbumService`, `FotoService` ni `BadgeService`. La visualización está disponible para usuarios autenticados con acceso propio o compartido.
 
 ## Consulta de auditoria deshabilitada
 
-Los endpoints de consulta de auditoria estan deshabilitados temporalmente porque no existe un caso de uso de pantalla de auditoria ni un rol global de administrador. El sistema solo tiene perfiles contextuales por mascota, todavia dependientes del modulo de cuidado compartido.
+Los endpoints de consulta de auditoría están deshabilitados temporalmente porque no existe un caso de uso de pantalla de auditoría ni un rol global de administrador. Los perfiles compartidos son contextuales al vínculo con el propietario; no habilitan la consulta general de logs.
 
 El codigo del controller, service, mapper y DTO se conserva. Para rehabilitar la consulta hay que definir:
 

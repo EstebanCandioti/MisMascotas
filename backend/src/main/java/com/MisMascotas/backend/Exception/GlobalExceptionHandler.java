@@ -22,6 +22,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(CuidadoCompartidoException.class)
+    public ResponseEntity<ErrorResponse> handleCuidadoCompartido(CuidadoCompartidoException ex) {
+        return buildResponse(ex.isExpirada() ? HttpStatus.GONE : HttpStatus.CONFLICT, ex.getCodigo(), ex.getMessage());
+    }
+
     @ExceptionHandler(PremiumRequeridoException.class)
     public ResponseEntity<ErrorResponse> handlePremiumRequerido(PremiumRequeridoException ex) {
         return buildResponse(HttpStatus.FORBIDDEN, "PREMIUM_REQUERIDO", ex.getMessage());
@@ -131,6 +136,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
         return buildResponse(HttpStatus.FORBIDDEN, "ACCESO_DENEGADO", "No tenes permisos para realizar esta accion");
+    }
+
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> metodoNoPermitido(org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        var permitidos = ex.getSupportedHttpMethods();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .allow(permitidos == null ? new org.springframework.http.HttpMethod[0]
+                        : permitidos.toArray(org.springframework.http.HttpMethod[]::new))
+                .body(new ErrorResponse("METODO_NO_PERMITIDO", "El metodo HTTP no esta permitido para este recurso", Instant.now()));
     }
 
     @ExceptionHandler(Exception.class)

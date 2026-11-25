@@ -150,9 +150,11 @@ B9 representa el resultado de V1–V9:
 | V7 | Estado y programación de reintentos. |
 | V8 | Datos del ciclo de suscripción y unicidad de factura. |
 | V9 | Retiro de `pago.estado`, conservando `estado_id`. |
+| V10 | Base de cuidado compartido: RECHAZADA, emails normalizados, plazos obligatorios, índices y acceso activo único por par de cuentas. |
+| V11 | Vínculo único de una invitación aceptada con su acceso concreto; repetir una aceptación no reactiva accesos revocados. |
 
 Las bases nuevas ya nacen sin las columnas textuales de estado. Para un cambio
-posterior se agrega `V10__descripcion.sql`, luego V11, etc. No hay que modificar
+posterior se agrega V12, luego V13, etc. No hay que modificar
 B9 ni volver a cargar el seed. B9 permanece como punto de partida estable de la imagen.
 
 Las migraciones publicadas son inmutables. Flyway valida los checksums de las
@@ -189,10 +191,28 @@ Cambiar de versión mayor de PostgreSQL es otra operación; Flyway no la resuelv
 - `docker/qa-db/Dockerfile`: imagen PostgreSQL con la base actual.
 - `DB/qa/restablecer-seed.sql`: seed ficticio actualizado; ejecución protegida para QA.
 - `ci/verificar_imagen_qa.py`: verifica seed, arranque, baseline V9 y persistencia en recursos temporales.
-- `backend/src/test/java/com/MisMascotas/backend/Configuracion/MigracionesPostgresIT.java`: diez casos de migración, incluida una V10 simulada que solo existe en recursos de prueba.
+- `backend/src/test/java/com/MisMascotas/backend/Configuracion/MigracionesPostgresIT.java`: migraciones desde bases vacías, V1 y V9, conservación y rechazo de datos incompatibles, e instalación de una V12 simulada exclusiva de pruebas.
 
-El archivo de prueba `db/futuro/V10__prueba_actualizacion_qa.sql` no se incluye en
+El archivo de prueba `db/futuro/V12__prueba_actualizacion_qa.sql` no se incluye en
 el JAR ni se ejecuta en QA real.
+
+### Actualización V10 de cuidado compartido
+
+B9 y sus huellas se conservan como puntos de partida inmutables. Tras aplicar V10,
+el catálogo tiene 16 estados, incluido `INVITACION/RECHAZADA`. La imagen DB sigue
+inicializando B9 y el seed qa-base-v2; el backend aplica V10 mediante Flyway al
+arrancar. No se necesita recargar el seed para actualizar una base existente.
+
+V10 conserva IDs, perfiles y accesos anteriores. Normaliza emails y completa solo
+expiraciones faltantes con creación más 48 horas. Accesos activos duplicados,
+autoaccesos, emails vacíos o plazos inválidos detienen la migración sin eliminar
+datos. Tras corregir la causa, se puede retomar la migración. El seed de restauración
+admite de forma explícita los catálogos B9 y B9+V10 y conserva RECHAZADA.
+
+V11 agrega `invitacion.acceso_id`, con clave foránea y unicidad, sin inferir
+asociaciones históricas. Una invitación aceptada sin vínculo verificable se
+conserva y requiere revisión al intentar repetir su aceptación. Las fixtures
+futuras pasan a V12 para no colisionar con la nueva migración real.
 
 ## Referencias
 

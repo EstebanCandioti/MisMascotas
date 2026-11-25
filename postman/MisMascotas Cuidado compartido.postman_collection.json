@@ -1,0 +1,3345 @@
+{
+  "info": {
+    "name": "MisMascotas — Cuidado compartido manual C09 a C13",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Prueba manual ordenada del backend actualizado con PostgreSQL y Mailpit. Completar las variables de COLECCIÓN baseUrl, emailPropietario, passwordPropietario, emailInvitado, passwordInvitado; usar cuentas distintas. No usar un entorno Postman con variables homónimas que oculten las de colección. Ejecutar carpetas 01 a 09. En sesiones elegir REGISTRO O LOGIN y luego copiar a codigoPropietario/codigoInvitado el código del último correo. La colección guarda tokens e IDs automáticamente. No ejecutar todo con Runner: hay pausas de código y alternativas. Mailpit se abre en el puerto realmente publicado por tu Compose. La web todavía requiere su pantalla de invitación; aceptar/rechazar se prueba aquí por POST. Los 403 y 409 previstos son pruebas negativas exitosas. Fechas de recordatorios calculadas para Argentina; si cambia el día, preparar de nuevo los recordatorios. Solicitudes no ejecutadas contra tu entorno al preparar este archivo; derivadas del contrato local verificado. Regla corregida: todos consultan cualquier fecha y todos confirman solo durante su día argentino, sin límite por hora. Se incluyen pruebas negativas para propietario, Familia y Cuidador. situacionTemporal y puedeConfirmar se calculan al consultar. Las aserciones leen pm.variables.get para usar la misma prioridad que URLs/cuerpos. Si faltan IDs de preparación, 07-02 falla con el nombre de la variable faltante; además valida las fechas de todos los resultados y excluye inactivos."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "emailPropietario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "passwordPropietario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "codigoPropietario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "emailInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "passwordInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "codigoInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "preAuthPropietario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenPropietario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshPropietario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "preAuthInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "usuarioPropietarioId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "usuarioInvitadoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordatorioId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordatorioMananaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordatorioAyerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "albumId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fotoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventoFamiliaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordatorioFamiliaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invitacionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accesoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invitacionRechazoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invitacionReenvioId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Argentina UTC-3: se recalculan fechas de los cuerpos sin alterar los IDs guardados.",
+          "const desplazamiento = 3 * 60 * 60 * 1000;",
+          "const fechaLocal = new Date(Date.now() - desplazamiento).toISOString().slice(0, 10);",
+          "const medianoche = new Date(fechaLocal + \"T00:00:00-03:00\");",
+          "for (const [nombre, dias] of [[\"fechaHoy\", 0], [\"fechaManana\", 1], [\"fechaAyer\", -1]]) {",
+          "    pm.variables.set(nombre, new Date(medianoche.getTime() + dias * 86400000 + 12 * 3600000).toISOString());",
+          "}",
+          "pm.variables.set(\"fechaClinica\", new Date(Date.now() - 86400000).toISOString());"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 — Sesión propietario",
+      "description": "Ejecutar REGISTRO si la cuenta es nueva O LOGIN si ya existe. Después copiar el último código de Mailpit en codigoPropietario y ejecutar VERIFICAR. No ejecutar ambas alternativas seguidas.",
+      "item": [
+        {
+          "name": "A — REGISTRO (solo cuenta nueva)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "Esperado: HTTP 200. Envía un código por email y guarda el token de preautenticación. Todavía no es un accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Propietario QA\",\n  \"email\": \"{{emailPropietario}}\",\n  \"password\": \"{{passwordPropietario}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"preAuthPropietario\", datos.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B — LOGIN (solo cuenta existente)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Esperado: HTTP 200. Leer el código más reciente: cada login genera uno nuevo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailPropietario}}\",\n  \"password\": \"{{passwordPropietario}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"preAuthPropietario\", datos.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C — VERIFICAR código del correo",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{preAuthPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "description": "Esperado: HTTP 200. Guardar codigoPropietario antes de enviar. Tokens de acceso y refresh quedan guardados por separado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoPropietario}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"tokenPropietario\", datos.accessToken); pm.collectionVariables.set(\"refreshPropietario\", datos.refreshToken); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D — Consultar mi usuario",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/usuario/me",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"usuarioPropietarioId\", datos.idUsuario); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 — Sesión invitado",
+      "description": "Ejecutar REGISTRO si la cuenta es nueva O LOGIN si ya existe. Después copiar el último código de Mailpit en codigoInvitado y ejecutar VERIFICAR. No ejecutar ambas alternativas seguidas.",
+      "item": [
+        {
+          "name": "A — REGISTRO (solo cuenta nueva)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "Esperado: HTTP 200. Envía un código por email y guarda el token de preautenticación. Todavía no es un accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Invitado QA\",\n  \"email\": \"{{emailInvitado}}\",\n  \"password\": \"{{passwordInvitado}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"preAuthInvitado\", datos.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B — LOGIN (solo cuenta existente)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Esperado: HTTP 200. Leer el código más reciente: cada login genera uno nuevo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailInvitado}}\",\n  \"password\": \"{{passwordInvitado}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"preAuthInvitado\", datos.token); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C — VERIFICAR código del correo",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{preAuthInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "description": "Esperado: HTTP 200. Guardar codigoInvitado antes de enviar. Tokens de acceso y refresh quedan guardados por separado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoInvitado}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"tokenInvitado\", datos.accessToken); pm.collectionVariables.set(\"refreshInvitado\", datos.refreshToken); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D — Consultar mi usuario",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/usuario/me",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"usuarioInvitadoId\", datos.idUsuario); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 — Preparar recursos (propietario)",
+      "description": "Usar dos cuentas distintas, preferiblemente nuevas. El propietario necesita cupo para crear una mascota. Estos POST crean datos de prueba y guardan sus IDs.",
+      "item": [
+        {
+          "name": "01 — Crear mascota",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mascota cuidado QA\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"mascotaId\", datos.idMascota); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Crear evento clínico",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/eventos-clinicos",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"VACUNA\",\n  \"fecha\": \"{{fechaClinica}}\",\n  \"nombre\": \"Vacuna manual QA\",\n  \"observaciones\": \"Prueba de cuidado compartido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"eventoId\", datos.idEvento); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Crear recordatorio HOY",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Recordatorio manual QA\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"{{fechaHoy}}\",\n  \"modalidad\": \"unica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"recordatorioId\", datos.idRecordatorio); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Crear recordatorio MAÑANA",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Mañana QA\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"{{fechaManana}}\",\n  \"modalidad\": \"unica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"recordatorioMananaId\", datos.idRecordatorio); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Crear recordatorio AYER",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Ayer QA\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"{{fechaAyer}}\",\n  \"modalidad\": \"unica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"recordatorioAyerId\", datos.idRecordatorio); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Crear álbum",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/albumes",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Álbum manual QA\",\n  \"descripcion\": \"Prueba de permisos\",\n  \"mascotaId\": \"{{mascotaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"albumId\", datos.idAlbum); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Crear foto por URL",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumId}}/fotos",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlArchivo\": \"https://example.test/foto-qa.jpg\",\n  \"formato\": \"jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"fotoId\", datos.idFoto); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Crear badge",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/badges",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"texto\": \"Badge manual QA\",\n  \"emoji\": \"🐾\",\n  \"mascotaId\": \"{{mascotaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"badgeId\", datos.idBadge); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Propietario no puede confirmar ayer",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioAyerId}}/confirmacion",
+            "description": "Esperado HTTP 400. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Propietario no puede confirmar mañana",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioMananaId}}/confirmacion",
+            "description": "Esperado HTTP 400. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 — Invitar y aceptar",
+      "description": "En Mailpit debe aparecer la invitación al invitado y, tras aceptar, una respuesta al propietario. El enlace dirige a la web; esta colección usa los POST del backend para responder.",
+      "item": [
+        {
+          "name": "01 — Sin invitación no puede ver la mascota",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Crear invitación Familia",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones",
+            "description": "Esperado: HTTP 201. Pausar y revisar el email: destinatario, perfil, vencimiento y enlace con invitacionId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailInvitado\": \"{{emailInvitado}}\",\n  \"perfil\": \"Familia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"invitacionId\", datos.idInvitacion); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Bandeja del propietario",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/me",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Bandeja del invitado",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/me",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Consultar invitación sin aceptarla",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Sigue pendiente\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\")); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — La consulta anterior no concede acceso",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Aceptar con la cuenta destinataria",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionId}}/aceptar",
+            "description": "Esperado: HTTP 200. Revisar correo de aceptación al propietario."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"accesoId\", datos.acceso.idAcceso); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Repetir aceptación conserva el mismo acceso",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionId}}/aceptar",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Mismo vínculo\", () => pm.expect(pm.response.json().acceso.idAcceso).to.eql(pm.variables.get(\"accesoId\"))); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Mascota ahora accesible",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Listado incluye mascota compartida",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Mascota compartida visible\", () => pm.expect(pm.response.json().map(m => m.idMascota)).to.include(pm.variables.get(\"mascotaId\"))); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 — Permisos Familia",
+      "description": "Se usa el token del invitado, que todavía tiene perfil Familia. Los intentos con 403 son resultados esperados, no fallos de la prueba.",
+      "item": [
+        {
+          "name": "01 — Consultar historia clínica",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/eventos-clinicos",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Crear evento como Familia",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/eventos-clinicos",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"VACUNA\",\n  \"fecha\": \"{{fechaClinica}}\",\n  \"nombre\": \"Vacuna manual QA\",\n  \"observaciones\": \"Prueba de cuidado compartido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"eventoFamiliaId\", datos.idEvento); }",
+                  "if (pm.response.code === 201) { pm.test(\"Autor real: invitado\", () => pm.expect(pm.response.json().registradoPorId).to.eql(pm.variables.get(\"usuarioInvitadoId\"))); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Editar evento como Familia",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/eventos-clinicos/{{eventoFamiliaId}}",
+            "description": "Esperado: HTTP 200. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"VACUNA\",\n  \"fecha\": \"{{fechaClinica}}\",\n  \"nombre\": \"Vacuna manual QA\",\n  \"observaciones\": \"Editado por Familia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Eliminar evento creado en esta prueba",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/eventos-clinicos/{{eventoFamiliaId}}",
+            "description": "Esperado: HTTP 204. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Crear recordatorio como Familia",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Creado por Familia\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"{{fechaHoy}}\",\n  \"modalidad\": \"unica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"recordatorioFamiliaId\", datos.idRecordatorio); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Editar recordatorio",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioFamiliaId}}",
+            "description": "Esperado: HTTP 200. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Editado por Familia\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"{{fechaHoy}}\",\n  \"modalidad\": \"unica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Confirmar recordatorio",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioFamiliaId}}/confirmacion",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Desmarcar confirmación",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioFamiliaId}}/confirmacion",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Eliminar recordatorio de Familia",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioFamiliaId}}",
+            "description": "Esperado: HTTP 204. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Familia no edita mascota",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Mascota cuidado QA\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Familia no elimina mascota",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Invitado no puede confirmar ayer",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioAyerId}}/confirmacion",
+            "description": "Esperado HTTP 400. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Invitado no puede confirmar mañana",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioMananaId}}/confirmacion",
+            "description": "Esperado HTTP 400. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 — Multimedia compartida (Familia)",
+      "description": "Ambos perfiles leen; las escrituras son exclusivas del propietario. Estos intentos negativos no deben modificar los recursos.",
+      "item": [
+        {
+          "name": "01 — Listar álbumes",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/albumes",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Consultar álbum por ID",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/albumes/{{albumId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Listar fotos",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/albumes/{{albumId}}/fotos",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Consultar foto por ID",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/fotos/{{fotoId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Listar badges",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/badges",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Consultar badge por ID",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/badges/{{badgeId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — No puede crear álbum",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/albumes",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Álbum manual QA\",\n  \"descripcion\": \"Prueba de permisos\",\n  \"mascotaId\": \"{{mascotaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — No puede editar álbum",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumId}}",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Álbum manual QA\",\n  \"descripcion\": \"Prueba de permisos\",\n  \"mascotaId\": \"{{mascotaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — No puede eliminar álbum",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/albumes/{{albumId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — No puede agregar foto",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumId}}/fotos",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlArchivo\": \"https://example.test/foto-qa.jpg\",\n  \"formato\": \"jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — No puede eliminar foto",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/fotos/{{fotoId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — No puede crear badge",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/badges",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"texto\": \"Badge manual QA\",\n  \"emoji\": \"🐾\",\n  \"mascotaId\": \"{{mascotaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — No puede eliminar badge",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/badges/{{badgeId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 — Cambiar a Cuidador, misma sesión",
+      "description": "El propietario cambia el perfil del vínculo. El invitado conserva su token; las restricciones deben reflejarse sin volver a iniciar sesión. Ejecutar en el mismo día argentino que la preparación.",
+      "item": [
+        {
+          "name": "01 — Cambiar perfil como propietario",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/cuidado-compartido/accesos/{{accesoId}}/perfil",
+            "description": "Esperado: HTTP 200. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perfil\": \"Cuidador\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Consultar recordatorios de hoy",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "HTTP 200. Requiere preparar los recordatorios 03-03, 03-04 y 03-05 en esta colección y durante el mismo día argentino. Las aserciones usan las variables efectivas, igual que las URLs y cuerpos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) {\n    const lista = pm.response.json();\n    const claves = [\"recordatorioId\", \"recordatorioMananaId\", \"recordatorioAyerId\"];\n    const valores = Object.fromEntries(claves.map(clave => [clave, pm.variables.get(clave)]));\n    const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;\n    pm.test(\"Preparación: IDs de hoy, mañana y ayer disponibles\", function () {\n        for (const clave of claves) {\n            pm.expect(valores[clave], \"Falta \" + clave + \": ejecutar 03-03 a 03-05 o cargar el UUID correspondiente; revisar colección, entorno y variables locales\").to.match(uuid);\n        }\n    });\n    pm.test(\"Todos los resultados corresponden al día argentino actual\", function () {\n        const diaArgentino = fecha => new Date(new Date(fecha).getTime() - 3 * 3600000).toISOString().slice(0, 10);\n        const hoy = diaArgentino(new Date());\n        pm.expect(lista).to.be.an(\"array\");\n        for (const r of lista) pm.expect(diaArgentino(r.fechaHoraInicio), \"Fecha de \" + r.idRecordatorio).to.eql(hoy);\n    });\n    pm.test(\"No devuelve recordatorios inactivos\", function () {\n        for (const r of lista) pm.expect(r.estado).not.to.eql(\"INACTIVO\");\n    });\n    if (claves.every(clave => uuid.test(valores[clave] || \"\"))) {\n        const ids = lista.map(r => r.idRecordatorio);\n        pm.test(\"Incluye hoy y excluye ayer/mañana\", function () {\n            pm.expect(ids).to.include(valores.recordatorioId);\n            pm.expect(ids).not.to.include(valores.recordatorioMananaId);\n            pm.expect(ids).not.to.include(valores.recordatorioAyerId);\n        });\n    }\n}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Consultar mañana por ID",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioMananaId}}",
+            "description": "Esperado: HTTP 200. Cuidador puede consultar cualquier fecha."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Situación temporal correcta\",()=>pm.expect(pm.response.json().situacionTemporal).to.eql(\"PROXIMO\")); pm.test(\"No se puede confirmar\",()=>pm.expect(pm.response.json().puedeConfirmar).to.eql(false)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Consultar ayer por ID",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioAyerId}}",
+            "description": "Esperado: HTTP 200. Cuidador puede consultar cualquier fecha."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Situación temporal correcta\",()=>pm.expect(pm.response.json().situacionTemporal).to.eql(\"VENCIDO\")); pm.test(\"No se puede confirmar\",()=>pm.expect(pm.response.json().puedeConfirmar).to.eql(false)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — No crea eventos clínicos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/eventos-clinicos",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"VACUNA\",\n  \"fecha\": \"{{fechaClinica}}\",\n  \"nombre\": \"Vacuna manual QA\",\n  \"observaciones\": \"Prueba de cuidado compartido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — No edita eventos clínicos",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/eventos-clinicos/{{eventoId}}",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"VACUNA\",\n  \"fecha\": \"{{fechaClinica}}\",\n  \"nombre\": \"Vacuna manual QA\",\n  \"observaciones\": \"Prueba de cuidado compartido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — No elimina eventos clínicos",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/eventos-clinicos/{{eventoId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — No crea recordatorios",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Recordatorio manual QA\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"{{fechaHoy}}\",\n  \"modalidad\": \"unica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — No edita recordatorios",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}",
+            "description": "Esperado: HTTP 403. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Recordatorio manual QA\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"{{fechaHoy}}\",\n  \"modalidad\": \"unica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — No elimina recordatorios",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Sí confirma el de hoy",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}/confirmacion",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Propietario ve quién confirmó",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Confirmación del Cuidador visible\",()=>pm.expect(pm.response.json().confirmadoPorId).to.eql(pm.variables.get(\"usuarioInvitadoId\"))); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Cuidador no desmarca la confirmación",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}/confirmacion",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 — Cuidador sigue viendo álbum",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/albumes/{{albumId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 — Cuidador sigue viendo foto",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/fotos/{{fotoId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Cuidador sigue viendo badge",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/badges/{{badgeId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 — Invitado no puede confirmar ayer",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioAyerId}}/confirmacion",
+            "description": "Esperado HTTP 400. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18 — Invitado no puede confirmar mañana",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioMananaId}}/confirmacion",
+            "description": "Esperado HTTP 400. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "19 — Propietario tampoco puede sobrescribir una confirmación",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}/confirmacion",
+            "description": "Esperado HTTP 400. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "20 — Consultar listado completo como Cuidador",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
+            "description": "Esperado HTTP 200. Consulta sin límite por fecha; confirmación solo en el día correspondiente para todos los perfiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 — Revocar y comprobar pérdida de acceso",
+      "description": "Conservar el token del invitado para verificar que no necesita cerrar sesión. Repetir aceptar la invitación vieja no debe reactivar el vínculo.",
+      "item": [
+        {
+          "name": "01 — Propietario revoca el vínculo",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/accesos/{{accesoId}}",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Mascota denegada con el mismo token",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Foto denegada por ID",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/fotos/{{fotoId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Listado ya no contiene la mascota",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Mascota revocada no visible\",()=>pm.expect(pm.response.json().map(m=>m.idMascota)).not.to.include(pm.variables.get(\"mascotaId\"))); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Reaceptar la vieja devuelve vínculo inactivo",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionId}}/aceptar",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { pm.test(\"Sin reactivación\",()=>pm.expect(pm.response.json().acceso.activo).to.eql(false)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Sigue sin acceso",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/mascotas/{{mascotaId}}",
+            "description": "Esperado: HTTP 403. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 — Rechazar, reenviar y cancelar",
+      "description": "Revisar en Mailpit el rechazo al propietario y el nuevo email al reenviar. Reenviar genera otro UUID.",
+      "item": [
+        {
+          "name": "01 — Nueva invitación al mismo usuario",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones",
+            "description": "Esperado: HTTP 201. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailInvitado\": \"{{emailInvitado}}\",\n  \"perfil\": \"Familia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"invitacionRechazoId\", datos.idInvitacion); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Invitado rechaza",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionRechazoId}}/rechazar",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Propietario reenvía",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionRechazoId}}/reenviar",
+            "description": "Esperado: HTTP 201. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201) { const datos = pm.response.json(); pm.collectionVariables.set(\"invitacionReenvioId\", datos.idInvitacion); }",
+                  "if (pm.response.code === 201) { pm.test(\"Nuevo UUID\",()=>pm.expect(pm.response.json().idInvitacion).not.to.eql(pm.variables.get(\"invitacionRechazoId\"))); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — La anterior no se puede aceptar",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionRechazoId}}/aceptar",
+            "description": "Esperado: HTTP 409. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 409\", function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Propietario cancela la nueva",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionReenvioId}}/cancelar",
+            "description": "Esperado: HTTP 200. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — La cancelada no se puede aceptar",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenInvitado}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/invitaciones/{{invitacionReenvioId}}/aceptar",
+            "description": "Esperado: HTTP 409. "
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 409\", function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Bandeja final y cupo liberado",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPropietario}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": "{{baseUrl}}/cuidado-compartido/me",
+            "description": "Esperado: HTTP 200. Con cuentas nuevas y sin otros vínculos, cupo.ocupados debe ser 0. El historial de invitaciones permanece."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AUXILIAR — Renovar sesión si aparece 401",
+      "description": "Usar únicamente si expiró un accessToken. Después volver a la solicitud pendiente. No permite renovar el token de preautenticación: para un código vencido repetir login y verificación.",
+      "item": [
+        {
+          "name": "Renovar Propietario",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/refresh",
+            "description": "Esperado: HTTP 200. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshPropietario}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"tokenPropietario\", datos.accessToken); pm.collectionVariables.set(\"refreshPropietario\", datos.refreshToken); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Renovar Invitado",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/refresh",
+            "description": "Esperado: HTTP 200. ",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshInvitado}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 200\", function () { pm.response.to.have.status(200); });",
+                  "if (pm.response.code === 200) { const datos = pm.response.json(); pm.collectionVariables.set(\"tokenInvitado\", datos.accessToken); pm.collectionVariables.set(\"refreshInvitado\", datos.refreshToken); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

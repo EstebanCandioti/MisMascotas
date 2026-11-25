@@ -8,9 +8,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+from verificar_cuidado_qa import verificar_cuidado
 
 
-def verificar_premium(sql, base_url, secreto_ci):
+def verificar_premium(sql, base_url, secreto_ci, mailpit_url):
     if urllib.parse.urlparse(base_url).hostname != "127.0.0.1":
         raise ValueError("La verificación Premium solo admite el backend Docker local de CI")
     cuentas = []
@@ -103,8 +104,9 @@ def verificar_premium(sql, base_url, secreto_ci):
 
         codigo, aislada = http("/suscripciones/me?usuarioId=" + cuentas[1], token(cuentas[0], cuentas[0] + "@example.test"))
         assert codigo == 200 and not aislada["esPremium"] and aislada["suscripcion"] is None
+        cuidado = verificar_cuidado(sql, http, token, cuentas, mailpit_url)
         return {"casos": len(casos), "perfil_suscripcion_y_cupo_coherentes": True,
-                "aislamiento_entre_cuentas": True, "sin_cobros_reales": True}
+                "aislamiento_entre_cuentas": True, "sin_cobros_reales": True, "cuidado_compartido": cuidado}
     finally:
         for id_usuario in cuentas:
             sql(f"""DELETE FROM log_auditoria WHERE actor_id='{id_usuario}';

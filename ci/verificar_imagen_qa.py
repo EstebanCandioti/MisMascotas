@@ -5,6 +5,7 @@ import json
 import subprocess
 import time
 import uuid
+import urllib.request
 from verificar_premium_qa import verificar_premium
 
 
@@ -21,6 +22,7 @@ def verificar(imagen_db, imagen_backend):
     prefijo = "mismascotas-ci-base-" + token
     db = prefijo + "-db"
     backend = prefijo + "-backend"
+    mailpit = prefijo + "-mailpit"
     volumen = prefijo + "-datos"
     etiqueta = "ar.mismascotas.verificacion"
     red_creada = volumen_creado = False
@@ -60,6 +62,21 @@ def verificar(imagen_db, imagen_backend):
         ejecutar("docker", "volume", "create", "--label", etiqueta + "=" + token, volumen)
         volumen_creado = True
         iniciar_db()
+        ejecutar("docker", "run", "-d", "--name", mailpit, "--network", prefijo, "--label", etiqueta + "=" + token,
+                 "--publish", "127.0.0.1::8025", "axllent/mailpit:v1.31.5")
+        contenedores.add(mailpit)
+        puerto_correo = ejecutar("docker", "port", mailpit, "8025/tcp").rsplit(":", 1)[1]
+        mailpit_url = "http://127.0.0.1:" + puerto_correo
+        limite = time.monotonic() + 30
+        while True:
+            try:
+                with urllib.request.urlopen(mailpit_url + "/api/v1/messages", timeout=2) as respuesta:
+                    assert respuesta.status == 200
+                break
+            except (OSError, AssertionError):
+                if time.monotonic() >= limite:
+                    raise RuntimeError("Mailpit temporal no quedó disponible")
+                time.sleep(0.2)
         cantidades = json.loads(sql("""SELECT json_build_object(
             'usuarios',(SELECT count(*) FROM usuario),'mascotas',(SELECT count(*) FROM mascota),
             'eventos_clinicos',(SELECT count(*) FROM evento_clinico),'recordatorios',(SELECT count(*) FROM recordatorio))"""))
@@ -77,7 +94,8 @@ def verificar(imagen_db, imagen_backend):
             "DB_URL": "jdbc:postgresql://" + db + ":5432/qa_imagen", "DB_USERNAME": "qa_ci",
             "DB_PASSWORD": "clave-ficticia-exclusiva-ci",
             "JWT_SECRET": secreto_ci,
-            "JAVA_TOOL_OPTIONS": "-Duser.timezone=UTC", "MAIL_HOST": "127.0.0.1", "MAIL_PORT": "9",
+            "JAVA_TOOL_OPTIONS": "-Duser.timezone=UTC", "MAIL_HOST": mailpit, "MAIL_PORT": "1025",
+            "CUIDADO_COMPARTIDO_URL_INVITACIONES": "http://localhost:5173/cuidado-compartido",
             "MAIL_SMTP_AUTH": "false", "MAIL_SMTP_STARTTLS_ENABLE": "false", "MAIL_SMTP_STARTTLS_REQUIRED": "false",
             "FLYWAY_ENABLED": "true", "MIGRACIONES_ADOPTAR_BASE_QA": "true",
         }.items():
@@ -101,7 +119,8 @@ def verificar(imagen_db, imagen_backend):
         consulta_catalogo = "SELECT md5(jsonb_agg(to_jsonb(e) ORDER BY id_estado)::text) FROM estados e"
         catalogo_actualizado = sql(consulta_catalogo)
         puerto = ejecutar("docker", "port", backend, "8080/tcp").rsplit(":", 1)[1]
-        premium = verificar_premium(sql, "http://127.0.0.1:" + puerto, secreto_ci)
+        premium = verificar_premium(sql, "http://127.0.0.1:" + puerto, secreto_ci, mailpit_url)
+        cuidado = premium.pop("cuidado_compartido")
 
         # Una actualización/recreación del contenedor debe conservar el volumen y sus cambios.
         id_ = str(uuid.uuid4())
@@ -115,9 +134,9 @@ def verificar(imagen_db, imagen_backend):
         assert sql("SELECT count(*) FROM flyway_schema_history WHERE version='9'") == "1"
         assert sql("SELECT max(version::int) FROM flyway_schema_history WHERE success") == version_final
         print(json.dumps(dict(seed=cantidades, version_base=9, version_final=int(version_final), baseline_sin_reaplicar_sql=True,
-                              backend_http=401, datos_persisten_al_recrear=True, premium=premium)))
+                              backend_http=401, datos_persisten_al_recrear=True, premium=premium, cuidado_compartido=cuidado)))
     finally:
-        for nombre in (backend, db):
+        for nombre in (backend, mailpit, db):
             retirar_contenedor(nombre)
         for tipo, nombre, creado in (("volume", volumen, volumen_creado), ("network", prefijo, red_creada)):
             if creado:

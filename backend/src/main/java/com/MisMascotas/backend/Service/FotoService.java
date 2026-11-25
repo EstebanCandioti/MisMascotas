@@ -56,7 +56,7 @@ public class FotoService {
     @Transactional(readOnly = true)
     public List<FotoResponseDTO> listarPorAlbum(UUID albumId, UUID usuarioAutenticadoId) {
         Album album = buscarAlbumActivo(albumId);
-        validarAccesoAlbum(album, usuarioAutenticadoId);
+        validarAccesoAlbum(album, usuarioAutenticadoId, false);
 
         List<Foto> fotos = fotoRepository.findFotosActivasPorAlbum(albumId);
         return fotos.stream().map(this::mapToResponse).toList();
@@ -65,7 +65,7 @@ public class FotoService {
     @Transactional(readOnly = true)
     public FotoResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
         Foto foto = buscarFotoActiva(id);
-        validarAccesoAlbum(foto.getAlbum(), usuarioAutenticadoId);
+        validarAccesoAlbum(foto.getAlbum(), usuarioAutenticadoId, false);
         return mapToResponse(foto);
     }
 
@@ -100,12 +100,19 @@ public class FotoService {
     }
 
     private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId) {
+        validarAccesoAlbum(album, usuarioAutenticadoId, true);
+    }
+
+    private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId, boolean escritura) {
         List<AlbumMascota> relaciones = albumMascotaRepository.findAllByAlbumIdActivos(album.getIdAlbum());
         if (relaciones.isEmpty()) {
             throw new RecursoNoEncontradoException("Album no encontrado con ID: " + album.getIdAlbum());
         }
 
-        relaciones.forEach(rel -> accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId));
+        relaciones.forEach(rel -> {
+            if (escritura) accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId);
+            else accesoMascotaService.verificarLectura(rel.getMascota(), usuarioAutenticadoId);
+        });
     }
 
 

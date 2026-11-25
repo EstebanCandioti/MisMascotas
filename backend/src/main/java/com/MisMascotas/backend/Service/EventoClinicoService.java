@@ -55,7 +55,7 @@ public class EventoClinicoService {
         String tipoNormalizado = validarRequest(request);
         validarFechaNoFutura(request.fecha());
 
-        Mascota mascota = accesoMascotaService.verificarAcceso(request.mascotaId(), registradoPorId);
+        Mascota mascota = accesoMascotaService.verificarGestionSalud(request.mascotaId(), registradoPorId);
 
         Usuario usuario = usuarioRepository.findById(registradoPorId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + registradoPorId));
@@ -72,7 +72,7 @@ public class EventoClinicoService {
 
     @Transactional(readOnly = true)
     public List<EventoClinicoResponseDTO> listarPorMascota(UUID mascotaId, String tipo, UUID usuarioAutenticadoId) {
-        accesoMascotaService.verificarAcceso(mascotaId, usuarioAutenticadoId);
+        accesoMascotaService.verificarLectura(mascotaId, usuarioAutenticadoId);
 
         List<EventoClinico> eventos;
         if (tipo != null && !tipo.isBlank()) {
@@ -87,7 +87,7 @@ public class EventoClinicoService {
     @Transactional(readOnly = true)
     public EventoClinicoResponseDTO obtenerPorId(UUID id, UUID usuarioAutenticadoId) {
         EventoClinico evento = buscarEventoActivo(id);
-        accesoMascotaService.verificarAcceso(evento.getMascota(), usuarioAutenticadoId);
+        accesoMascotaService.verificarLectura(evento.getMascota(), usuarioAutenticadoId);
         return mapToResponse(evento);
     }
 
@@ -108,7 +108,7 @@ public class EventoClinicoService {
         validarFechaNoFutura(request.fecha());
 
         EventoClinico evento = buscarEventoActivo(id);
-        accesoMascotaService.verificarAcceso(evento.getMascota(), usuarioAutenticadoId);
+        accesoMascotaService.verificarGestionSalud(evento.getMascota(), usuarioAutenticadoId);
 
         Mascota mascota = evento.getMascota();
         aplicarDatos(evento, request, tipoNormalizado);
@@ -122,7 +122,7 @@ public class EventoClinicoService {
     @Transactional
     public void eliminar(UUID id, UUID usuarioAutenticadoId) {
         EventoClinico evento = buscarEventoActivo(id);
-        accesoMascotaService.verificarAcceso(evento.getMascota(), usuarioAutenticadoId);
+        accesoMascotaService.verificarGestionSalud(evento.getMascota(), usuarioAutenticadoId);
 
         Mascota mascota = evento.getMascota();
         evento.setFechaEliminacion(Instant.now());
