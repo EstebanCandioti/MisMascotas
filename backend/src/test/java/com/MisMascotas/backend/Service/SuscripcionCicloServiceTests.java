@@ -24,7 +24,7 @@ class SuscripcionCicloServiceTests {
     Suscripcion local;SuscripcionCicloService service;
     @BeforeEach void preparar(){
         local=new Suscripcion();local.setIdSuscripcion(id);local.setTipoPlan("PREMIUM_MENSUAL");local.setIdSuscripcionMercadopago("s");var u=new Usuario();u.setIdUsuario(UUID.randomUUID());local.setUsuario(u);
-        service=new SuscripcionCicloService(proveedor,new CatalogoPlanesSuscripcion("2500","ARS",1,"months","QA"),repositorio,tx);
+        service=new SuscripcionCicloService(proveedor,new CatalogoPlanesSuscripcion("2500","ARS",1,"months","QA", "40000", "ARS", 12, "months", "Plan Premium anual MisMascotas"),repositorio,tx);
         when(proveedor.consultarPreapproval("s")).thenReturn(remoto("authorized",new BigDecimal("2500"),"ARS",1));
     }
     @ParameterizedTest @ValueSource(strings={"importeFactura","monedaFactura","importePago","monedaPago","fechaPago","estadoPago","estadoFactura","importePlan","monedaPlan","frecuenciaPlan","referenciaPlan","estadoPlan","idPago","referenciaFactura"})

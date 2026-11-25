@@ -91,6 +91,31 @@ class SuscripcionCicloPostgresIT {
         assertThat(procesador.evaluar(nueva(f)).motivo()).isEqualTo("YA_CONFIRMADA");
         assertThat(actual().getFechaVencimiento()).isEqualTo(vencimiento);assertThat(cantidadPagos()).isEqualTo(1);assertThat(eventos()).isEqualTo(2);
     }
+
+    @Test void anualPrimerCobroRenovacionYRepeticionesSumanDoceMesesPorPago() {
+        s.setTipoPlan("PREMIUM_ANUAL"); suscripciones.saveAndFlush(s);
+        when(proveedor.consultarPreapproval(prefijo)).thenReturn(new PreapprovalConsultado(prefijo,
+                s.getIdSuscripcion().toString(), "authorized", null, new BigDecimal("40000"), "ARS", 12, "months",
+                INICIO.atZone(ZoneOffset.UTC).plusMonths(12).toInstant(), INICIO));
+        for (int cuota = 1; cuota <= 2; cuota++) {
+            String idFactura = prefijo + "-anual-f" + cuota;
+            String idPago = prefijo + "-anual-p" + cuota;
+            Instant aprobada = INICIO.plusSeconds((cuota - 1) * 300L * 86400);
+            when(proveedor.consultarFacturaAutorizada(idFactura)).thenReturn(new FacturaAutorizada(idFactura,
+                    prefijo, s.getIdSuscripcion().toString(), idPago, "processed", 1, aprobada, null,
+                    new BigDecimal("40000"), "ARS"));
+            when(proveedor.consultarPago(idPago)).thenReturn(new PagoConsultado(idPago, "approved",
+                    new BigDecimal("40000"), "ARS", aprobada));
+            var aviso = nueva(idFactura);
+            assertThat(procesador.evaluar(aviso).motivo()).isEqualTo(cuota == 1 ? "ACTIVADA" : "RENOVADA");
+            var vencimiento = INICIO.atZone(ZoneOffset.UTC).plusMonths(12L * cuota).toInstant();
+            assertThat(actual().getFechaVencimiento()).isEqualTo(vencimiento);
+            assertThat(procesador.evaluar(aviso).motivo()).isEqualTo("YA_CONFIRMADA");
+            assertThat(actual().getFechaVencimiento()).isEqualTo(vencimiento);
+        }
+        assertThat(cantidadPagos()).isEqualTo(2);
+        assertThat(eventos()).isEqualTo(4);
+    }
     @Test void dosConfirmacionesConcurrentesAcreditanUnaSolaCuota() throws Exception {
         String f=factura(1,"processed","approved",INICIO);var n=nueva(f);var inicio=new CountDownLatch(1);
         try(var h=Executors.newFixedThreadPool(2)){

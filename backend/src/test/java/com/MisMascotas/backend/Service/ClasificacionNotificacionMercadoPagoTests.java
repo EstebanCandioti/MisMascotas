@@ -28,7 +28,7 @@ class ClasificacionNotificacionMercadoPagoTests {
     ProcesadorNotificacionMercadoPagoService procesador;
     final UUID id = UUID.randomUUID();
     @BeforeEach void preparar() {
-        var ciclo = new SuscripcionCicloService(proveedor, new CatalogoPlanesSuscripcion("2500", "ARS", 1, "months", "QA"), suscripciones, transacciones);
+        var ciclo = new SuscripcionCicloService(proveedor, new CatalogoPlanesSuscripcion("2500", "ARS", 1, "months", "QA", "40000", "ARS", 12, "months", "Plan Premium anual MisMascotas"), suscripciones, transacciones);
         procesador = new ProcesadorNotificacionMercadoPagoService(mock(NotificacionMercadoPagoRepository.class), suscripciones,
                 proveedor, ciclo, mock(NotificacionMercadoPagoMarcadoService.class));
         var s = new Suscripcion(); s.setIdSuscripcion(id); s.setUsuario(new Usuario()); s.setTipoPlan("PREMIUM_MENSUAL"); s.setIdSuscripcionMercadopago("s");

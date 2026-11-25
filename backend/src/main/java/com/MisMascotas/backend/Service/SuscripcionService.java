@@ -39,6 +39,10 @@ public class SuscripcionService {
         return primerCobroService.confirmar(usuarioId, idSuscripcion);
     }
 
+    public java.util.List<PlanSuscripcion> listarPlanes() {
+        return catalogoPlanes.listar();
+    }
+
     public SuscripcionPrimerCobroService.VerificacionCobro confirmarPrimerCobroConDetalle(
             UUID usuarioId, UUID idSuscripcion) {
         return primerCobroService.confirmarConDetalle(usuarioId, idSuscripcion);

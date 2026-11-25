@@ -1,5 +1,11 @@
 # Suscripciones con Mercado Pago
 
+Los planes mensual de 4000 ARS y anual de 40000 ARS, la configuración y `GET /suscripciones/planes` se documentan en [Catálogo de planes](catalogo_planes.md).
+
+La consulta autenticada `GET /suscripciones/me` y su contrato para el frontend se documentan en [Consulta de la suscripción propia](consulta_suscripcion_propia.md).
+
+La cancelación desde la aplicación, `POST /suscripciones/{idSuscripcion}/cancelar`, se documenta en [Cancelación de la suscripción propia](cancelacion_suscripcion.md).
+
 Este bloque implementa alta, continuación, reemplazo, primer cobro, renovaciones, cambios de suscripción y vencimiento de cobertura. El procesamiento de webhooks es secuencial. Ver el [contrato actual del procesador](procesador_notificaciones_mercadopago.md) y su [QA](qa_ciclo_suscripciones.md).
 
 ## Confirmación del primer cobro

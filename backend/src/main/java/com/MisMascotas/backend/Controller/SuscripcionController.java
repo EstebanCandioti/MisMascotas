@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.MisMascotas.backend.DTO.IniciarSuscripcionRequestDTO;
+import com.MisMascotas.backend.DTO.SuscripcionPropiaResponseDTO;
+import com.MisMascotas.backend.Service.SuscripcionConsultaService;
 import com.MisMascotas.backend.Exception.ErrorResponse;
 import com.MisMascotas.backend.Service.SuscripcionService;
 import com.MisMascotas.backend.Service.SuscripcionService.ResultadoAltaSuscripcion;
@@ -31,6 +34,26 @@ public class SuscripcionController {
 
     private final SuscripcionService suscripcionService;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
+    private final SuscripcionConsultaService consultaService;
+    private final com.MisMascotas.backend.Service.SuscripcionCancelacionService cancelacionService;
+
+    @GetMapping("/suscripciones/planes")
+    public ResponseEntity<java.util.List<com.MisMascotas.backend.Service.PlanSuscripcion>> listarPlanes() {
+        return ResponseEntity.ok(suscripcionService.listarPlanes());
+    }
+
+    @PostMapping("/suscripciones/{idSuscripcion}/cancelar")
+    public ResponseEntity<com.MisMascotas.backend.DTO.CancelarSuscripcionResponseDTO> cancelar(
+            @PathVariable UUID idSuscripcion, Principal principal) {
+        UUID usuarioId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(cancelacionService.cancelar(usuarioId, idSuscripcion));
+    }
+
+    @GetMapping("/suscripciones/me")
+    public ResponseEntity<SuscripcionPropiaResponseDTO> consultarPropia(Principal principal) {
+        UUID usuarioId = usuarioAutenticadoService.obtenerIdUsuario(principal);
+        return ResponseEntity.ok(consultaService.consultar(usuarioId));
+    }
 
     @PostMapping("/suscripciones/iniciar")
     public ResponseEntity<ResultadoAltaSuscripcion> iniciar(

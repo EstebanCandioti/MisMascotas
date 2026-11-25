@@ -35,13 +35,29 @@ class SuscripcionPrimerCobroServiceTests {
     private ContextoCobro contexto;
     private static final Instant FECHA = Instant.parse("2026-02-01T02:30:00Z");
 
+    @Test void primerCobroAnualSumaDoceMesesCalendarioIncluyendoAnioBisiesto() {
+        var anual = new ContextoCobro(suscripcionId, "PREMIUM_ANUAL", "remoto", true, null);
+        var aprobacion = Instant.parse("2028-02-29T15:00:00Z");
+        when(transacciones.buscar(usuarioId, suscripcionId)).thenReturn(anual);
+        when(proveedor.consultarPreapproval("remoto")).thenReturn(new PreapprovalConsultado(
+                "remoto", suscripcionId.toString(), "authorized", null, new BigDecimal("40000"), "ARS", 12, "months"));
+        when(proveedor.buscarCuotas("remoto")).thenReturn(List.of(new CuotaConsultada("remoto", "999")));
+        var pago = pago("999", "approved", "40000", "ARS", aprobacion);
+        when(proveedor.consultarPago("999")).thenReturn(pago);
+        when(transacciones.confirmar(eq(usuarioId), eq(anual), eq(pago), any())).thenReturn(
+                new ResultadoCobro(suscripcionId, EstadoCobro.ACTIVADA, UUID.randomUUID(), "999",
+                        aprobacion, Instant.parse("2029-02-28T15:00:00Z")));
+        service.confirmar(usuarioId, suscripcionId);
+        verify(transacciones).confirmar(usuarioId, anual, pago, Instant.parse("2029-02-28T15:00:00Z"));
+    }
+
     @BeforeEach
     void preparar() {
         usuarioId = UUID.randomUUID();
         suscripcionId = UUID.randomUUID();
         contexto = new ContextoCobro(suscripcionId, "PREMIUM_MENSUAL", "remoto", true, null);
         service = new SuscripcionPrimerCobroService(transacciones,
-                new CatalogoPlanesSuscripcion("2500.00", "ARS", 1, "months", "Premium QA"), proveedor);
+                new CatalogoPlanesSuscripcion("2500.00", "ARS", 1, "months", "Premium QA", "40000", "ARS", 12, "months", "Plan Premium anual MisMascotas"), proveedor);
         when(transacciones.buscar(usuarioId, suscripcionId)).thenReturn(contexto);
     }
 

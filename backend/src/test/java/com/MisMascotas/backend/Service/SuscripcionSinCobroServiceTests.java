@@ -75,7 +75,7 @@ class SuscripcionSinCobroServiceTests {
         }
         var persistencia = new SuscripcionCobroTransaccionalService(usuarios, suscripciones, pagos, estados, auditoria);
         var verificacion = new SuscripcionPrimerCobroService(persistencia,
-                new CatalogoPlanesSuscripcion("2500", "ARS", 1, "months", "Premium QA"), proveedor);
+                new CatalogoPlanesSuscripcion("2500", "ARS", 1, "months", "Premium QA", "40000", "ARS", 12, "months", "Plan Premium anual MisMascotas"), proveedor);
 
         var resultado = verificacion.confirmar(usuario.getIdUsuario(), pendiente.getIdSuscripcion());
 

@@ -65,9 +65,116 @@ class SuscripcionControllerTests {
     @MockitoBean private MercadoPagoGateway proveedor;
     @MockitoBean private SuscripcionPrimerCobroService primerCobro;
     @MockitoBean private JwtService jwtService;
+    @MockitoBean private com.MisMascotas.backend.Service.SuscripcionConsultaService consulta;
+    @MockitoBean private com.MisMascotas.backend.Service.SuscripcionCancelacionService cancelacion;
 
     private UUID usuarioId;
     private UUID suscripcionId;
+
+    @Test void catalogoAutenticadoDevuelveLosDosPlanesSinConsultarMP() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/suscripciones/planes")
+                        .with(user(EMAIL)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].codigo").value("PREMIUM_MENSUAL"))
+                .andExpect(jsonPath("$[0].importe").value(2500))
+                .andExpect(jsonPath("$[1].codigo").value("PREMIUM_ANUAL"))
+                .andExpect(jsonPath("$[1].importe").value(40000))
+                .andExpect(jsonPath("$[1].frecuencia").value(12))
+                .andExpect(jsonPath("$[1].tipoFrecuencia").value("months"));
+        verifyNoInteractions(proveedor, reservas, primerCobro, usuarios);
+    }
+
+    @Test void catalogoSinSesionDevuelve401() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/suscripciones/planes"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test void catalogoNoAceptaPreautenticacion() throws Exception {
+        when(jwtService.esTokenPreAuth("preauth-planes")).thenReturn(true);
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/suscripciones/planes")
+                        .header("Authorization", "Bearer preauth-planes"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test void iniciaElAnualConImporteYFrecuenciaDelServidor() throws Exception {
+        autenticarUsuario();
+        when(reservas.reservar(usuarioId, "PREMIUM_ANUAL")).thenReturn(
+                new ReservaSuscripcion(suscripcionId, EMAIL, "PREMIUM_ANUAL", null, true));
+        when(proveedor.crearPreapproval(any())).thenReturn(
+                new PreapprovalCreado("anual-qa", "https://checkout.example.test/anual"));
+        mockMvc.perform(post("/suscripciones/iniciar").with(user(EMAIL)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"tipoPlan\":\"PREMIUM_ANUAL\",\"importe\":1,\"frecuencia\":1}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.estado").value("CHECKOUT_DISPONIBLE"));
+        verify(proveedor).crearPreapproval(argThat(s -> s.importe().compareTo(new BigDecimal("40000")) == 0
+                && s.frecuencia() == 12 && "ARS".equals(s.moneda()) && "months".equals(s.tipoFrecuencia())));
+    }
+
+    @Test void cancelacionAutenticadaNoNecesitaBody() throws Exception {
+        autenticarUsuario();
+        when(cancelacion.cancelar(usuarioId, suscripcionId)).thenReturn(
+                new com.MisMascotas.backend.DTO.CancelarSuscripcionResponseDTO(suscripcionId,
+                        com.MisMascotas.backend.DTO.CancelarSuscripcionResponseDTO.Resultado.CANCELADA,
+                        "CANCELADA", Instant.parse("2030-01-01T12:00:00Z"), Instant.parse("2030-02-01T12:00:00Z")));
+        mockMvc.perform(post("/suscripciones/{id}/cancelar", suscripcionId).with(user(EMAIL)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultado").value("CANCELADA"))
+                .andExpect(jsonPath("$.fechaVencimiento").value("2030-02-01T12:00:00Z"));
+        verify(cancelacion).cancelar(usuarioId, suscripcionId);
+    }
+
+    @Test void cancelacionSinSesionNoEjecutaOperacion() throws Exception {
+        mockMvc.perform(post("/suscripciones/{id}/cancelar", suscripcionId)).andExpect(status().isUnauthorized());
+        verifyNoInteractions(cancelacion);
+    }
+
+    @Test void cancelacionConUuidInvalidoDevuelve400() throws Exception {
+        mockMvc.perform(post("/suscripciones/invalido/cancelar").with(user(EMAIL)))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(cancelacion);
+    }
+
+    @Test void cancelacionConPreautenticacionNoEjecutaOperacion() throws Exception {
+        when(jwtService.esTokenPreAuth("preauth-cancelacion")).thenReturn(true);
+        mockMvc.perform(post("/suscripciones/{id}/cancelar", suscripcionId)
+                        .header("Authorization", "Bearer preauth-cancelacion"))
+                .andExpect(status().isUnauthorized());
+        verifyNoInteractions(cancelacion);
+    }
+
+    @Test
+    void consultaPropiaUsaElUsuarioAutenticadoAunqueSeEnvieOtroId() throws Exception {
+        autenticarUsuario();
+        when(consulta.consultar(usuarioId)).thenReturn(new com.MisMascotas.backend.DTO.SuscripcionPropiaResponseDTO(
+                false, false, null, null, null));
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/suscripciones/me")
+                        .with(user(EMAIL)).param("usuarioId", UUID.randomUUID().toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.esPremium").value(false))
+                .andExpect(jsonPath("$.coberturaPagadaVigente").value(false))
+                .andExpect(jsonPath("$.suscripcion").value(nullValue()))
+                .andExpect(jsonPath("$.intentoPendiente").value(nullValue()));
+        verify(consulta).consultar(usuarioId);
+        verifyNoMoreInteractions(consulta);
+        verifyNoInteractions(proveedor, reservas, primerCobro);
+    }
+
+    @Test
+    void consultaSinSesionNoAccedeALosDatos() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/suscripciones/me"))
+                .andExpect(status().isUnauthorized());
+        verifyNoInteractions(consulta);
+    }
+
+    @Test
+    void consultaConPreautenticacionNoAccedeALosDatos() throws Exception {
+        when(jwtService.esTokenPreAuth("preauth-consulta")).thenReturn(true);
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/suscripciones/me")
+                        .header("Authorization", "Bearer preauth-consulta"))
+                .andExpect(status().isUnauthorized());
+        verifyNoInteractions(consulta);
+    }
 
     @BeforeEach
     void preparar() {
