@@ -32,14 +32,16 @@ public class MascotaService {
     private final AccesoMascotaService accesoMascotaService;
     private final EventoClinicoRepository eventoClinicoRepository;
     private final EventoAuditoriaPendienteService eventoAuditoriaPendienteService;
+    private final PremiumService premiumService;
 
     @Auditable(entidad = "mascota", accion = TipoAccionAuditoria.CREATE)
     @Transactional
     public MascotaResponseDTO crear(MascotaRequestDTO request, UUID propietarioId) {
-        Usuario propietario = usuarioRepository.findById(propietarioId)
+        // Serializa las altas del propietario para que dos solicitudes no superen juntas el cupo Free.
+        Usuario propietario = usuarioRepository.findByIdConBloqueo(propietarioId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + propietarioId));
 
-        validarLimiteMascotasPlan(propietario);
+        validarLimiteMascotasPlan(propietarioId);
 
         Mascota mascota = new Mascota();
         mascota.setPropietario(propietario);
@@ -125,12 +127,12 @@ public class MascotaService {
         mascotaRepository.save(mascota);
     }
 
-    private void validarLimiteMascotasPlan(Usuario propietario) {
-        if (propietario.isEsPremium()) {
+    private void validarLimiteMascotasPlan(UUID propietarioId) {
+        if (premiumService.esPremium(propietarioId)) {
             return;
         }
 
-        long mascotasActivas = mascotaRepository.countByPropietario_IdUsuarioAndFechaEliminacionIsNull(propietario.getIdUsuario());
+        long mascotasActivas = mascotaRepository.countByPropietario_IdUsuarioAndFechaEliminacionIsNull(propietarioId);
         if (mascotasActivas >= LIMITE_MASCOTAS_PLAN_GRATUITO) {
             throw new LimiteMascotasAlcanzadoException(
                     "Alcanzaste el limite de 5 mascotas del plan gratuito. Actualiza al plan premium para registrar mas mascotas.");

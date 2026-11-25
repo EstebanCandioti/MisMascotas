@@ -47,7 +47,7 @@ class SuscripcionConsultaPostgresIT {
     @Test void consultaHttpConPostgresAislaUsuariosYConservaCancelacionConCobertura() throws Exception {
         var ahora = Instant.parse("2030-01-31T15:00:00Z");
         when(reloj.instant()).thenReturn(ahora);
-        var propietario = usuario(true);
+        var propietario = usuario(false);
         var ajeno = usuario(false);
         var cancelada = suscripcion(propietario, "CANCELADA", ahora);
         cancelada.setEstadoMercadopago("cancelled");

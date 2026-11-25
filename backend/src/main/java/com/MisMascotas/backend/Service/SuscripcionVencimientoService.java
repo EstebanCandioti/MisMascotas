@@ -25,13 +25,14 @@ public class SuscripcionVencimientoService {
         if (usuario == null) return;
         var ahora = reloj.instant();
         var propias = suscripciones.findAllByUsuario_IdUsuario(usuarioId);
-        boolean cobertura = false;
-        boolean hayPagas = false;
+        var aprobadas = pagos.buscarSuscripcionesConPagoAprobado(usuarioId);
+        var evaluacion = PremiumService.evaluar(usuario, propias, aprobadas, ahora);
+        if (!evaluacion.pagadasSinVencimiento().isEmpty()) {
+            throw new IllegalStateException("Suscripcion paga sin vencimiento; requiere revision");
+        }
         for (var s : propias) {
-            if (!pagos.existePagoAprobado(s.getIdSuscripcion())) continue;
-            hayPagas = true;
-            if (s.getFechaVencimiento() == null) throw new IllegalStateException("Suscripcion paga sin vencimiento; requiere revision");
-            if (s.getFechaVencimiento().isAfter(ahora)) { cobertura = true; continue; }
+            if (!aprobadas.contains(s.getIdSuscripcion())
+                    || evaluacion.conCoberturaVigente().contains(s.getIdSuscripcion())) continue;
             if (s.getEstadoCatalogo() != null && "ACTIVA".equals(s.getEstadoCatalogo().getNombre())) {
                 s.setEstadoCatalogo(estados.findByEntidadAndNombre("SUSCRIPCION", "VENCIDA")
                         .orElseThrow(() -> new EstadoNoConfiguradoException("SUSCRIPCION", "VENCIDA")));
@@ -40,7 +41,8 @@ public class SuscripcionVencimientoService {
                         new Cambio("ACTIVA", "VENCIMIENTO_PROGRAMADO"), new Cambio("VENCIDA", "VENCIMIENTO_PROGRAMADO"));
             }
         }
-        if (hayPagas && usuario.isEsPremium() != cobertura) {
+        boolean cobertura = evaluacion.estado().esPremium();
+        if (usuario.isEsPremium() != cobertura) {
             boolean anterior = usuario.isEsPremium();
             usuario.setEsPremium(cobertura); usuarios.saveAndFlush(usuario);
             auditoria.encolar(null, "usuario", cobertura ? TipoAccionAuditoria.ACTIVATE : TipoAccionAuditoria.DEACTIVATE,

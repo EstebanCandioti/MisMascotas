@@ -2,6 +2,7 @@ package com.MisMascotas.backend.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Clock;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -31,6 +32,7 @@ public class SuscripcionCobroTransaccionalService {
     private final PagoRepository pagoRepository;
     private final EstadoRepository estadoRepository;
     private final EventoAuditoriaPendienteService auditoria;
+    private final Clock reloj;
 
     @Transactional(readOnly = true)
     public ContextoCobro buscar(UUID usuarioId, UUID idSuscripcion) {
@@ -78,8 +80,11 @@ public class SuscripcionCobroTransaccionalService {
         suscripcion.setEstadoCatalogo(activa);
         suscripcion.setFechaVencimiento(vencimiento);
         suscripcion.setProximoRecargo(contexto.proximoRecargo());
-        usuario.setEsPremium(true);
         suscripcionRepository.saveAndFlush(suscripcion);
+        var cobertura = PremiumService.evaluar(usuario,
+                suscripcionRepository.findAllByUsuario_IdUsuario(usuarioId),
+                pagoRepository.buscarSuscripcionesConPagoAprobado(usuarioId), reloj.instant());
+        usuario.setEsPremium(cobertura.estado().esPremium());
         usuarioRepository.saveAndFlush(usuario);
 
         auditoria.encolar(usuarioId, "pago", TipoAccionAuditoria.CREATE, pago.getIdPago(), null,

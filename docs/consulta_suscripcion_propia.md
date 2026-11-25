@@ -19,15 +19,17 @@ No lleva cuerpo ni necesita parámetros de ruta o de consulta. El backend obtien
 ## Procesamiento y decisiones
 
 1. Resolver el usuario autenticado y comprobar que existe.
-2. Leer sus suscripciones y, en una sola consulta adicional, los identificadores de sus suscripciones con al menos un pago `APROBADO`.
-3. Capturar un único instante del reloj. Hay cobertura pagada vigente si existe un pago aprobado y el vencimiento es estrictamente posterior a ese instante. En el instante exacto del vencimiento deja de considerarse vigente.
+2. Solicitar a `PremiumService` una evaluación interna que incluya el estado efectivo, sus suscripciones y los identificadores de suscripciones pagadas y vigentes. Cada repositorio se consulta una sola vez en esa evaluación.
+3. El servicio central captura un único instante del reloj. Hay cobertura pagada vigente si existe un pago aprobado y el vencimiento es estrictamente posterior a ese instante. En el instante exacto del vencimiento deja de considerarse vigente. La raíz y los detalles del JSON reutilizan esa evaluación, sin recalcular vigencias en el servicio de consulta.
 4. Seleccionar como `suscripcion` la que tenga la mayor cobertura vigente. Si ninguna tiene cobertura, seleccionar la más reciente que no esté reemplazada ni pendiente. El criterio de antigüedad es `fechaInicio`, con desempate determinista por UUID.
 5. Seleccionar por separado el `intentoPendiente` más reciente, no reemplazado. Esto permite retomar una reserva sin ocultar una cobertura anterior.
 6. Mapear un DTO explícito dentro de una transacción de lectura. No guardar entidades, registrar auditoría, emitir HTTP a MP ni extender vigencias.
 
 El mandato y la cobertura son independientes: una suscripción `CANCELADA` o remota `paused` puede conservar cobertura pagada. Una fecha futura sin pago aprobado no demuestra cobertura. La cobertura ya pagada tampoco se elimina simplemente por reemplazar un mandato.
 
-`esPremium` reproduce el indicador persistido que ya devuelve `/usuario/me`, para mantener compatibilidad con la autorización actual y cuentas Premium manuales del seed. `coberturaPagadaVigente` y `fechaFinCobertura` describen la evidencia de suscripciones pagadas; no sustituyen ese indicador ni lo corrigen durante el GET. Puede existir una diferencia transitoria antes de que actúe el procesador de vencimientos. El frontend debe refrescar la consulta tras las operaciones de pago y no activar Premium por su cuenta.
+Desde P05 de la [centralización de Premium](premium_centralizado.md), `esPremium`, `coberturaPagadaVigente` y `fechaFinCobertura` provienen de `PremiumService`. Se aplica la misma política que en `/usuario/me` y el límite de mascotas: una cobertura pagada vigente otorga Premium aunque el indicador persistido sea falso; si hay pagos aprobados históricos pero no cobertura vigente, el indicador verdadero no concede beneficios. Solo cuando no hay pagos aprobados se conserva la excepción temporal del Premium manual. El GET no corrige el indicador ni modifica suscripciones o pagos.
+
+Perfil y suscripción coinciden al consultar los mismos datos e instante; una cobertura puede vencer entre dos solicitudes. El frontend debe refrescar la consulta tras las operaciones de pago y no activar Premium por su cuenta.
 
 ## Respuesta
 
@@ -35,7 +37,7 @@ El mandato y la cobertura son independientes: una suscripción `CANCELADA` o rem
 
 | Campo raíz | Tipo | Significado |
 |---|---|---|
-| `esPremium` | boolean | Indicador Premium persistido del usuario. |
+| `esPremium` | boolean | Resultado efectivo de `PremiumService`, incluida la compatibilidad manual acordada. |
 | `coberturaPagadaVigente` | boolean | Existe una cobertura futura respaldada por un pago aprobado. |
 | `fechaFinCobertura` | string ISO 8601 UTC o null | Mayor vencimiento de las coberturas actualmente vigentes. |
 | `suscripcion` | objeto o null | Suscripción seleccionada según las reglas anteriores. |
@@ -114,6 +116,7 @@ Los errores siguen el formato global `codigo`, `mensaje` y `timestamp`. No se in
 - Pruebas unitarias: Free, Premium manual, activa/cancelada, vencimiento exacto, fecha futura sin pago, reserva con/sin ID remoto, reemplazo, coberturas múltiples y pago sin vencimiento.
 - Contrato HTTP: sesión requerida, rechazo del token 2FA y selección por principal aunque se envíe un ID ajeno.
 - `SuscripcionConsultaPostgresIT`: consulta HTTP sobre PostgreSQL real, aislamiento entre dos usuarios, pago aprobado y cancelación con cobertura. Usa exclusivamente el perfil `ci`, con datos transaccionales que se revierten. Se incorpora a la suite de CI.
+- P05 amplía `UsuarioPremiumPostgresIT` para comparar perfil y suscripción después del login y refresh reales, con vencimiento exacto, Premium manual e indicadores desactualizados, comprobando que las consultas no escriben datos. `MascotaPremiumPostgresIT` verifica además que ambas respuestas coinciden con la posibilidad de superar el cupo Free. Estas dos integraciones utilizan `RUN_POSTGRES_PREMIUM_IT=true`.
 
 Para ejecutarla localmente, levantar `ci/compose.yaml` en un proyecto temporal, activar `SPRING_PROFILES_ACTIVE=ci` y `RUN_POSTGRES_CONSULTA_IT=true`, y ejecutar desde `backend`:
 

@@ -29,6 +29,8 @@ class SuscripcionCicloTransaccionalServiceTests {
         when(suscripciones.findByIdSuscripcionAndUsuario_IdUsuario(sid,uid)).thenReturn(Optional.of(s));
         lenient().when(estados.findByEntidadAndNombre(anyString(),anyString())).thenAnswer(i->{var e=estado(i.getArgument(1)); e.setEntidad(i.getArgument(0));return Optional.of(e);});
         lenient().when(pagos.saveAndFlush(any())).thenAnswer(i->{Pago p=i.getArgument(0);if(p.getIdPago()==null)p.setIdPago(UUID.randomUUID());return p;});
+        lenient().when(suscripciones.findAllByUsuario_IdUsuario(uid)).thenReturn(List.of(s));
+        lenient().when(pagos.buscarSuscripcionesConPagoAprobado(uid)).thenReturn(Set.of(sid));
     }
     @Test void primerCobroGuardaFacturaPagoYMesCalendarioConDosEventos() {
         assertThat(registrar("f","p",aprobacion).motivo()).isEqualTo("ACTIVADA");
@@ -101,6 +103,21 @@ class SuscripcionCicloTransaccionalServiceTests {
         var f=factura("f","p");
         assertThat(service.registrar(uid,sid,s.getTipoPlan(),f,pago("p",aprobacion),remoto("cancelled"),1).motivo()).isEqualTo("ACTIVADA");
         assertThat(s.getEstadoCatalogo().getNombre()).isEqualTo("CANCELADA");assertThat(u.isEsPremium()).isTrue();
+    }
+    @Test void cobroHistoricoVencidoNoActivaPremiumAunqueElIndicadorSeaVerdadero() {
+        u.setEsPremium(true);
+        service = new SuscripcionCicloTransaccionalService(usuarios,suscripciones,pagos,estados,auditoria,
+                Clock.fixed(aprobacion.atZone(ZoneOffset.UTC).plusMonths(2).toInstant(), ZoneOffset.UTC));
+        registrar("f", "p", aprobacion);
+        assertThat(u.isEsPremium()).isFalse();
+    }
+    @Test void reautorizarConFechaFuturaSinPagoNoActivaLaSuscripcion() {
+        s.setEstadoCatalogo(estado("CANCELADA")); s.setEstadoMercadopago("cancelled");
+        s.setFechaVencimiento(aprobacion.plusSeconds(3600));
+        service.sincronizar(uid,sid,s.getTipoPlan(),remoto("authorized"));
+        assertThat(s.getEstadoCatalogo().getNombre()).isEqualTo("PENDIENTE");
+        assertThat(u.isEsPremium()).isFalse();
+        verify(pagos, never()).saveAndFlush(any());
     }
     Pago previo(String id) {var p=new Pago();p.setSuscripcion(s);p.setIdTransaccionMercadopago(id);p.setMonto(new BigDecimal("2500"));p.setFechaPago(aprobacion);var e=estado("APROBADO");e.setEntidad("PAGO");p.setEstadoCatalogo(e);return p;}
     ProcesadorNotificacionMercadoPagoService.ResultadoProcesamiento registrar(String f,String p,Instant fecha){return service.registrar(uid,sid,s.getTipoPlan(),factura(f,p),pago(p,fecha),remoto("authorized"),1);}

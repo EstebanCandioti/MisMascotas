@@ -19,15 +19,24 @@ class SuscripcionVencimientoServiceTests {
         when(usuarios.findByIdConBloqueo(uid)).thenReturn(Optional.of(u));
         when(suscripciones.findAllByUsuario_IdUsuario(uid)).thenReturn(List.of(s));
         lenient().when(estados.findByEntidadAndNombre("SUSCRIPCION","VENCIDA")).thenReturn(Optional.of(SuscripcionCicloTransaccionalServiceTests.estado("VENCIDA")));
-        when(pagos.existePagoAprobado(s.getIdSuscripcion())).thenReturn(true);
+        when(pagos.buscarSuscripcionesConPagoAprobado(uid)).thenReturn(Set.of(s.getIdSuscripcion()));
     }
     @Test void venceEnElInstanteExactoYNoDuplicaEventos(){service.vencer(uid);service.vencer(uid);
         assertThat(u.isEsPremium()).isFalse();assertThat(s.getEstadoCatalogo().getNombre()).isEqualTo("VENCIDA");
         verify(auditoria,times(2)).encolar(isNull(),anyString(),any(),any(),any(),any());}
     @Test void antesDeVencerConservaPremium(){s.setFechaVencimiento(ahora.plusSeconds(1));service.vencer(uid);assertThat(u.isEsPremium()).isTrue();verifyNoInteractions(auditoria);}
-    @Test void otraSuscripcionPagaVigenteConservaPremium(){var otra=nueva(ahora.plusSeconds(86400),"CANCELADA");when(suscripciones.findAllByUsuario_IdUsuario(uid)).thenReturn(List.of(s,otra));when(pagos.existePagoAprobado(otra.getIdSuscripcion())).thenReturn(true);service.vencer(uid);assertThat(u.isEsPremium()).isTrue();assertThat(s.getEstadoCatalogo().getNombre()).isEqualTo("VENCIDA");verify(usuarios,never()).saveAndFlush(any());}
+    @Test void otraSuscripcionPagaVigenteConservaPremium(){var otra=nueva(ahora.plusSeconds(86400),"CANCELADA");when(suscripciones.findAllByUsuario_IdUsuario(uid)).thenReturn(List.of(s,otra));when(pagos.buscarSuscripcionesConPagoAprobado(uid)).thenReturn(Set.of(s.getIdSuscripcion(),otra.getIdSuscripcion()));service.vencer(uid);assertThat(u.isEsPremium()).isTrue();assertThat(s.getEstadoCatalogo().getNombre()).isEqualTo("VENCIDA");verify(usuarios,never()).saveAndFlush(any());}
     @Test void canceladaVencidaConservaSuCancelacion(){s.setEstadoCatalogo(SuscripcionCicloTransaccionalServiceTests.estado("CANCELADA"));service.vencer(uid);assertThat(s.getEstadoCatalogo().getNombre()).isEqualTo("CANCELADA");assertThat(u.isEsPremium()).isFalse();}
-    @Test void cuentaSinPagosNoPierdePremiumManual(){when(pagos.existePagoAprobado(s.getIdSuscripcion())).thenReturn(false);service.vencer(uid);assertThat(u.isEsPremium()).isTrue();verifyNoInteractions(auditoria);}
+    @Test void cuentaSinPagosNoPierdePremiumManual(){when(pagos.buscarSuscripcionesConPagoAprobado(uid)).thenReturn(Set.of());service.vencer(uid);assertThat(u.isEsPremium()).isTrue();verifyNoInteractions(auditoria);}
     @Test void pagoSinVencimientoExigeRevisionAntesDeQuitarAcceso(){s.setFechaVencimiento(null);assertThatThrownBy(()->service.vencer(uid)).isInstanceOf(IllegalStateException.class);assertThat(u.isEsPremium()).isTrue();verifyNoInteractions(auditoria);}
+    @Test void inconsistenciaEnOtraSuscripcionSeDetectaAntesDeGuardarCualquierVencimiento() {
+        var inconsistente=nueva(null,"CANCELADA");
+        when(suscripciones.findAllByUsuario_IdUsuario(uid)).thenReturn(List.of(s,inconsistente));
+        when(pagos.buscarSuscripcionesConPagoAprobado(uid)).thenReturn(Set.of(s.getIdSuscripcion(),inconsistente.getIdSuscripcion()));
+        assertThatThrownBy(()->service.vencer(uid)).isInstanceOf(IllegalStateException.class);
+        assertThat(s.getEstadoCatalogo().getNombre()).isEqualTo("ACTIVA");
+        verify(suscripciones,never()).saveAndFlush(any()); verify(usuarios,never()).saveAndFlush(any());
+        verifyNoInteractions(auditoria);
+    }
     Suscripcion nueva(Instant fecha,String estado){var a=new Suscripcion();a.setIdSuscripcion(UUID.randomUUID());a.setUsuario(u);a.setFechaVencimiento(fecha);a.setEstadoCatalogo(SuscripcionCicloTransaccionalServiceTests.estado(estado));return a;}
 }

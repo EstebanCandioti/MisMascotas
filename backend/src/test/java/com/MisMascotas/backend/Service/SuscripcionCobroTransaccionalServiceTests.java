@@ -7,9 +7,12 @@ import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Clock;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +44,8 @@ class SuscripcionCobroTransaccionalServiceTests {
 
     @BeforeEach
     void preparar() {
-        service = new SuscripcionCobroTransaccionalService(usuarios, suscripciones, pagos, estados, auditoria);
+        service = new SuscripcionCobroTransaccionalService(usuarios, suscripciones, pagos, estados, auditoria,
+                Clock.fixed(fecha, ZoneOffset.UTC));
         usuario = new Usuario();
         usuario.setIdUsuario(UUID.randomUUID());
         suscripcion = new Suscripcion();
@@ -125,6 +129,33 @@ class SuscripcionCobroTransaccionalServiceTests {
         assertThatThrownBy(this::confirmar).isInstanceOf(IllegalStateException.class);
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(longs = {0, 1})
+    void primerCobroConfirmadoEnODespuesDelVencimientoNoConcedeUnaExcepcionManual(long segundos) {
+        prepararAlta();
+        usuario.setEsPremium(true);
+        service = new SuscripcionCobroTransaccionalService(usuarios, suscripciones, pagos, estados, auditoria,
+                Clock.fixed(vencimiento.plusSeconds(segundos), ZoneOffset.UTC));
+        assertThat(confirmar().estado()).isEqualTo(EstadoCobro.ACTIVADA);
+        assertThat(usuario.isEsPremium()).isFalse();
+        assertThat(suscripcion.getFechaVencimiento()).isEqualTo(vencimiento);
+        verify(auditoria, times(2)).encolar(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test void otraCoberturaPagaConservaPremiumAlRegistrarUnPrimerCobroHistorico() {
+        prepararAlta();
+        var otra = new Suscripcion(); otra.setUsuario(usuario); otra.setIdSuscripcion(UUID.randomUUID());
+        otra.setEstadoCatalogo(estado("SUSCRIPCION", "CANCELADA"));
+        otra.setFechaVencimiento(vencimiento.plusSeconds(60));
+        when(suscripciones.findAllByUsuario_IdUsuario(usuario.getIdUsuario())).thenReturn(List.of(suscripcion, otra));
+        when(pagos.buscarSuscripcionesConPagoAprobado(usuario.getIdUsuario()))
+                .thenReturn(Set.of(suscripcion.getIdSuscripcion(), otra.getIdSuscripcion()));
+        service = new SuscripcionCobroTransaccionalService(usuarios, suscripciones, pagos, estados, auditoria,
+                Clock.fixed(vencimiento, ZoneOffset.UTC));
+        confirmar();
+        assertThat(usuario.isEsPremium()).isTrue();
+    }
+
     private void assertConciliacion() {
         assertThat(confirmar().estado()).isEqualTo(EstadoCobro.PENDIENTE_CONCILIACION);
         verify(pagos, never()).saveAndFlush(any());
@@ -137,6 +168,8 @@ class SuscripcionCobroTransaccionalServiceTests {
     }
 
     private void prepararAlta() {
+        when(suscripciones.findAllByUsuario_IdUsuario(usuario.getIdUsuario())).thenReturn(List.of(suscripcion));
+        when(pagos.buscarSuscripcionesConPagoAprobado(usuario.getIdUsuario())).thenReturn(Set.of(suscripcion.getIdSuscripcion()));
         when(pagos.findBySuscripcion_IdSuscripcionOrderByFechaPagoAsc(suscripcion.getIdSuscripcion()))
                 .thenAnswer(invocacion -> pagoGuardado == null ? List.of() : List.of(pagoGuardado));
         when(estados.findByEntidadAndNombre("PAGO", "APROBADO"))
