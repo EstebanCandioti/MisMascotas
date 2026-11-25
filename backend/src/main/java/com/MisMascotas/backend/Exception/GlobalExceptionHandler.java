@@ -22,6 +22,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PremiumRequeridoException.class)
+    public ResponseEntity<ErrorResponse> handlePremiumRequerido(PremiumRequeridoException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, "PREMIUM_REQUERIDO", ex.getMessage());
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(RecursoNoEncontradoException.class)

@@ -73,7 +73,8 @@ class SuscripcionSinCobroServiceTests {
             when(proveedor.consultarPago("999"))
                     .thenReturn(new PagoConsultado("999", "rejected", new BigDecimal("2500"), "ARS", null));
         }
-        var persistencia = new SuscripcionCobroTransaccionalService(usuarios, suscripciones, pagos, estados, auditoria);
+        var persistencia = new SuscripcionCobroTransaccionalService(usuarios, suscripciones, pagos, estados, auditoria,
+                java.time.Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), java.time.ZoneOffset.UTC));
         var verificacion = new SuscripcionPrimerCobroService(persistencia,
                 new CatalogoPlanesSuscripcion("2500", "ARS", 1, "months", "Premium QA", "40000", "ARS", 12, "months", "Plan Premium anual MisMascotas"), proveedor);
 

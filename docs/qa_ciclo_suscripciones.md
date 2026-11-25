@@ -140,7 +140,7 @@ usan `Authorization: Bearer {{accessToken}}`. El webhook usa No Auth y firma HMA
 | Caso | Peticion o accion | Resultado que verificar |
 |---|---|---|
 | Alta | POST `{{baseUrl}}/suscripciones/iniciar`, JSON `{"tipoPlan":"PREMIUM_MENSUAL"}` | Checkout o intento existente, sin conceder Premium por iniciar. |
-| Primer pago | Completar el checkout de prueba y esperar el webhook | Un pago aprobado, una activacion, dos eventos y Premium. |
+| Primer pago | Completar el checkout de prueba y esperar el webhook | Un pago aprobado, una activacion y dos eventos; Premium si la cobertura calculada sigue vigente. |
 | Repeticion manual | POST `{{baseUrl}}/suscripciones/{{idSuscripcion}}/confirmar-primer-cobro`, Body none | YA_CONFIRMADA, mismos datos y vencimiento. |
 | Reenvio del webhook | Repetir la misma solicitud firmada e ID de notificacion | 200 y una sola fila. |
 | Actualizacion de una factura | Nueva notificacion firmada con nuevo ID y mismo data.id | Consulta actual, sin duplicar un pago ya registrado. |
@@ -150,6 +150,12 @@ usan `Authorization: Bearer {{accessToken}}`. El webhook usa No Auth y firma HMA
 | Firma invalida | Cambiar x-signature | 401 sin persistir. |
 | Estado desconocido o recurso inexistente del simulador | Notificacion firmada y consulta sin recurso verificable | Revision, sin acreditar. |
 | Perfil | GET `{{baseUrl}}/usuario/me` | esPremium coherente con la cobertura. |
+
+La confirmación de un pago histórico conserva `ACTIVADA` o `YA_CONFIRMADA` para
+describir el registro del cobro; no garantiza que el período siga vigente hoy.
+Después de confirmar, consultar `/usuario/me` y `/suscripciones/me` para mostrar
+el Premium efectivo. Los dos GET y el límite de mascotas reutilizan `PremiumService`.
+La compatibilidad de Premium manual se conserva solo sin pagos aprobados históricos.
 
 Formato del webhook, con data.id igual al parametro de la URL:
 

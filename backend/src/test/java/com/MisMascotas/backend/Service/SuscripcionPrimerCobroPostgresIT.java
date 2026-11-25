@@ -54,7 +54,9 @@ class SuscripcionPrimerCobroPostgresIT {
     @jakarta.annotation.Resource private PagoRepository pagos;
     @jakarta.annotation.Resource private EstadoRepository estados;
     @jakarta.annotation.Resource private JdbcTemplate sql;
+    @jakarta.annotation.Resource private PremiumService premium;
     @MockitoBean private MercadoPagoGateway proveedor;
+    @MockitoBean private java.time.Clock reloj;
     @MockitoSpyBean private EventoAuditoriaPendienteService auditoria;
 
     private final List<UUID> usuariosQA = new ArrayList<>();
@@ -65,6 +67,7 @@ class SuscripcionPrimerCobroPostgresIT {
 
     @BeforeEach
     void preparar() {
+        when(reloj.instant()).thenReturn(FECHA);
         usuario = crearUsuario();
         suscripcion = crearReserva(usuario);
         idPago = UUID.randomUUID().toString();
@@ -112,6 +115,20 @@ class SuscripcionPrimerCobroPostgresIT {
         assertThat(sql.queryForList("SELECT tipo_accion FROM evento_auditoria_pendiente WHERE actor_id = ?",
                 String.class, usuario.getIdUsuario())).containsExactlyInAnyOrder("CREATE", "ACTIVATE");
         verify(proveedor, times(2)).consultarPreapproval(suscripcion.getIdSuscripcionMercadopago());
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(longs = {0, 1})
+    void confirmacionTardiaRegistraElPagoSinConcederPremiumFueraDelPeriodo(long segundos) {
+        var fin = Instant.parse("2026-03-01T02:30:00Z");
+        when(reloj.instant()).thenReturn(fin.plusSeconds(segundos));
+        var resultado = service.confirmarPrimerCobro(usuario.getIdUsuario(), suscripcion.getIdSuscripcion());
+        assertThat(resultado.estado()).isEqualTo(EstadoCobro.ACTIVADA);
+        assertThat(resultado.fechaVencimiento()).isEqualTo(fin);
+        assertThat(pagos.findBySuscripcion_IdSuscripcionOrderByFechaPagoAsc(suscripcion.getIdSuscripcion())).hasSize(1);
+        assertThat(usuarios.findById(usuario.getIdUsuario()).orElseThrow().isEsPremium()).isFalse();
+        assertThat(premium.esPremium(usuario.getIdUsuario())).isFalse();
+        assertThat(cantidadEventos()).isEqualTo(2);
     }
 
     @Test

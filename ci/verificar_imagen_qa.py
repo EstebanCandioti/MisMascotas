@@ -5,6 +5,7 @@ import json
 import subprocess
 import time
 import uuid
+from verificar_premium_qa import verificar_premium
 
 
 def ejecutar(*args, entrada=None):
@@ -69,11 +70,13 @@ def verificar(imagen_db, imagen_backend):
         consulta = (raiz / "backend/src/main/resources/db/qa/huella_esquema.sql").read_text(encoding="utf-8")
         assert sql(consulta) == (raiz / "backend/src/main/resources/db/qa/huella_base_v9.txt").read_text().strip()
 
-        args = ["docker", "run", "-d", "--name", backend, "--network", prefijo, "--label", etiqueta + "=" + token]
+        secreto_ci = "secreto-ficticio-ci-con-mas-de-treinta-y-dos-caracteres"
+        args = ["docker", "run", "-d", "--name", backend, "--network", prefijo, "--label", etiqueta + "=" + token,
+                "--publish", "127.0.0.1::8080"]
         for clave, valor in {
             "DB_URL": "jdbc:postgresql://" + db + ":5432/qa_imagen", "DB_USERNAME": "qa_ci",
             "DB_PASSWORD": "clave-ficticia-exclusiva-ci",
-            "JWT_SECRET": "secreto-ficticio-ci-con-mas-de-treinta-y-dos-caracteres",
+            "JWT_SECRET": secreto_ci,
             "JAVA_TOOL_OPTIONS": "-Duser.timezone=UTC", "MAIL_HOST": "127.0.0.1", "MAIL_PORT": "9",
             "MAIL_SMTP_AUTH": "false", "MAIL_SMTP_STARTTLS_ENABLE": "false", "MAIL_SMTP_STARTTLS_REQUIRED": "false",
             "FLYWAY_ENABLED": "true", "MIGRACIONES_ADOPTAR_BASE_QA": "true",
@@ -97,6 +100,8 @@ def verificar(imagen_db, imagen_backend):
         version_final = sql("SELECT max(version::int) FROM flyway_schema_history WHERE success")
         consulta_catalogo = "SELECT md5(jsonb_agg(to_jsonb(e) ORDER BY id_estado)::text) FROM estados e"
         catalogo_actualizado = sql(consulta_catalogo)
+        puerto = ejecutar("docker", "port", backend, "8080/tcp").rsplit(":", 1)[1]
+        premium = verificar_premium(sql, "http://127.0.0.1:" + puerto, secreto_ci)
 
         # Una actualización/recreación del contenedor debe conservar el volumen y sus cambios.
         id_ = str(uuid.uuid4())
@@ -110,7 +115,7 @@ def verificar(imagen_db, imagen_backend):
         assert sql("SELECT count(*) FROM flyway_schema_history WHERE version='9'") == "1"
         assert sql("SELECT max(version::int) FROM flyway_schema_history WHERE success") == version_final
         print(json.dumps(dict(seed=cantidades, version_base=9, version_final=int(version_final), baseline_sin_reaplicar_sql=True,
-                              backend_http=401, datos_persisten_al_recrear=True)))
+                              backend_http=401, datos_persisten_al_recrear=True, premium=premium)))
     finally:
         for nombre in (backend, db):
             retirar_contenedor(nombre)

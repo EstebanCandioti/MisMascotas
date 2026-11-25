@@ -44,6 +44,7 @@ class SuscripcionCicloPostgresIT {
     @jakarta.annotation.Resource EstadoRepository estados;
     @jakarta.annotation.Resource PagoRepository pagos;
     @jakarta.annotation.Resource SuscripcionVencimientoService vencimientos;
+    @jakarta.annotation.Resource PremiumService premium;
     @jakarta.annotation.Resource SuscripcionReservaService reservas;
     @jakarta.annotation.Resource SuscripcionService manual;
     @jakarta.annotation.Resource JdbcTemplate sql;
@@ -79,6 +80,28 @@ class SuscripcionCicloPostgresIT {
         assertThat(cantidadPagos()).isEqualTo(3);assertThat(eventos()).isEqualTo(6);
         assertThat(actual().getFechaVencimiento()).isEqualTo(Instant.parse("2030-04-28T20:00:00Z"));
         assertThat(usuarios.findById(u.getIdUsuario()).orElseThrow().isEsPremium()).isTrue();
+        assertThat(premium.esPremium(u.getIdUsuario())).isTrue();
+    }
+
+    @Test void webhookTardioRegistraElPeriodoHistoricoSinActivarPremiumHoy() {
+        ahora.set(INICIO.atZone(ZoneOffset.UTC).plusMonths(2).toInstant());
+        assertThat(procesador.evaluar(nueva(factura(1,"processed","approved",INICIO))).motivo()).isEqualTo("ACTIVADA");
+        assertThat(actual().getFechaVencimiento()).isEqualTo(Instant.parse("2030-02-28T20:00:00Z"));
+        assertThat(cantidadPagos()).isEqualTo(1);
+        assertThat(eventos()).isEqualTo(2);
+        assertThat(usuarios.findById(u.getIdUsuario()).orElseThrow().isEsPremium()).isFalse();
+        assertThat(premium.esPremium(u.getIdUsuario())).isFalse();
+    }
+
+    @Test void pagoSinFechaExigeRevisionSinCambiarElIndicadorNiCrearEventos() {
+        procesador.evaluar(nueva(factura(1,"processed","approved",INICIO)));
+        var inconsistente = actual(); inconsistente.setFechaVencimiento(null); suscripciones.saveAndFlush(inconsistente);
+        long antes = eventos();
+        assertThatThrownBy(() -> vencimientos.vencer(u.getIdUsuario())).isInstanceOf(IllegalStateException.class);
+        assertThat(eventos()).isEqualTo(antes);
+        assertThat(usuarios.findById(u.getIdUsuario()).orElseThrow().isEsPremium()).isTrue();
+        assertThat(actual().getFechaVencimiento()).isNull();
+        assertThat(premium.esPremium(u.getIdUsuario())).isFalse();
     }
     @Test void manualAntesDelWebhookVinculaFacturaSinExtenderOtraVez(){
         String f=factura(1,"processed","approved",INICIO);
@@ -181,8 +204,10 @@ class SuscripcionCicloPostgresIT {
         procesador.evaluar(nueva(factura(1,"processed","approved",INICIO)));Instant vence=actual().getFechaVencimiento();ahora.set(vence);
         vencimientos.vencer(u.getIdUsuario());long antes=eventos();vencimientos.vencer(u.getIdUsuario());assertThat(eventos()).isEqualTo(antes);
         assertThat(usuarios.findById(u.getIdUsuario()).orElseThrow().isEsPremium()).isFalse();
+        assertThat(premium.esPremium(u.getIdUsuario())).isFalse();
         procesador.evaluar(nueva(factura(2,"processed","approved",vence.plusSeconds(60))));
         assertThat(usuarios.findById(u.getIdUsuario()).orElseThrow().isEsPremium()).isTrue();
+        assertThat(premium.esPremium(u.getIdUsuario())).isTrue();
     }
     @Test void renovarConcurrenteConVencerTerminaConLaNuevaCobertura() throws Exception {
         procesador.evaluar(nueva(factura(1,"processed","approved",INICIO)));Instant vence=actual().getFechaVencimiento();ahora.set(vence);

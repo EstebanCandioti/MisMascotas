@@ -72,8 +72,11 @@ public class SuscripcionCicloTransaccionalService {
         if ("cancelled".equals(local.getEstadoMercadopago()) || es(local, "CANCELADA")) local.setEstadoCatalogo(estado("SUSCRIPCION", "CANCELADA"));
         else local.setEstadoCatalogo(estado("SUSCRIPCION", "ACTIVA"));
         // No concede una nueva excepcion de vigencia a pagos confirmados meses despues.
-        usuario.setEsPremium(tieneCobertura(usuarioId, reloj.instant(), local));
-        suscripciones.saveAndFlush(local); usuarios.saveAndFlush(usuario);
+        suscripciones.saveAndFlush(local);
+        var cobertura = PremiumService.evaluar(usuario, suscripciones.findAllByUsuario_IdUsuario(usuarioId),
+                pagos.buscarSuscripcionesConPagoAprobado(usuarioId), reloj.instant());
+        usuario.setEsPremium(cobertura.estado().esPremium());
+        usuarios.saveAndFlush(usuario);
         auditoria.encolar(null, "pago", TipoAccionAuditoria.CREATE, pago.getIdPago(), null,
                 new PagoAuditado(pago.getIdPago(), id, factura.id(), verificado.id(), verificado.fechaAprobacion(),
                         verificado.importe(), "WEBHOOK_MERCADO_PAGO"));
@@ -96,9 +99,10 @@ public class SuscripcionCicloTransaccionalService {
         if (cancelada(remoto.estado())) local.setEstadoCatalogo(estado("SUSCRIPCION", "CANCELADA"));
         // Autorizar o reactivar el mandato no acredita un nuevo pago.
         else if ("authorized".equals(remoto.estado()) && es(local, "CANCELADA")) {
-            local.setEstadoCatalogo(estado("SUSCRIPCION", local.getFechaVencimiento() != null
-                    && local.getFechaVencimiento().isAfter(reloj.instant()) ? "ACTIVA" :
-                    pagos.existePagoAprobado(id) ? "VENCIDA" : "PENDIENTE"));
+            boolean pagada = pagos.existePagoAprobado(id);
+            local.setEstadoCatalogo(estado("SUSCRIPCION",
+                    PremiumService.tieneCoberturaVigente(local, pagada, reloj.instant()) ? "ACTIVA" :
+                    pagada ? "VENCIDA" : "PENDIENTE"));
         }
         Snapshot nuevo = snapshot(local);
         if (!anterior.equals(nuevo)) {
@@ -129,12 +133,6 @@ public class SuscripcionCicloTransaccionalService {
         local.setProximoRecargo(remoto.proximoPago());
         if (remoto.ultimaModificacion() != null) local.setActualizadaMercadopagoEn(remoto.ultimaModificacion());
         if (cancelada(remoto.estado()) && local.getFechaCancelacion() == null) local.setFechaCancelacion(reloj.instant());
-    }
-    private boolean tieneCobertura(UUID usuarioId, Instant ahora, Suscripcion actual) {
-        if (actual.getFechaVencimiento() != null && actual.getFechaVencimiento().isAfter(ahora)) return true;
-        return suscripciones.findAllByUsuario_IdUsuario(usuarioId).stream().anyMatch(s ->
-                s.getFechaVencimiento() != null && s.getFechaVencimiento().isAfter(ahora)
-                && pagos.existePagoAprobado(s.getIdSuscripcion()));
     }
     private Usuario bloquear(UUID id) { return usuarios.findByIdConBloqueo(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado")); }

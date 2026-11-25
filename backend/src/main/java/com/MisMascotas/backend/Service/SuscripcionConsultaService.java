@@ -1,7 +1,5 @@
 package com.MisMascotas.backend.Service;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.UUID;
@@ -12,20 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.MisMascotas.backend.DTO.SuscripcionPropiaResponseDTO;
 import com.MisMascotas.backend.DTO.SuscripcionPropiaResponseDTO.Detalle;
 import com.MisMascotas.backend.Entity.Suscripcion;
-import com.MisMascotas.backend.Exception.RecursoNoEncontradoException;
-import com.MisMascotas.backend.Repository.PagoRepository;
-import com.MisMascotas.backend.Repository.SuscripcionRepository;
-import com.MisMascotas.backend.Repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class SuscripcionConsultaService {
-    private final UsuarioRepository usuarios;
-    private final SuscripcionRepository suscripciones;
-    private final PagoRepository pagos;
-    private final Clock reloj;
+    private final PremiumService premiumService;
 
     // Desempate explícito: el resultado no depende del orden de las filas de PostgreSQL.
     private static final Comparator<Suscripcion> MAS_RECIENTE = Comparator
@@ -34,14 +25,14 @@ public class SuscripcionConsultaService {
 
     @Transactional(readOnly = true)
     public SuscripcionPropiaResponseDTO consultar(UUID usuarioId) {
-        var usuario = usuarios.findById(usuarioId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario autenticado no encontrado"));
-        var propias = suscripciones.findAllByUsuario_IdUsuario(usuarioId);
-        Set<UUID> aprobadas = pagos.buscarSuscripcionesConPagoAprobado(usuarioId);
-        Instant ahora = reloj.instant();
+        var consulta = premiumService.consultarSuscripciones(usuarioId);
+        var estado = consulta.estado();
+        var propias = consulta.suscripciones();
+        var aprobadas = consulta.conPagoAprobado();
+        var vigentes = consulta.conCoberturaVigente();
 
         // La cobertura ya pagada no se pierde por cancelación o reemplazo del mandato.
-        var cobertura = propias.stream().filter(s -> vigente(s, aprobadas, ahora))
+        var cobertura = propias.stream().filter(s -> vigentes.contains(s.getIdSuscripcion()))
                 .max(Comparator.comparing(Suscripcion::getFechaVencimiento).thenComparing(MAS_RECIENTE))
                 .orElse(null);
         var principal = cobertura != null ? cobertura : propias.stream()
@@ -50,9 +41,8 @@ public class SuscripcionConsultaService {
         var intento = propias.stream().filter(s -> !s.isReemplazada() && pendiente(s))
                 .max(MAS_RECIENTE).orElse(null);
 
-        return new SuscripcionPropiaResponseDTO(usuario.isEsPremium(), cobertura != null,
-                cobertura != null ? cobertura.getFechaVencimiento() : null,
-                detalle(principal, aprobadas, ahora), detalle(intento, aprobadas, ahora));
+        return new SuscripcionPropiaResponseDTO(estado.esPremium(), estado.coberturaPagadaVigente(),
+                estado.fechaFinCobertura(), detalle(principal, aprobadas, vigentes), detalle(intento, aprobadas, vigentes));
     }
 
     private boolean pendiente(Suscripcion suscripcion) {
@@ -60,13 +50,7 @@ public class SuscripcionConsultaService {
                 && "PENDIENTE".equals(suscripcion.getEstadoCatalogo().getNombre());
     }
 
-    private boolean vigente(Suscripcion suscripcion, Set<UUID> aprobadas, Instant ahora) {
-        return aprobadas.contains(suscripcion.getIdSuscripcion())
-                && suscripcion.getFechaVencimiento() != null
-                && suscripcion.getFechaVencimiento().isAfter(ahora);
-    }
-
-    private Detalle detalle(Suscripcion suscripcion, Set<UUID> aprobadas, Instant ahora) {
+    private Detalle detalle(Suscripcion suscripcion, Set<UUID> aprobadas, Set<UUID> vigentes) {
         if (suscripcion == null) return null;
         boolean pagada = aprobadas.contains(suscripcion.getIdSuscripcion());
         boolean sinIdRemoto = suscripcion.getIdSuscripcionMercadopago() == null
@@ -75,7 +59,7 @@ public class SuscripcionConsultaService {
                 suscripcion.getEstadoCatalogo() != null ? suscripcion.getEstadoCatalogo().getNombre() : null,
                 suscripcion.getEstadoMercadopago(), suscripcion.getFechaInicio(),
                 suscripcion.getFechaVencimiento(), suscripcion.getProximoRecargo(), suscripcion.getFechaCancelacion(),
-                pagada, vigente(suscripcion, aprobadas, ahora),
+                pagada, vigentes.contains(suscripcion.getIdSuscripcion()),
                 (pendiente(suscripcion) && sinIdRemoto) || (pagada && suscripcion.getFechaVencimiento() == null));
     }
 }

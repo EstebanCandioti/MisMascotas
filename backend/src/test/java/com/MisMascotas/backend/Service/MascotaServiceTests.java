@@ -43,6 +43,8 @@ class MascotaServiceTests {
     private EventoClinicoRepository eventoClinicoRepository;
     @Mock
     private EventoAuditoriaPendienteService eventoAuditoriaPendienteService;
+    @Mock
+    private PremiumService premiumService;
 
     private MascotaService mascotaService;
     private UUID mascotaId;
@@ -56,7 +58,8 @@ class MascotaServiceTests {
                 usuarioRepository,
                 accesoMascotaService,
                 eventoClinicoRepository,
-                eventoAuditoriaPendienteService);
+                eventoAuditoriaPendienteService,
+                premiumService);
         mascotaId = UUID.randomUUID();
         usuarioId = UUID.randomUUID();
 
@@ -188,5 +191,74 @@ class MascotaServiceTests {
                 null,
                 pesoActual,
                 "Notas editadas");
+    }
+
+    @Test void freeConCuatroMascotasPuedeRegistrarLaQuinta() {
+        prepararAlta(false);
+        when(mascotaRepository.countByPropietario_IdUsuarioAndFechaEliminacionIsNull(usuarioId)).thenReturn(4L);
+        var respuesta = mascotaService.crear(requestEdicion(null), usuarioId);
+        assertEquals(usuarioId, respuesta.propietarioId());
+        var orden = org.mockito.Mockito.inOrder(usuarioRepository, premiumService, mascotaRepository);
+        orden.verify(usuarioRepository).findByIdConBloqueo(usuarioId);
+        orden.verify(premiumService).esPremium(usuarioId);
+        orden.verify(mascotaRepository).countByPropietario_IdUsuarioAndFechaEliminacionIsNull(usuarioId);
+        orden.verify(mascotaRepository).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test void freeConCincoNoRegistraUnaSexta() {
+        prepararPropietario(false);
+        when(mascotaRepository.countByPropietario_IdUsuarioAndFechaEliminacionIsNull(usuarioId)).thenReturn(5L);
+        assertThrows(com.MisMascotas.backend.Exception.LimiteMascotasAlcanzadoException.class,
+                () -> mascotaService.crear(requestEdicion(null), usuarioId));
+        verify(mascotaRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test void indicadorAntiguoTrueNoPermiteSuperarCincoSiPremiumServiceLoNiega() {
+        prepararPropietario(true);
+        when(mascotaRepository.countByPropietario_IdUsuarioAndFechaEliminacionIsNull(usuarioId)).thenReturn(5L);
+        assertThrows(com.MisMascotas.backend.Exception.LimiteMascotasAlcanzadoException.class,
+                () -> mascotaService.crear(requestEdicion(null), usuarioId));
+        verify(premiumService).esPremium(usuarioId);
+        verify(mascotaRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {false, true})
+    void premiumEfectivoPermiteSuperarCincoIndependientementeDelIndicador(boolean indicador) {
+        prepararAlta(indicador);
+        when(premiumService.esPremium(usuarioId)).thenReturn(true);
+        mascotaService.crear(requestEdicion(null), usuarioId);
+        verify(premiumService).esPremium(usuarioId);
+        verify(mascotaRepository, org.mockito.Mockito.never())
+                .countByPropietario_IdUsuarioAndFechaEliminacionIsNull(org.mockito.ArgumentMatchers.any());
+        verify(mascotaRepository).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test void propietarioInexistenteNoConsultaPremiumNiGuardaMascota() {
+        assertThrows(com.MisMascotas.backend.Exception.RecursoNoEncontradoException.class,
+                () -> mascotaService.crear(requestEdicion(null), usuarioId));
+        verifyNoInteractions(premiumService, mascotaRepository);
+    }
+
+    @Test void falloDeConsultaPremiumNoSeOcultaNiGuardaMascota() {
+        prepararPropietario(false);
+        when(premiumService.esPremium(usuarioId)).thenThrow(new IllegalStateException("Fallo QA"));
+        assertThrows(IllegalStateException.class, () -> mascotaService.crear(requestEdicion(null), usuarioId));
+        verifyNoInteractions(mascotaRepository);
+    }
+
+    private void prepararPropietario(boolean indicador) {
+        var propietario = mascota.getPropietario();
+        propietario.setEsPremium(indicador);
+        when(usuarioRepository.findByIdConBloqueo(usuarioId)).thenReturn(Optional.of(propietario));
+    }
+
+    private void prepararAlta(boolean indicador) {
+        prepararPropietario(indicador);
+        when(mascotaRepository.save(org.mockito.ArgumentMatchers.any())).thenAnswer(i -> {
+            Mascota nueva = i.getArgument(0);
+            nueva.setIdMascota(UUID.randomUUID());
+            return nueva;
+        });
     }
 }

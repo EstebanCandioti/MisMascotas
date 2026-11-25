@@ -21,7 +21,8 @@ por sí sola una entrega nueva para testers.
 - `backend/configuracion/application.properties`: plantilla pública para CI y Docker.
 - `backend/src/test/resources/application-ci.properties`: configuración ficticia para las pruebas.
 - `docker/qa-db/Dockerfile`: PostgreSQL con la base actual B9 y el seed qa-base-v2.
-- `ci/verificar_imagen_qa.py`: validación del seed, arranque del backend y persistencia.
+- `ci/verificar_imagen_qa.py`: validación del seed, arranque del backend, Premium y persistencia.
+- `ci/verificar_premium_qa.py`: nueve escenarios por HTTP del backend empaquetado; usa datos y JWT sintéticos exclusivos del entorno aislado.
 
 ## Configuración en GitHub y Docker Hub
 
@@ -52,7 +53,7 @@ Las únicas credenciales externas son las de publicación en Docker Hub.
 Los cambios relevantes son `backend/`, `DB/`, `ci/` y el propio workflow.
 GitHub muestra **Run workflow** cuando el workflow está disponible en la rama
 predeterminada; hasta entonces una PR dirigida a `backend` permite verificarlo.
-Esta preparación no hace commit, merge ni push de los cambios locales.
+La PR verifica los cambios sin fusionarlos ni publicar imágenes en Docker Hub.
 
 ## Verificación y aislamiento
 
@@ -74,21 +75,30 @@ Se ejecuta:
 
 ```bash
 cd backend
-bash mvnw -B -ntp -DreuseForks=false '-Dtest=*Tests,SuscripcionCicloPostgresIT,MigracionesPostgresIT' verify
+bash mvnw -B -ntp -DreuseForks=false '-Dtest=*Tests,SuscripcionCicloPostgresIT,MigracionesPostgresIT,SuscripcionConsultaPostgresIT,SuscripcionCancelacionPostgresIT,SuscripcionPrimerCobroPostgresIT,MascotaPremiumPostgresIT,UsuarioPremiumPostgresIT' verify
 ```
 
-Esto incluye las clases `*Tests` y la integración real `SuscripcionCicloPostgresIT`
-de primer cobro, renovaciones, vencimiento, rechazos y concurrencia. Incluye también
-las diez pruebas de `MigracionesPostgresIT`, habilitadas mediante
-`RUN_POSTGRES_MIGRACIONES_IT=true`. Las otras
-cinco clases `*PostgresIT` no forman parte de esta selección. No se
-presenta esta ejecución como cobertura de todas las integraciones existentes.
+Esto incluye las clases `*Tests` y las siete integraciones PostgreSQL listadas:
+ciclo, migraciones, consulta, cancelación, primer cobro, límite de mascotas y perfil
+con login/refresh reales. Se habilitan con `RUN_POSTGRES_CICLO_IT`,
+`RUN_POSTGRES_MIGRACIONES_IT`, `RUN_POSTGRES_CONSULTA_IT`,
+`RUN_POSTGRES_PRIMER_COBRO_IT` y `RUN_POSTGRES_PREMIUM_IT`, todos en `true`.
+Se verifican concurrencia e idempotencia de cobros y vencimientos, rollback de
+auditoría y coherencia del Premium efectivo entre perfil, suscripción y cupo.
+Las demás clases `*PostgresIT` no están incluidas en esta selección.
 
 Después se construyen ambas imágenes sin publicarlas y se ejecuta
 `ci/verificar_imagen_qa.py`. Verifica la estructura actual, los datos ficticios,
 el registro de baseline V9 sin ejecutar V1–V9, el arranque del backend y que un
-usuario agregado persista después de recrear el contenedor DB. Usa recursos
-temporales etiquetados y no publica puertos. Si falla, no se habilita la publicación.
+usuario agregado persista después de recrear el contenedor DB. También recorre
+nueve casos Premium: Free, manual, mensual, anual, cancelada, pausada, vencida,
+pago sin fecha y fecha futura sin pago aprobado. Compara los dos GET con el alta
+de una sexta mascota y prueba aislamiento entre cuentas. Son fixtures SQL locales;
+no se envían notificaciones ni cobros a MP. Las sesiones completas se verifican en
+`UsuarioPremiumPostgresIT`; esta comprobación Docker firma JWT con la clave ficticia
+de ese contenedor. Las fixtures se retiran antes de comprobar persistencia.
+Usa recursos temporales etiquetados y un puerto efímero publicado exclusivamente
+en `127.0.0.1`. Si falla, no se habilita la publicación.
 
 Cada clase utiliza su propia JVM para evitar que el logging configurado por las
 pruebas MVC contamine las comprobaciones de privacidad del cliente HTTP. No se
