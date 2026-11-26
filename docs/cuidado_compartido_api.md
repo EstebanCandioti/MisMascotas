@@ -68,15 +68,15 @@ Los endpoints conservan sus campos previos; las respuestas de recordatorios agre
 - Recordatorios: todos los perfiles con acceso consultan cualquier fecha, incluidos inactivos. Todos confirman únicamente durante el día correspondiente de Argentina, sin límite por hora. Familia y propietario gestionan y desmarcan; Cuidador consulta y confirma. Los eliminados quedan fuera de consulta.
 - Álbumes, fotos y badges: ambos perfiles consultan; solo el propietario escribe. Se exige acceso a todas las mascotas activas del álbum, incluso en los listados; no basta conocer el ID de una foto.
 
-`GET /recordatorios/hoy` no recibe cuerpo ni fecha. Devuelve 200 con un arreglo JSON, vacío cuando no hay registros. Reúne mascotas propias y compartidas; ordena por `fechaHoraInicio` y UUID, y permite agrupar por `mascotaId` en el front. Excluye mascotas/recordatorios eliminados y estado INACTIVO; conserva COMPLETADO para mostrar las confirmaciones.
+`GET /recordatorios/hoy` devuelve los únicos y las ocurrencias del día argentino de mascotas propias y compartidas. Ordena por fecha efectiva e ID del recordatorio. Las ocurrencias incluyen `idOcurrencia` y `fechaProgramada`. El [contrato de recordatorios](recordatorios_api.md) describe el selector, los campos y el ciclo de vida.
 
-Cada elemento contiene: `idRecordatorio`, `mascotaId`, `titulo`, `tipo`, `fechaHoraInicio`, `modalidad`, `intervaloValor`, `intervaloUnidad`, `diaSemana`, `fechaFin`, `creadoPorId`, `creadoEn`, `confirmadoPorId`, `confirmadoEn`, `estado`, `situacionTemporal`, `puedeConfirmar`. Los campos opcionales se devuelven como null. Las fechas siguen siendo ISO 8601 UTC.
+Cada elemento conserva los datos del recordatorio, la programación, la autoría y los indicadores temporales. En las ocurrencias se agregan `idOcurrencia` y `fechaProgramada`. Estos dos campos se omiten para los únicos y en el detalle de una serie. Las fechas siguen siendo ISO 8601 UTC.
 
 `estado` conserva el catálogo persistido. `situacionTemporal` se calcula al consultar: `PROXIMO` para fechas futuras sin confirmar, `PENDIENTE` para hoy, `VENCIDO` para fechas pasadas sin confirmar, `COMPLETADO` si ya tiene confirmación o ese estado y `INACTIVO` si está desactivado. `puedeConfirmar` es true solo si está activo, sin confirmar y en su día. Ambos campos también se entregan en los GET generales y respuestas de escritura. El cambio de día no requiere una actualización en base.
 
 `PATCH /recordatorios/{id}/confirmacion` rechaza con 400 `ERROR_NEGOCIO` un pasado, futuro, inactivo o ya confirmado, para cualquier perfil. No sobrescribe autor ni fecha. Cambiar a `COMPLETADO` mediante `/estado?nuevoEstado=COMPLETADO` aplica las mismas validaciones y registra al actor; ese endpoint sigue siendo exclusivo de propietario/Familia. La hora no restringe: antes o después del horario programado, durante ese mismo día, se puede confirmar. La lectura por ID de otras fechas devuelve 200 si el actor tiene acceso.
 
-El día comprende desde las 00:00 de Argentina inclusive hasta las 00:00 siguientes exclusive, calculado con `Clock`. Este endpoint selecciona por `fechaHoraInicio`; no expande recordatorios repetitivos ni crea confirmaciones por ocurrencia. El motor de recurrencias mantiene su backlog propio.
+El día comprende desde las 00:00 de Argentina inclusive hasta las 00:00 siguientes exclusive, calculado con `Clock`. La consulta combina únicos por fecha inicial y ocurrencias persistidas por fecha programada. La confirmación de una serie requiere `?idOcurrencia=<UUID>`.
 
 ## Correo y contrato con frontend C13
 

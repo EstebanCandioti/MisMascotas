@@ -42,14 +42,19 @@ END $$;
 
 -- Lista explícita de las tablas de negocio actuales: sin CASCADE. Una nueva FK
 -- externa bloquea el reset hasta revisar conscientemente su alcance.
-TRUNCATE TABLE
+DO $$
+BEGIN
+    EXECUTE 'TRUNCATE TABLE ' ||
+        CASE WHEN to_regclass('public.ocurrencia_recordatorio') IS NOT NULL
+             THEN 'public.ocurrencia_recordatorio, ' ELSE '' END || '
     public.notificacion_mercado_pago, public.evento_auditoria_pendiente,
     public.refresh_token, public.codigo_verificacion, public.log_auditoria,
     public.foto, public.album_mascota, public.album, public.badge,
     public.adjunto, public.evento_clinico, public.recordatorio,
     public.acceso_compartido, public.invitacion, public.pago,
     public.suscripcion, public.mascota, public.usuario
-RESTART IDENTITY RESTRICT;
+RESTART IDENTITY RESTRICT';
+END $$;
 
 CREATE TEMP TABLE qa_contexto ON COMMIT DROP AS
 SELECT 'qa-base-v2'::text AS version_seed, transaction_timestamp() AS t0,

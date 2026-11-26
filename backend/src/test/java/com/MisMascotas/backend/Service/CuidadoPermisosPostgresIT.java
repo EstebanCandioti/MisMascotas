@@ -23,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.MisMascotas.backend.Entity.*;
 import com.MisMascotas.backend.Repository.*;
+import com.MisMascotas.backend.Repository.RecordatorioRepository.SerieParaRenovar;
 import com.MisMascotas.backend.Integration.MercadoPagoGateway;
 import com.MisMascotas.backend.Security.JwtService;
 import tools.jackson.databind.JsonNode;
@@ -40,6 +41,8 @@ class CuidadoPermisosPostgresIT {
     @Autowired AccesoCompartidoRepository accesos;
     @Autowired AlbumMascotaRepository relaciones;
     @Autowired AlbumRepository albumes;
+    @Autowired RecordatorioRepository recordatorios;
+    @Autowired RecordatorioService servicioRecordatorios;
     @Autowired JdbcTemplate sql;
     @Autowired JwtService jwt;
     @MockitoBean Clock reloj;
@@ -79,6 +82,12 @@ class CuidadoPermisosPostgresIT {
             sql.update("DELETE FROM album WHERE creado_por_id=?", id);
             sql.update("DELETE FROM badge WHERE mascota_id IN (SELECT id_mascota FROM mascota WHERE propietario_id=?)", id);
             sql.update("DELETE FROM evento_clinico WHERE mascota_id IN (SELECT id_mascota FROM mascota WHERE propietario_id=?)", id);
+            sql.update("""
+                    DELETE FROM ocurrencia_recordatorio WHERE recordatorio_id IN (
+                        SELECT r.id_recordatorio FROM recordatorio r
+                        JOIN mascota m ON m.id_mascota=r.mascota_id WHERE m.propietario_id=?
+                    )
+                    """, id);
             sql.update("DELETE FROM recordatorio WHERE mascota_id IN (SELECT id_mascota FROM mascota WHERE propietario_id=?)", id);
             sql.update("DELETE FROM acceso_compartido WHERE propietario_id=? OR invitado_id=?", id, id);
         }
@@ -239,7 +248,11 @@ class CuidadoPermisosPostgresIT {
     }
 
     private int estadoConfirmar(Usuario actor) throws Exception {
-        return mvc.perform(request(HttpMethod.PATCH, "/recordatorios/" + recordatorio + "/confirmacion").with(user(actor.getEmail())))
+        return estadoConfirmar(actor, "/recordatorios/" + recordatorio + "/confirmacion");
+    }
+
+    private int estadoConfirmar(Usuario actor, String ruta) throws Exception {
+        return mvc.perform(request(HttpMethod.PATCH, ruta).with(user(actor.getEmail())))
                 .andReturn().getResponse().getStatus();
     }
 
@@ -288,6 +301,641 @@ class CuidadoPermisosPostgresIT {
         propietario.setActivo(false); usuarios.saveAndFlush(propietario);
         llamar(familia, "GET", "/mascotas/" + mascota.getIdMascota(), null, 403);
         assertThat(ids(llamar(familia, "GET", "/mascotas", null, 200), "idMascota")).containsExactly(propiaFamilia.getIdMascota().toString());
+    }
+
+    @Test void validaYNormalizaProgramacionesPorHttpAntesDeModificarDatos() throws Exception {
+        var base = new HashMap<>(datosRecordatorio(ahora));
+        base.remove("modalidad");
+        assertThat(llamar(propietario, "POST", rutaMascota("recordatorios"), base, 201)
+                .get("modalidad").asText()).isEqualTo("unica");
+
+        var dias = new HashMap<>(base);
+        dias.put("modalidad", "dias_semana");
+        dias.put("diasSemana", "domingo, miércoles, jueves, martes, viernes, sábado, lunes");
+        var serie = llamar(familia, "POST", rutaMascota("recordatorios"), dias, 201);
+        UUID id = UUID.fromString(serie.get("idRecordatorio").asText());
+        assertThat(serie.get("diaSemana").asText())
+                .isEqualTo("LUNES,MARTES,MIERCOLES,JUEVES,VIERNES,SABADO,DOMINGO");
+        var antes = estadoProgramacion(id);
+
+        var recurrente = new HashMap<>(base);
+        recurrente.put("modalidad", "recurrente");
+        recurrente.put("intervaloUnidad", "dias");
+
+        for (var caso : List.of(
+                Map.entry("intervaloValor", Map.of("intervaloValor", 1.5)),
+                Map.entry("intervaloValor", Map.of("intervaloValor", "1")),
+                Map.entry("intervaloValor", Map.of("intervaloValor", 0)),
+                Map.entry("intervaloValor", Map.of("intervaloValor", 2147483648L)),
+                Map.entry("intervaloValor", Map.of()),
+                Map.entry("intervaloUnidad", Map.of("intervaloValor", 1, "intervaloUnidad", "horas")),
+                Map.entry("diasSemana", Map.of("intervaloValor", 1, "diasSemana", "LUNES")),
+                Map.entry("fechaFin", Map.of("intervaloValor", 1, "fechaFin", "2030-01-01T21:00:00Z")),
+                Map.entry("fechaFin", Map.of("intervaloValor", 1, "fechaFin", "2032-01-01T15:00:00Z")))) {
+            var invalido = new HashMap<String, Object>(recurrente);
+            caso.getValue().forEach((clave, valor) -> invalido.put(clave.toString(), valor));
+            var respuesta = llamar(familia, "PUT", "/recordatorios/" + id, invalido, 400);
+            assertThat(respuesta.get("codigo").asText()).isEqualTo("ERROR_VALIDACION");
+            assertThat(respuesta.get("mensaje").asText()).startsWith(caso.getKey() + ":");
+        }
+        assertThat(estadoProgramacion(id)).isEqualTo(antes);
+        assertThat(sql.queryForObject("""
+                SELECT count(*) FROM log_auditoria WHERE entidad_afectada='recordatorio'
+                    AND id_entidad=? AND tipo_accion='UPDATE'
+                """, Integer.class, id)).isZero();
+        llamar(cuidador, "PUT", "/recordatorios/" + id, dias, 403);
+    }
+
+    @Test void buscaSoloTandasSinFinActivasYConUltimaFechaAlcanzada() throws Exception {
+        var datos = new HashMap<>(datosRecordatorio(ahora));
+        datos.put("modalidad", "recurrente");
+        datos.put("intervaloValor", 1);
+        datos.put("intervaloUnidad", "anios");
+
+        var alDia = nuevaSerie(datos);
+        var anterior = nuevaSerie(datos);
+        var futuro = nuevaSerie(datos);
+        var pausa = nuevaSerie(datos);
+        var eliminada = nuevaSerie(datos);
+        var pendienteDePrimeraTanda = nuevaSerie(datos);
+        // Representa una serie previa a V12, que aún no tiene progreso registrado.
+        actualizarUltima(pendienteDePrimeraTanda, null);
+        var conFin = new HashMap<>(datos);
+        conFin.put("fechaFin", ahora.plus(30, java.time.temporal.ChronoUnit.DAYS).toString());
+        var finito = nuevaSerie(conFin);
+
+        LocalDate hoy = LocalDate.of(2030, 1, 1);
+        for (UUID serie : List.of(alDia, pausa, eliminada, finito)) actualizarUltima(serie, hoy);
+        actualizarUltima(anterior, hoy.minusDays(1));
+        actualizarUltima(futuro, hoy.plusDays(1));
+        actualizarUltima(UUID.fromString(recordatorio), hoy);
+        llamar(propietario, "PATCH", "/recordatorios/" + pausa + "/estado?nuevoEstado=INACTIVO", null, 200);
+        llamar(propietario, "DELETE", "/recordatorios/" + eliminada, null, 204);
+
+        assertThat(recordatorios.buscarSeriesParaRenovar(hoy, null, null, 20))
+                .extracting(SerieParaRenovar::getIdRecordatorio).containsExactly(anterior, alDia);
+        var primeraPagina = recordatorios.buscarSeriesParaRenovar(hoy, null, null, 1);
+        assertThat(primeraPagina).extracting(SerieParaRenovar::getIdRecordatorio).containsExactly(anterior);
+        var cursor = primeraPagina.getFirst();
+        assertThat(recordatorios.buscarSeriesParaRenovar(hoy, cursor.getUltimaFechaGenerada(),
+                cursor.getIdRecordatorio(), 1)).extracting(SerieParaRenovar::getIdRecordatorio).containsExactly(alDia);
+        assertThat(recordatorios.findById(pendienteDePrimeraTanda).orElseThrow().getUltimaFechaGenerada()).isNull();
+    }
+
+    @Test void altaConFinGuardaTodasLasFechasYElUnicoNoCreaOcurrencias() throws Exception {
+        var datos = programacionPorIntervalo("2030-01-31T21:00:00Z", 1, "meses");
+        datos.put("fechaFin", "2030-03-31T21:00:00Z");
+        var respuesta = llamar(familia, "POST", rutaMascota("recordatorios"), datos, 201);
+        UUID serie = UUID.fromString(respuesta.get("idRecordatorio").asText());
+
+        assertThat(respuesta.get("creadoPorId").asText()).isEqualTo(familia.getIdUsuario().toString());
+        assertThat(respuesta.get("fechaHoraInicio").asText()).isEqualTo("2030-01-31T21:00:00Z");
+        assertThat(respuesta.get("fechaFin").asText()).isEqualTo("2030-03-31T21:00:00Z");
+        assertThat(fechasDeOcurrencias(serie)).containsExactly(
+                Instant.parse("2030-01-31T21:00:00Z"), Instant.parse("2030-02-28T21:00:00Z"),
+                Instant.parse("2030-03-31T21:00:00Z"));
+        assertThat(recordatorios.findById(serie).orElseThrow().getUltimaFechaGenerada()).isNull();
+        assertThat(fechasDeOcurrencias(UUID.fromString(recordatorio))).isEmpty();
+        assertThat(sql.queryForObject("""
+                SELECT count(*) FROM log_auditoria WHERE id_entidad=? AND entidad_afectada='recordatorio'
+                  AND tipo_accion='CREATE' AND actor_id=?
+                """, Integer.class, serie, familia.getIdUsuario())).isEqualTo(1);
+    }
+
+    @Test void altaSinFinGuardaDoceOcurrenciasYMarcaElUltimoDiaArgentino() throws Exception {
+        UUID serie = nuevaSerie(programacionPorIntervalo("2030-01-02T02:30:00Z", 2, "dias"));
+        var fechas = fechasDeOcurrencias(serie);
+        assertThat(fechas).containsExactlyElementsOf(java.util.stream.IntStream.range(0, 12)
+                .mapToObj(i -> Instant.parse("2030-01-02T02:30:00Z").plus(Duration.ofDays(2L * i))).toList());
+        assertThat(fechas.getLast()).isEqualTo(Instant.parse("2030-01-24T02:30:00Z"));
+        assertThat(recordatorios.findById(serie).orElseThrow().getUltimaFechaGenerada())
+                .isEqualTo(LocalDate.of(2030, 1, 23));
+        assertThat(sql.queryForObject("""
+                SELECT count(*) FROM ocurrencia_recordatorio WHERE recordatorio_id=?
+                  AND confirmado_por_id IS NULL AND confirmado_en IS NULL
+                """, Integer.class, serie)).isEqualTo(12);
+    }
+
+    @Test void altaPorDiasDeSemanaEmpiezaEnElPrimerDiaElegido() throws Exception {
+        var datos = new HashMap<>(datosRecordatorio(Instant.parse("2030-01-01T21:00:00Z")));
+        datos.put("modalidad", "dias_semana");
+        datos.put("diasSemana", "lunes, miércoles");
+        datos.put("fechaFin", "2030-01-09T21:00:00Z");
+        assertThat(fechasDeOcurrencias(nuevaSerie(datos))).containsExactly(
+                Instant.parse("2030-01-02T21:00:00Z"), Instant.parse("2030-01-07T21:00:00Z"),
+                Instant.parse("2030-01-09T21:00:00Z"));
+    }
+
+    @Test void altaAceptaElLimiteYRechazaExcesoIntervaloInvalidoOAccesoSinEscrituras() throws Exception {
+        var datos = programacionPorIntervalo("2030-01-01T21:00:00Z", 1, "dias");
+        datos.put("fechaFin", "2031-01-01T21:00:00Z");
+        assertThat(fechasDeOcurrencias(nuevaSerie(datos))).hasSize(366);
+        var antes = estadoAltas();
+
+        datos.put("fechaFin", "2031-01-02T21:00:00Z");
+        var exceso = llamar(propietario, "POST", rutaMascota("recordatorios"), datos, 400);
+        assertThat(exceso.get("codigo").asText()).isEqualTo("ERROR_VALIDACION");
+        assertThat(exceso.get("mensaje").asText()).startsWith("fechaFin:");
+
+        datos.put("intervaloValor", 0);
+        var intervalo = llamar(propietario, "POST", rutaMascota("recordatorios"), datos, 400);
+        assertThat(intervalo.get("mensaje").asText()).startsWith("intervaloValor:");
+
+        datos.put("fechaFin", "2030-01-10T21:00:00Z");
+        datos.put("intervaloValor", 1);
+        llamar(cuidador, "POST", rutaMascota("recordatorios"), datos, 403);
+        assertThat(estadoAltas()).isEqualTo(antes);
+    }
+
+    @Test void fallaDeInsercionRevierteLaSerieLasOcurrenciasYLaAuditoria() throws Exception {
+        var datos = programacionPorIntervalo("2040-12-01T21:00:00Z", 1, "dias");
+        var antes = estadoAltas();
+        sql.execute("""
+                ALTER TABLE ocurrencia_recordatorio ADD CONSTRAINT prueba_falla_alta_serie
+                  CHECK (fecha_programada <> TIMESTAMPTZ '2040-12-03T21:00:00Z') NOT VALID
+                """);
+        try {
+            llamar(propietario, "POST", rutaMascota("recordatorios"), datos, 500);
+            assertThat(estadoAltas()).isEqualTo(antes);
+        } finally {
+            sql.execute("ALTER TABLE ocurrencia_recordatorio DROP CONSTRAINT prueba_falla_alta_serie");
+        }
+        assertThat(fechasDeOcurrencias(nuevaSerie(datos))).hasSize(12);
+    }
+
+    @Test void renuevaElUltimoDiaSinConfirmarYElReintentoNoDuplica() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo("2029-12-21T21:00:00Z", 1, "dias"));
+        var datosConFin = programacionPorIntervalo("2029-12-31T21:00:00Z", 1, "dias");
+        datosConFin.put("fechaFin", "2030-01-01T21:00:00Z");
+        var finita = nuevaSerie(datosConFin);
+        var inactiva = nuevaSerie(programacionPorIntervalo("2029-12-21T21:00:00Z", 1, "dias"));
+        llamar(propietario, "PATCH", "/recordatorios/" + inactiva + "/estado?nuevoEstado=INACTIVO", null, 200);
+        var job = new RenovadorTandasRecordatorioProgramado(recordatorios, servicioRecordatorios, reloj);
+        var iniciales = fechasDeOcurrencias(serie);
+        assertThat(iniciales).hasSize(12).endsWith(Instant.parse("2030-01-01T21:00:00Z"));
+
+        when(reloj.instant()).thenReturn(Instant.parse("2030-01-01T02:59:59Z"));
+        job.ejecutar();
+        assertThat(fechasDeOcurrencias(serie)).isEqualTo(iniciales);
+
+        when(reloj.instant()).thenReturn(Instant.parse("2030-01-01T03:00:00Z"));
+        job.ejecutar();
+        var renovadas = fechasDeOcurrencias(serie);
+        assertThat(renovadas).hasSize(24).startsWith(iniciales.toArray(Instant[]::new))
+                .endsWith(Instant.parse("2030-01-13T21:00:00Z"));
+        assertThat(renovadas.get(12)).isEqualTo(Instant.parse("2030-01-02T21:00:00Z"));
+        assertThat(ultimaFechaDe(serie)).isEqualTo(LocalDate.of(2030, 1, 13));
+        job.ejecutar();
+        assertThat(fechasDeOcurrencias(serie)).isEqualTo(renovadas);
+        assertThat(fechasDeOcurrencias(finita)).hasSize(2);
+        assertThat(fechasDeOcurrencias(inactiva)).hasSize(11).endsWith(Instant.parse("2029-12-31T21:00:00Z"));
+    }
+
+    @Test void recuperaDesdeHoySinCompletarDiasPasadosNiCambiarLaFrecuencia() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo("2029-12-02T21:00:00Z", 2, "dias"));
+        var iniciales = fechasDeOcurrencias(serie);
+        assertThat(iniciales).hasSize(12).endsWith(Instant.parse("2029-12-24T21:00:00Z"));
+        new RenovadorTandasRecordatorioProgramado(recordatorios, servicioRecordatorios, reloj).ejecutar();
+        var renovadas = fechasDeOcurrencias(serie);
+        assertThat(renovadas).hasSize(24).startsWith(iniciales.toArray(Instant[]::new));
+        assertThat(renovadas.subList(12, 15)).containsExactly(Instant.parse("2030-01-01T21:00:00Z"),
+                Instant.parse("2030-01-03T21:00:00Z"), Instant.parse("2030-01-05T21:00:00Z"));
+        assertThat(ultimaFechaDe(serie)).isEqualTo(LocalDate.of(2030, 1, 23));
+    }
+
+    @Test void renovarEnParaleloAgregaUnaSolaTanda() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo("2029-12-21T21:00:00Z", 1, "dias"));
+        try (var hilos = Executors.newFixedThreadPool(2)) {
+            var preparados = new CountDownLatch(2);
+            var salida = new CountDownLatch(1);
+            Callable<Void> renovar = () -> {
+                preparados.countDown();
+                assertThat(salida.await(5, TimeUnit.SECONDS)).isTrue();
+                servicioRecordatorios.renovarTanda(serie, LocalDate.of(2030, 1, 1));
+                return null;
+            };
+            var primera = hilos.submit(renovar);
+            var segunda = hilos.submit(renovar);
+            assertThat(preparados.await(5, TimeUnit.SECONDS)).isTrue();
+            salida.countDown();
+            primera.get(15, TimeUnit.SECONDS);
+            segunda.get(15, TimeUnit.SECONDS);
+        }
+        assertThat(fechasDeOcurrencias(serie)).hasSize(24).doesNotHaveDuplicates();
+        assertThat(ultimaFechaDe(serie)).isEqualTo(LocalDate.of(2030, 1, 13));
+    }
+
+    @Test void elFalloDeUnaTandaNoAvanzaSuProgresoNiImpideProcesarOtra() throws Exception {
+        var falla = nuevaSerie(programacionPorIntervalo("2029-12-21T20:00:00Z", 1, "dias"));
+        var correcta = nuevaSerie(programacionPorIntervalo("2029-12-21T21:00:00Z", 1, "dias"));
+        sql.execute("""
+                ALTER TABLE ocurrencia_recordatorio ADD CONSTRAINT prueba_falla_renovacion
+                CHECK (fecha_programada <> TIMESTAMPTZ '2030-01-04T20:00:00Z') NOT VALID
+                """);
+        var job = new RenovadorTandasRecordatorioProgramado(recordatorios, servicioRecordatorios, reloj);
+        try {
+            job.ejecutar();
+            assertThat(fechasDeOcurrencias(falla)).hasSize(12);
+            assertThat(ultimaFechaDe(falla)).isEqualTo(LocalDate.of(2030, 1, 1));
+            assertThat(fechasDeOcurrencias(correcta)).hasSize(24);
+        } finally {
+            sql.execute("ALTER TABLE ocurrencia_recordatorio DROP CONSTRAINT prueba_falla_renovacion");
+        }
+        job.ejecutar();
+        assertThat(fechasDeOcurrencias(falla)).hasSize(24);
+        assertThat(fechasDeOcurrencias(correcta)).hasSize(24);
+    }
+
+    @Test void hoyMezclaConUnicosUsaFechaArgentinaYRespetaRevocacion() throws Exception {
+        var datos = programacionPorIntervalo("2029-12-31T03:00:00Z", 1, "dias");
+        var serie = nuevaSerie(datos);
+        var inactiva = nuevaSerie(datos);
+        var eliminada = nuevaSerie(datos);
+        llamar(propietario, "PATCH", "/recordatorios/" + inactiva + "/estado?nuevoEstado=INACTIVO", null, 200);
+        llamar(propietario, "DELETE", "/recordatorios/" + eliminada, null, 204);
+        llamar(ajeno, "POST", "/mascotas/" + otra.getIdMascota() + "/recordatorios", datos, 201);
+        var antes = estadoAltas();
+        var token = jwt.generarToken(cuidador);
+        var lista = llamarConToken(token, "GET", "/recordatorios/hoy", null, 200);
+        assertThat(ids(lista, "idRecordatorio")).containsExactly(serie.toString(), recordatorio);
+        assertThat(lista.get(0).get("idOcurrencia").asText()).isEqualTo(idOcurrencia(serie, "2030-01-01T03:00:00Z").toString());
+        assertThat(lista.get(0).get("fechaProgramada").asText()).isEqualTo("2030-01-01T03:00:00Z");
+        assertThat(lista.get(0).get("fechaHoraInicio").asText()).isEqualTo("2029-12-31T03:00:00Z");
+        assertThat(lista.get(0).get("situacionTemporal").asText()).isEqualTo("PENDIENTE");
+        assertThat(lista.get(0).get("puedeConfirmar").asBoolean()).isTrue();
+        assertThat(lista.get(1).has("idOcurrencia")).isFalse();
+        assertThat(llamarConToken(token, "GET", "/recordatorios/hoy", null, 200)).isEqualTo(lista);
+        assertThat(estadoAltas()).isEqualTo(antes);
+        var acceso = accesos.findByPropietario_IdUsuarioAndInvitado_IdUsuarioAndActivoTrue(
+                propietario.getIdUsuario(), cuidador.getIdUsuario()).orElseThrow();
+        llamar(propietario, "DELETE", "/cuidado-compartido/accesos/" + acceso.getIdAcceso(), null, 200);
+        assertThat(llamarConToken(token, "GET", "/recordatorios/hoy", null, 200).size()).isZero();
+        llamarConToken(token, "PATCH", "/recordatorios/" + serie + "/confirmacion?idOcurrencia="
+                + lista.get(0).get("idOcurrencia").asText(), null, 403);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"Propietario", "Familia", "Cuidador"})
+    void confirmaSoloLaOcurrenciaDeHoyAunqueTodaviaNoSeaLaHora(String perfil) throws Exception {
+        var actor = actor(perfil);
+        var serie = nuevaSerie(programacionPorIntervalo("2030-01-01T02:59:59Z", 1, "dias"));
+        var anterior = idOcurrencia(serie, "2030-01-01T02:59:59Z");
+        var actual = idOcurrencia(serie, "2030-01-02T02:59:59Z");
+        var futura = idOcurrencia(serie, "2030-01-03T02:59:59Z");
+        var ruta = "/recordatorios/" + serie + "/confirmacion?idOcurrencia=";
+        llamar(actor, "PATCH", ruta + anterior, null, 400);
+        llamar(actor, "PATCH", ruta + futura, null, 400);
+        var confirmada = llamar(actor, "PATCH", ruta + actual, null, 200);
+        assertThat(confirmada.get("idOcurrencia").asText()).isEqualTo(actual.toString());
+        assertThat(confirmada.get("confirmadoPorId").asText()).isEqualTo(actor.getIdUsuario().toString());
+        assertThat(confirmada.get("confirmadoEn").asText()).isEqualTo(ahora.toString());
+        assertThat(confirmada.get("estado").asText()).isEqualTo("ACTIVO");
+        assertThat(confirmada.get("situacionTemporal").asText()).isEqualTo("COMPLETADO");
+        assertThat(confirmada.get("puedeConfirmar").asBoolean()).isFalse();
+        llamar(actor, "PATCH", ruta + actual, null, 400);
+        var padre = llamar(propietario, "GET", "/recordatorios/" + serie, null, 200);
+        assertThat(padre.get("confirmadoEn").isNull()).isTrue();
+        assertThat(padre.get("puedeConfirmar").asBoolean()).isFalse();
+        var lista = llamar(actor, "GET", "/recordatorios/hoy", null, 200);
+        assertThat(lista.get(1).get("idOcurrencia").asText()).isEqualTo(actual.toString());
+        assertThat(lista.get(1).get("situacionTemporal").asText()).isEqualTo("COMPLETADO");
+        assertThat(confirmadasDe(serie)).containsExactly(actual);
+    }
+
+    @Test void selectorYEstadoNoModificanLaSerieCompletaYDesmarcarRespetaPermisos() throws Exception {
+        var datos = programacionPorIntervalo(ahora.toString(), 1, "dias");
+        var serie = nuevaSerie(datos);
+        var otraSerie = nuevaSerie(datos);
+        var actual = idOcurrencia(serie, ahora.toString());
+        var ajena = idOcurrencia(otraSerie, ahora.toString());
+        var base = "/recordatorios/" + serie;
+        var ruta = base + "/confirmacion?idOcurrencia=";
+        for (var metodo : List.of("PATCH", "DELETE")) {
+            llamar(familia, metodo, base + "/confirmacion", null, 400);
+            llamar(familia, metodo, ruta + ajena, null, 404);
+            llamar(familia, metodo, ruta + UUID.randomUUID(), null, 404);
+        }
+        llamar(familia, "PATCH", "/recordatorios/" + recordatorio + "/confirmacion?idOcurrencia=" + actual, null, 400);
+        llamar(familia, "PATCH", base + "/estado?nuevoEstado=INACTIVO&idOcurrencia=" + actual, null, 400);
+        llamar(familia, "PATCH", base + "/estado?nuevoEstado=INACTIVO", null, 200);
+        llamar(cuidador, "PATCH", ruta + actual, null, 404);
+        llamar(familia, "PATCH", base + "/estado?nuevoEstado=ACTIVO", null, 200);
+        var reactivada = idOcurrencia(serie, ahora.toString());
+        assertThat(reactivada).isNotEqualTo(actual);
+        llamar(familia, "PATCH", base + "/estado?nuevoEstado=COMPLETADO", null, 400);
+        llamar(ajeno, "PATCH", ruta + reactivada, null, 403);
+        assertThat(confirmadasDe(serie)).isEmpty();
+        assertThat(confirmadasDe(otraSerie)).isEmpty();
+        var confirmada = llamar(familia, "PATCH", base + "/estado?nuevoEstado=COMPLETADO&idOcurrencia=" + reactivada,
+                null, 200);
+        assertThat(confirmada.get("estado").asText()).isEqualTo("ACTIVO");
+        assertThat(confirmada.get("idOcurrencia").asText()).isEqualTo(reactivada.toString());
+        llamar(cuidador, "DELETE", ruta + reactivada, null, 403);
+        assertThat(confirmadasDe(serie)).containsExactly(reactivada);
+        var pendiente = llamar(propietario, "DELETE", ruta + reactivada, null, 200);
+        assertThat(pendiente.get("situacionTemporal").asText()).isEqualTo("PENDIENTE");
+        assertThat(pendiente.get("confirmadoPorId").isNull()).isTrue();
+        assertThat(pendiente.get("confirmadoEn").isNull()).isTrue();
+        assertThat(confirmadasDe(serie)).isEmpty();
+        llamar(cuidador, "PATCH", ruta + reactivada, null, 200);
+        llamar(familia, "DELETE", ruta + reactivada, null, 200);
+        assertThat(confirmadasDe(serie)).isEmpty();
+    }
+
+    @Test void confirmarLaMismaOcurrenciaEnParaleloConservaAlPrimerAutor() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo(ahora.toString(), 1, "dias"));
+        var ocurrencia = idOcurrencia(serie, ahora.toString());
+        var ruta = "/recordatorios/" + serie + "/confirmacion?idOcurrencia=" + ocurrencia;
+        try (var hilos = Executors.newFixedThreadPool(2)) {
+            var preparados = new CountDownLatch(2);
+            var salida = new CountDownLatch(1);
+            var familiaRespuesta = hilos.submit(() -> {
+                preparados.countDown();
+                assertThat(salida.await(5, TimeUnit.SECONDS)).isTrue();
+                return estadoConfirmar(familia, ruta);
+            });
+            var cuidadorRespuesta = hilos.submit(() -> {
+                preparados.countDown();
+                assertThat(salida.await(5, TimeUnit.SECONDS)).isTrue();
+                return estadoConfirmar(cuidador, ruta);
+            });
+            assertThat(preparados.await(5, TimeUnit.SECONDS)).isTrue();
+            salida.countDown();
+            var resultadoFamilia = familiaRespuesta.get(15, TimeUnit.SECONDS);
+            var resultadoCuidador = cuidadorRespuesta.get(15, TimeUnit.SECONDS);
+            assertThat(List.of(resultadoFamilia, resultadoCuidador)).containsExactlyInAnyOrder(200, 400);
+            var autor = resultadoFamilia == 200 ? familia : cuidador;
+            assertThat(sql.queryForObject("SELECT confirmado_por_id FROM ocurrencia_recordatorio WHERE id_ocurrencia=?",
+                    UUID.class, ocurrencia)).isEqualTo(autor.getIdUsuario());
+        }
+        assertThat(confirmadasDe(serie)).containsExactly(ocurrencia);
+    }
+
+    @Test void editarReprogramaSoloFuturasYConservaLaPendienteDeHoyYLaAutoriaPasada() throws Exception {
+        var original = programacionPorIntervalo("2029-12-31T21:00:00Z", 1, "dias");
+        var serie = nuevaSerie(original);
+        var anterior = idOcurrencia(serie, "2029-12-31T21:00:00Z");
+        var hoy = idOcurrencia(serie, "2030-01-01T21:00:00Z");
+        var futura = idOcurrencia(serie, "2030-01-02T21:00:00Z");
+        when(reloj.instant()).thenReturn(Instant.parse("2029-12-31T23:00:00Z"));
+        llamar(cuidador, "PATCH", rutaOcurrencia(serie, anterior), null, 200);
+        when(reloj.instant()).thenReturn(ahora);
+        var base = "/recordatorios/" + serie;
+        var edicion = programacionPorIntervalo("2029-12-31T20:00:00Z", 2, "dias");
+        llamar(cuidador, "PUT", base, edicion, 403);
+        llamar(familia, "PUT", base, edicion, 200);
+
+        assertThat(fechasDeOcurrencias(serie)).hasSize(14)
+                .startsWith(Instant.parse("2029-12-31T21:00:00Z"), Instant.parse("2030-01-01T21:00:00Z"),
+                        Instant.parse("2030-01-02T20:00:00Z"), Instant.parse("2030-01-04T20:00:00Z"))
+                .endsWith(Instant.parse("2030-01-24T20:00:00Z"));
+        assertThat(idOcurrencia(serie, "2030-01-01T21:00:00Z")).isEqualTo(hoy);
+        assertThat(autorDe(anterior)).isEqualTo(cuidador.getIdUsuario());
+        assertThat(confirmadasDe(serie)).containsExactly(anterior);
+        llamar(familia, "PATCH", rutaOcurrencia(serie, futura), null, 404);
+        assertThat(ultimaFechaDe(serie)).isEqualTo(LocalDate.of(2030, 1, 24));
+
+        var siguiente = idOcurrencia(serie, "2030-01-02T20:00:00Z");
+        edicion.put("titulo", "Solo cambia el título");
+        llamar(propietario, "PUT", base, edicion, 200);
+        assertThat(idOcurrencia(serie, "2030-01-02T20:00:00Z")).isEqualTo(siguiente);
+        cuandoLasTandasVencen("2030-01-24T03:00:00Z");
+        assertThat(fechasDeOcurrencias(serie)).hasSize(26)
+                .contains(Instant.parse("2030-01-26T20:00:00Z"))
+                .doesNotContain(Instant.parse("2030-01-25T21:00:00Z"));
+    }
+
+    @Test void pausarYReactivarDescartaPendientesDeLaPausaYMantieneElIntervaloOriginal() throws Exception {
+        var datos = programacionPorIntervalo("2029-12-30T21:00:00Z", 2, "dias");
+        var serie = nuevaSerie(datos);
+        var anterior = idOcurrencia(serie, "2029-12-30T21:00:00Z");
+        var delDia = idOcurrencia(serie, "2030-01-01T21:00:00Z");
+        var deLaPausa = idOcurrencia(serie, "2030-01-03T21:00:00Z");
+        when(reloj.instant()).thenReturn(Instant.parse("2029-12-30T23:00:00Z"));
+        llamar(familia, "PATCH", rutaOcurrencia(serie, anterior), null, 200);
+        when(reloj.instant()).thenReturn(ahora);
+        var estado = "/recordatorios/" + serie + "/estado?nuevoEstado=";
+
+        llamar(cuidador, "PATCH", estado + "INACTIVO", null, 403);
+        llamar(familia, "PATCH", estado + "INACTIVO", null, 200);
+        assertThat(fechasDeOcurrencias(serie)).containsExactly(Instant.parse("2029-12-30T21:00:00Z"));
+        assertThat(ultimaFechaDe(serie)).isNull();
+        assertThat(ids(llamar(cuidador, "GET", "/recordatorios/hoy", null, 200), "idRecordatorio"))
+                .doesNotContain(serie.toString());
+        llamar(cuidador, "PATCH", rutaOcurrencia(serie, delDia), null, 404);
+        cuandoLasTandasVencen("2030-01-04T03:00:00Z");
+        assertThat(fechasDeOcurrencias(serie)).hasSize(1);
+
+        llamar(familia, "PATCH", estado + "ACTIVO", null, 200);
+        var reactivadas = fechasDeOcurrencias(serie);
+        assertThat(reactivadas).hasSize(13)
+                .startsWith(Instant.parse("2029-12-30T21:00:00Z"), Instant.parse("2030-01-05T21:00:00Z"),
+                        Instant.parse("2030-01-07T21:00:00Z"))
+                .endsWith(Instant.parse("2030-01-27T21:00:00Z"));
+        assertThat(ultimaFechaDe(serie)).isEqualTo(LocalDate.of(2030, 1, 27));
+        assertThat(confirmadasDe(serie)).containsExactly(anterior);
+        llamar(cuidador, "PATCH", rutaOcurrencia(serie, deLaPausa), null, 404);
+        llamar(familia, "PATCH", estado + "ACTIVO", null, 200);
+        assertThat(fechasDeOcurrencias(serie)).isEqualTo(reactivadas);
+    }
+
+    @Test void pausarYEditarUnaSerieConHoyConfirmadoNoCreaOtraOcurrenciaParaElMismoDia() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo("2029-12-31T21:00:00Z", 1, "dias"));
+        var actual = idOcurrencia(serie, "2030-01-01T21:00:00Z");
+        llamar(cuidador, "PATCH", rutaOcurrencia(serie, actual), null, 200);
+        var ruta = "/recordatorios/" + serie;
+        llamar(propietario, "PATCH", ruta + "/estado?nuevoEstado=INACTIVO", null, 200);
+        llamar(propietario, "PUT", ruta, programacionPorIntervalo("2029-12-31T20:00:00Z", 1, "dias"), 200);
+        assertThat(fechasDeOcurrencias(serie)).hasSize(2);
+        assertThat(ultimaFechaDe(serie)).isNull();
+        llamar(propietario, "PATCH", ruta + "/estado?nuevoEstado=ACTIVO", null, 200);
+        assertThat(fechasDeOcurrencias(serie)).hasSize(13)
+                .startsWith(Instant.parse("2029-12-31T21:00:00Z"), Instant.parse("2030-01-01T21:00:00Z"),
+                        Instant.parse("2030-01-02T20:00:00Z"));
+        assertThat(confirmadasDe(serie)).containsExactly(actual);
+        assertThat(autorDe(actual)).isEqualTo(cuidador.getIdUsuario());
+    }
+
+    @Test void reactivarFinitaSinFechasRechazaSinCambiosYPermiteAmpliarElFin() throws Exception {
+        var datos = programacionPorIntervalo("2029-12-31T21:00:00Z", 1, "semanas");
+        datos.put("fechaFin", "2030-01-05T21:00:00Z");
+        var serie = nuevaSerie(datos);
+        var ruta = "/recordatorios/" + serie;
+        llamar(familia, "PATCH", ruta + "/estado?nuevoEstado=INACTIVO", null, 200);
+        when(reloj.instant()).thenReturn(Instant.parse("2030-01-03T15:00:00Z"));
+        var antes = estadoProgramacion(serie);
+        var error = llamar(familia, "PATCH", ruta + "/estado?nuevoEstado=ACTIVO", null, 400);
+        assertThat(error.get("codigo").asText()).isEqualTo("ERROR_NEGOCIO");
+        assertThat(estadoProgramacion(serie)).isEqualTo(antes);
+        assertThat(fechasDeOcurrencias(serie)).containsExactly(Instant.parse("2029-12-31T21:00:00Z"));
+        datos.put("fechaFin", "2030-01-07T21:00:00Z");
+        llamar(familia, "PUT", ruta, datos, 200);
+        assertThat(fechasDeOcurrencias(serie)).hasSize(1);
+        assertThat(llamar(familia, "PATCH", ruta + "/estado?nuevoEstado=ACTIVO", null, 200)
+                .get("estado").asText()).isEqualTo("ACTIVO");
+        assertThat(fechasDeOcurrencias(serie)).containsExactly(Instant.parse("2029-12-31T21:00:00Z"),
+                Instant.parse("2030-01-07T21:00:00Z"));
+        assertThat(ultimaFechaDe(serie)).isNull();
+        when(reloj.instant()).thenReturn(Instant.parse("2030-01-08T03:00:00Z"));
+        llamar(familia, "PATCH", ruta + "/estado?nuevoEstado=INACTIVO", null, 200);
+        llamar(familia, "PATCH", ruta + "/estado?nuevoEstado=ACTIVO", null, 400);
+        assertThat(fechasDeOcurrencias(serie)).hasSize(2);
+        assertThat(llamar(familia, "GET", ruta, null, 200).get("estado").asText()).isEqualTo("INACTIVO");
+    }
+
+    @Test void cambiarEntreUnicoYSerieConservaLaConfirmacionDeHoy() throws Exception {
+        llamar(cuidador, "PATCH", "/recordatorios/" + recordatorio + "/confirmacion", null, 200);
+        var id = UUID.fromString(recordatorio);
+        var ruta = "/recordatorios/" + id;
+        var respuesta = llamar(propietario, "PUT", ruta, programacionPorIntervalo(ahora.toString(), 1, "dias"), 200);
+        assertThat(respuesta.get("estado").asText()).isEqualTo("ACTIVO");
+        var historica = idOcurrencia(id, ahora.toString());
+        assertThat(confirmadasDe(id)).containsExactly(historica);
+        assertThat(autorDe(historica)).isEqualTo(cuidador.getIdUsuario());
+        assertThat(fechasDeOcurrencias(id)).hasSize(13);
+
+        llamar(propietario, "PUT", ruta, datosRecordatorio(ahora), 400);
+        llamar(propietario, "PUT", ruta, datosRecordatorio(ahora.plusSeconds(86400)), 200);
+        assertThat(fechasDeOcurrencias(id)).containsExactly(ahora);
+        assertThat(ultimaFechaDe(id)).isNull();
+        var lista = llamar(cuidador, "GET", "/recordatorios/hoy", null, 200);
+        assertThat(lista.get(0).get("idOcurrencia").asText()).isEqualTo(historica.toString());
+        assertThat(lista.get(0).get("situacionTemporal").asText()).isEqualTo("COMPLETADO");
+        when(reloj.instant()).thenReturn(ahora.plusSeconds(86400));
+        var unico = llamar(cuidador, "GET", "/recordatorios/hoy", null, 200).get(0);
+        assertThat(unico.get("idRecordatorio").asText()).isEqualTo(recordatorio);
+        assertThat(unico.has("idOcurrencia")).isFalse();
+        assertThat(unico.get("puedeConfirmar").asBoolean()).isTrue();
+    }
+
+    @Test void editarEnParaleloConElJobDejaSoloFuturasDeLaNuevaProgramacion() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo("2029-12-21T21:00:00Z", 1, "dias"));
+        var edicion = programacionPorIntervalo("2030-01-02T20:00:00Z", 2, "dias");
+        edicion.put("fechaFin", "2030-01-04T20:00:00Z");
+        try (var hilos = Executors.newFixedThreadPool(2)) {
+            var preparados = new CountDownLatch(2);
+            var salida = new CountDownLatch(1);
+            var job = hilos.submit(() -> {
+                preparados.countDown();
+                assertThat(salida.await(5, TimeUnit.SECONDS)).isTrue();
+                servicioRecordatorios.renovarTanda(serie, LocalDate.of(2030, 1, 1));
+                return null;
+            });
+            var editar = hilos.submit(() -> {
+                preparados.countDown();
+                assertThat(salida.await(5, TimeUnit.SECONDS)).isTrue();
+                return llamar(familia, "PUT", "/recordatorios/" + serie, edicion, 200);
+            });
+            assertThat(preparados.await(5, TimeUnit.SECONDS)).isTrue();
+            salida.countDown();
+            job.get(15, TimeUnit.SECONDS);
+            editar.get(15, TimeUnit.SECONDS);
+        }
+        assertThat(fechasDeOcurrencias(serie)).hasSize(14).endsWith(Instant.parse("2030-01-01T21:00:00Z"),
+                Instant.parse("2030-01-02T20:00:00Z"), Instant.parse("2030-01-04T20:00:00Z"));
+        assertThat(ultimaFechaDe(serie)).isNull();
+    }
+
+    @Test void fallaAlReemplazarFuturasRevierteLaEdicionYConservaSusIds() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo("2029-12-31T21:00:00Z", 1, "dias"));
+        var antes = estadoProgramacion(serie);
+        var fechas = fechasDeOcurrencias(serie);
+        var anterior = idOcurrencia(serie, "2030-01-02T21:00:00Z");
+        sql.execute("""
+                ALTER TABLE ocurrencia_recordatorio ADD CONSTRAINT prueba_falla_edicion
+                CHECK (fecha_programada <> TIMESTAMPTZ '2030-01-04T20:00:00Z') NOT VALID
+                """);
+        try {
+            llamar(familia, "PUT", "/recordatorios/" + serie,
+                    programacionPorIntervalo("2029-12-31T20:00:00Z", 1, "dias"), 500);
+            assertThat(estadoProgramacion(serie)).isEqualTo(antes);
+            assertThat(fechasDeOcurrencias(serie)).isEqualTo(fechas);
+            assertThat(idOcurrencia(serie, "2030-01-02T21:00:00Z")).isEqualTo(anterior);
+        } finally {
+            sql.execute("ALTER TABLE ocurrencia_recordatorio DROP CONSTRAINT prueba_falla_edicion");
+        }
+    }
+
+    @Test void eliminarLogicamenteMantieneElHistorialYElJobNoVuelveAGenerar() throws Exception {
+        var serie = nuevaSerie(programacionPorIntervalo("2029-12-21T21:00:00Z", 1, "dias"));
+        var actual = idOcurrencia(serie, "2030-01-01T21:00:00Z");
+        llamar(cuidador, "PATCH", rutaOcurrencia(serie, actual), null, 200);
+        var ruta = "/recordatorios/" + serie;
+        llamar(cuidador, "DELETE", ruta, null, 403);
+        llamar(familia, "DELETE", ruta, null, 204);
+        cuandoLasTandasVencen("2030-01-02T03:00:00Z");
+        assertThat(fechasDeOcurrencias(serie)).hasSize(12);
+        assertThat(confirmadasDe(serie)).containsExactly(actual);
+        assertThat(recordatorios.findById(serie).orElseThrow().getFechaEliminacion()).isEqualTo(ahora);
+        llamar(propietario, "GET", ruta, null, 404);
+        llamar(propietario, "PATCH", ruta + "/estado?nuevoEstado=ACTIVO", null, 404);
+    }
+
+    private void cuandoLasTandasVencen(String instante) {
+        when(reloj.instant()).thenReturn(Instant.parse(instante));
+        new RenovadorTandasRecordatorioProgramado(recordatorios, servicioRecordatorios, reloj).ejecutar();
+    }
+
+    private String rutaOcurrencia(UUID serie, UUID ocurrencia) {
+        return "/recordatorios/" + serie + "/confirmacion?idOcurrencia=" + ocurrencia;
+    }
+
+    private UUID autorDe(UUID ocurrencia) {
+        return sql.queryForObject("SELECT confirmado_por_id FROM ocurrencia_recordatorio WHERE id_ocurrencia=?",
+                UUID.class, ocurrencia);
+    }
+
+    private LocalDate ultimaFechaDe(UUID serie) {
+        return recordatorios.findById(serie).orElseThrow().getUltimaFechaGenerada();
+    }
+
+    private UUID idOcurrencia(UUID serie, String fecha) {
+        return sql.queryForObject("""
+                SELECT id_ocurrencia FROM ocurrencia_recordatorio WHERE recordatorio_id=? AND fecha_programada=?
+                """, UUID.class, serie, java.sql.Timestamp.from(Instant.parse(fecha)));
+    }
+
+    private List<UUID> confirmadasDe(UUID serie) {
+        return sql.queryForList("""
+                SELECT id_ocurrencia FROM ocurrencia_recordatorio WHERE recordatorio_id=? AND confirmado_en IS NOT NULL
+                """, UUID.class, serie);
+    }
+
+    private Map<String, Object> programacionPorIntervalo(String inicio, int valor, String unidad) {
+        var datos = new HashMap<>(datosRecordatorio(Instant.parse(inicio)));
+        datos.put("modalidad", "recurrente");
+        datos.put("intervaloValor", valor);
+        datos.put("intervaloUnidad", unidad);
+        return datos;
+    }
+
+    private List<Instant> fechasDeOcurrencias(UUID serie) {
+        return sql.query("""
+                SELECT fecha_programada FROM ocurrencia_recordatorio WHERE recordatorio_id=? ORDER BY fecha_programada
+                """, (fila, i) -> fila.getTimestamp(1).toInstant(), serie);
+    }
+
+    private Map<String, Object> estadoAltas() {
+        return sql.queryForMap("""
+                SELECT (SELECT count(*) FROM recordatorio WHERE mascota_id=?) AS series,
+                    (SELECT count(*) FROM ocurrencia_recordatorio o
+                     JOIN recordatorio r ON r.id_recordatorio=o.recordatorio_id WHERE r.mascota_id=?) AS ocurrencias,
+                    (SELECT count(*) FROM log_auditoria WHERE entidad_afectada='recordatorio'
+                     AND tipo_accion='CREATE' AND actor_id IN (?,?,?)) AS auditoria
+                """, mascota.getIdMascota(), mascota.getIdMascota(),
+                propietario.getIdUsuario(), familia.getIdUsuario(), cuidador.getIdUsuario());
+    }
+
+    private UUID nuevaSerie(Map<String, Object> datos) throws Exception {
+        return UUID.fromString(llamar(propietario, "POST", rutaMascota("recordatorios"), datos, 201)
+                .get("idRecordatorio").asText());
+    }
+
+    private void actualizarUltima(UUID id, LocalDate fecha) {
+        sql.update("UPDATE recordatorio SET ultima_fecha_generada=? WHERE id_recordatorio=?", fecha, id);
+    }
+
+    private String estadoProgramacion(UUID id) {
+        return sql.queryForObject("SELECT to_jsonb(r)::text FROM recordatorio r WHERE id_recordatorio=?", String.class, id);
     }
 
     private Usuario usuario() { var u = new Usuario(); u.setNombre("Permisos QA"); u.setEmail(UUID.randomUUID() + "@example.test"); u.setPasswordHash("hash-ficticio"); u = usuarios.saveAndFlush(u); cuentas.add(u.getIdUsuario()); return u; }

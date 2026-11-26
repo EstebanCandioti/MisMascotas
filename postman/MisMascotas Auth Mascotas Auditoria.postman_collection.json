@@ -451,7 +451,7 @@
             "url": "{{baseUrl}}/mascotas/{{mascotaId}}/recordatorios",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Aplicar pipeta\",\n  \"tipo\": \"PIPETA_ANTIPARASITARIO\",\n  \"fechaHoraInicio\": \"2027-01-15T12:00:00Z\",\n  \"modalidad\": \"semanal\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"SEMANAS\",\n  \"diasSemana\": \"LUNES,MIERCOLES\",\n  \"fechaFin\": \"2027-06-30T23:59:59Z\"\n}",
+              "raw": "{\n  \"titulo\": \"Aplicar pipeta\",\n  \"tipo\": \"PIPETA_ANTIPARASITARIO\",\n  \"fechaHoraInicio\": \"2027-01-15T12:00:00Z\",\n  \"modalidad\": \"dias_semana\",\n  \"diasSemana\": \"LUNES,MIERCOLES\",\n  \"fechaFin\": \"2027-06-30T23:59:59Z\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -529,7 +529,7 @@
             "url": "{{baseUrl}}/recordatorios/{{recordatorioId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Aplicar pipeta actualizada\",\n  \"tipo\": \"PIPETA_ANTIPARASITARIO\",\n  \"fechaHoraInicio\": \"2027-01-16T12:00:00Z\",\n  \"modalidad\": \"mensual\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"MESES\",\n  \"diasSemana\": null,\n  \"fechaFin\": \"2027-12-31T23:59:59Z\"\n}",
+              "raw": "{\n  \"titulo\": \"Aplicar pipeta actualizada\",\n  \"tipo\": \"PIPETA_ANTIPARASITARIO\",\n  \"fechaHoraInicio\": \"2027-01-16T12:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"meses\",\n  \"fechaFin\": \"2027-12-31T23:59:59Z\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

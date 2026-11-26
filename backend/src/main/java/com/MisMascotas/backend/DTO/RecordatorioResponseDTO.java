@@ -3,6 +3,8 @@ package com.MisMascotas.backend.DTO;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public record RecordatorioResponseDTO(
     UUID idRecordatorio,
     UUID mascotaId,
@@ -20,5 +22,7 @@ public record RecordatorioResponseDTO(
     Instant confirmadoEn,
     String estado,
     String situacionTemporal,
-    boolean puedeConfirmar
+    boolean puedeConfirmar,
+    @JsonInclude(JsonInclude.Include.NON_NULL) UUID idOcurrencia,
+    @JsonInclude(JsonInclude.Include.NON_NULL) Instant fechaProgramada
 ) {}

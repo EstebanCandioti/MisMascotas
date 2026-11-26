@@ -24,6 +24,7 @@ por sí sola una entrega nueva para testers.
 - `ci/verificar_imagen_qa.py`: validación del seed, arranque del backend, Premium, cuidado compartido, SMTP con Mailpit y persistencia.
 - `ci/verificar_premium_qa.py`: nueve escenarios por HTTP del backend empaquetado; usa datos y JWT sintéticos exclusivos del entorno aislado.
 - `ci/verificar_cuidado_qa.py`: gestión, cupo Free, visibilidad y revocación por HTTP; consulta de cualquier fecha, confirmación diaria para todos los perfiles e indicadores temporales. Verifica correos en Mailpit. Usa cuentas sintéticas y retira sus recordatorios y vínculos antes de limpiar las cuentas.
+- `ci/verificar_recordatorios_qa.py`: alta finita e indefinida, renovación por reinicio, reintento sin duplicados, confirmación por ocurrencia, edición, pausa, reactivación, borrado lógico y permisos Familia/Cuidador. Se ejecuta desde el verificador de imágenes antes de publicar.
 
 ## Configuración en GitHub y Docker Hub
 
