@@ -1,0 +1,1297 @@
+{
+  "info": {
+    "name": "MisMascotas — Fotos de perfil Premium",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Datos exclusivos de QA: Free y Vencido con mascota y fotoPerfil previa; Premium con mascota propia; Invitado activo Familia hacia Free. Ausencia conserva; null explícito elimina incluso en Free/vencido; URL igual conserva y URL nueva requiere Premium. No modifica el plan por API. Ejecutar en orden; agrega mascotas y edita las de prueba. Ver docs/fotos_premium.md."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "tokenFree",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenVencido",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenPremium",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaFreeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaVencidoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaPremiumId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaNuevaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fotoPerfilPrevia",
+      "value": "https://example.test/perfil-previa.jpg",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Invitado — lectura y rechazo por permisos",
+      "item": [
+        {
+          "name": "Invitado ve foto de propietario Free",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitado no edita: ausencia",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No modificar\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Acceso denegado',()=>pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitado no edita: null",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No retirar\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Acceso denegado',()=>pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitado no edita: URL nueva",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No reemplazar\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Acceso denegado',()=>pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Free — conservar, rechazar reemplazo y retirar",
+      "item": [
+        {
+          "name": "Ver foto previa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ausencia conserva al editar nombre",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sin tocar foto\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "URL igual conserva",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Misma imagen\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"{{fotoPerfilPrevia}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "URL nueva no modifica la ficha",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No debe guardarse\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rechazo conservó nombre e imagen",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));",
+                  "pm.test('Nombre intacto',()=>pm.expect(pm.response.json().nombre).to.equal('Misma imagen'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Null explícito retira imagen",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Foto retirada\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ausencia mantiene la falta de imagen",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sin imagen\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignar primera foto también requiere Premium",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No guardar\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alta general sin campo de foto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alta sin campo\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alta general con null",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alta null\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alta con foto requiere Premium",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No crear\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No oculta foto con indicador interno",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No crear\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\",\n  \"fotoPerfilInformada\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vencido — conservar, rechazar reemplazo y retirar",
+      "item": [
+        {
+          "name": "Ver foto previa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ausencia conserva al editar nombre",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sin tocar foto\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "URL igual conserva",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Misma imagen\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"{{fotoPerfilPrevia}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "URL nueva no modifica la ficha",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No debe guardarse\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rechazo conservó nombre e imagen",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva imagen previa',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(pm.variables.get('fotoPerfilPrevia')));",
+                  "pm.test('Nombre intacto',()=>pm.expect(pm.response.json().nombre).to.equal('Misma imagen'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Null explícito retira imagen",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Foto retirada\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ausencia mantiene la falta de imagen",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sin imagen\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignar primera foto también requiere Premium",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No guardar\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alta general sin campo de foto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alta sin campo\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alta general con null",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alta null\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Alta con foto requiere Premium",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No crear\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No oculta foto con indicador interno",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No crear\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\",\n  \"fotoPerfilInformada\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Premium requerido',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Premium — alta, reemplazo, conservación y retiro",
+      "item": [
+        {
+          "name": "Alta con foto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Con imagen\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('URL nueva guardada',()=>pm.expect(pm.response.json().fotoPerfil).to.equal('https://example.test/perfil-nueva.jpg'));",
+                  "if(pm.response.code===201)pm.collectionVariables.set('mascotaNuevaId',pm.response.json().idMascota);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reemplazar foto previa",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Foto nueva\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('URL nueva guardada',()=>pm.expect(pm.response.json().fotoPerfil).to.equal('https://example.test/perfil-nueva.jpg'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ausencia conserva foto nueva",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cambio general\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('URL nueva guardada',()=>pm.expect(pm.response.json().fotoPerfil).to.equal('https://example.test/perfil-nueva.jpg'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Null retira foto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Retiro\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Foto retirada con null',()=>pm.expect(pm.response.json().fotoPerfil).to.equal(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignar otra vez",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Asignación\",\n  \"especie\": \"Perro\",\n  \"fechaNacimiento\": \"2020-01-01\",\n  \"fechaAproximada\": false,\n  \"pesoActual\": 12.5,\n  \"notas\": \"Notas de perfil QA\",\n  \"fotoPerfil\": \"https://example.test/perfil-nueva.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('URL nueva guardada',()=>pm.expect(pm.response.json().fotoPerfil).to.equal('https://example.test/perfil-nueva.jpg'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar mascota creada en esta prueba",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaNuevaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

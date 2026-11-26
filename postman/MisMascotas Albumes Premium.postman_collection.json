@@ -1,0 +1,1276 @@
+{
+  "info": {
+    "name": "MisMascotas — Álbumes Premium",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Ejecutar en orden con datos de QA exclusivos. Free y vencido deben tener un álbum y foto previos; el invitado activo es Premium y está vinculado al propietario Free. La cuenta Premium tiene mascota propia. No editar el plan desde Postman. Ver preparación manual de cuentas y recursos en docs/albumes_premium.md. La colección también admite ejecución con Newman después de preparar esas variables. Los tokens y UUID se mantienen fuera del archivo. Las respuestas negativas 403 son resultados esperados. Matriz actualizada: eliminar álbumes y fotos propias está permitido en Free/vencido. La última carpeta elimina lógicamente los fixtures previos; usar exclusivamente datos creados para esta prueba."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "tokenFree",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenVencido",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenPremium",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaFreeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaVencidoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaPremiumId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "albumFreeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "albumVencidoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fotoFreeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fotoVencidoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "albumNuevoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fotoNuevaId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Free — Consulta y rechazos sin modificación",
+      "item": [
+        {
+          "name": "No crea álbum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/albumes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No crear\",\n  \"mascotaId\": \"{{mascotaFreeId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No edita álbum",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No editar\",\n  \"mascotaId\": \"{{mascotaFreeId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No carga foto en álbum previo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}/fotos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlArchivo\": \"https://example.test/no-guardar.jpg\",\n  \"formato\": \"jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista álbumes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/albumes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Incluye el álbum previo', () => pm.expect(pm.response.json().map(a=>a.idAlbum)).to.include(pm.variables.get('albumFreeId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Álbum previo sin modificaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva nombre y cantidad de fotos', () => {const a=pm.response.json();pm.expect(a.nombre).to.equal('Recuerdo previo');pm.expect(a.cantidadFotos).to.equal(1);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista fotos previas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}/fotos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Solo una foto, sin nuevas cargas', () => pm.expect(pm.response.json()).to.have.lengthOf(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta foto previa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vencido — Consulta y rechazos sin modificación",
+      "item": [
+        {
+          "name": "No crea álbum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}/albumes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No crear\",\n  \"mascotaId\": \"{{mascotaVencidoId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No edita álbum",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumVencidoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No editar\",\n  \"mascotaId\": \"{{mascotaVencidoId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No carga foto en álbum previo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumVencidoId}}/fotos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlArchivo\": \"https://example.test/no-guardar.jpg\",\n  \"formato\": \"jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista álbumes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}/albumes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Incluye el álbum previo', () => pm.expect(pm.response.json().map(a=>a.idAlbum)).to.include(pm.variables.get('albumVencidoId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Álbum previo sin modificaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva nombre y cantidad de fotos', () => {const a=pm.response.json();pm.expect(a.nombre).to.equal('Recuerdo previo');pm.expect(a.cantidadFotos).to.equal(1);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista fotos previas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumVencidoId}}/fotos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Solo una foto, sin nuevas cargas', () => pm.expect(pm.response.json()).to.have.lengthOf(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta foto previa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invitado — Consulta y rechazos sin modificación",
+      "item": [
+        {
+          "name": "No crea álbum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/albumes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No crear\",\n  \"mascotaId\": \"{{mascotaFreeId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No edita álbum",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No editar\",\n  \"mascotaId\": \"{{mascotaFreeId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No elimina álbum",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No carga foto en álbum previo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}/fotos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlArchivo\": \"https://example.test/no-guardar.jpg\",\n  \"formato\": \"jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403', () => pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de rechazo', () => pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista álbumes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/albumes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Incluye el álbum previo', () => pm.expect(pm.response.json().map(a=>a.idAlbum)).to.include(pm.variables.get('albumFreeId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Álbum previo sin modificaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Conserva nombre y cantidad de fotos', () => {const a=pm.response.json();pm.expect(a.nombre).to.equal('Recuerdo previo');pm.expect(a.cantidadFotos).to.equal(1);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista fotos previas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}/fotos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Solo una foto, sin nuevas cargas', () => pm.expect(pm.response.json()).to.have.lengthOf(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta foto previa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Premium — Creación, edición, carga y borrado lógico",
+      "item": [
+        {
+          "name": "Crear álbum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/albumes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Álbum nuevo\",\n  \"mascotaId\": \"{{mascotaPremiumId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201', () => pm.expect(pm.response.code).to.equal(201));",
+                  "if(pm.response.code===201) pm.collectionVariables.set('albumNuevoId',pm.response.json().idAlbum);",
+                  "pm.test('Contrato de álbum',()=>{const a=pm.response.json();pm.expect(a.nombre).to.equal('Álbum nuevo');pm.expect(a.mascotaId).to.equal(pm.variables.get('mascotaPremiumId'));pm.expect(a.cantidadFotos).to.equal(0);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar álbum",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumNuevoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Álbum editado\",\n  \"mascotaId\": \"{{mascotaPremiumId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Nombre editado',()=>pm.expect(pm.response.json().nombre).to.equal('Álbum editado'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cargar foto por URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumNuevoId}}/fotos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"urlArchivo\": \"https://example.test/nueva.jpg\",\n  \"formato\": \"jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201', () => pm.expect(pm.response.code).to.equal(201));",
+                  "if(pm.response.code===201) pm.collectionVariables.set('fotoNuevaId',pm.response.json().idFoto);",
+                  "pm.test('Foto pertenece al nuevo álbum',()=>pm.expect(pm.response.json().albumId).to.equal(pm.variables.get('albumNuevoId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar cantidad de fotos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumNuevoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Una foto',()=>pm.expect(pm.response.json().cantidadFotos).to.equal(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar álbum",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumNuevoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204', () => pm.expect(pm.response.code).to.equal(204));",
+                  "pm.test('Sin cuerpo',()=>pm.expect(pm.response.text()).to.equal(''));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Álbum eliminado no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumNuevoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404', () => pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Foto del álbum eliminado no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoNuevaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404', () => pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Eliminación Free y vencido — solo fixtures exclusivos",
+      "item": [
+        {
+          "name": "Free: eliminar foto previa",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Free: foto eliminada no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404',()=>pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Free: álbum conservado sin fotos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Sin fotos activas',()=>pm.expect(pm.response.json().cantidadFotos).to.equal(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Free: eliminar álbum previo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Free: álbum eliminado no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404',()=>pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Free: listado sin álbum eliminado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/albumes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('No incluye álbum eliminado',()=>pm.expect(pm.response.json().map(a=>a.idAlbum)).not.to.include(pm.variables.get('albumFreeId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vencido: eliminar foto previa",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vencido: foto eliminada no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/fotos/{{fotoVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404',()=>pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vencido: álbum conservado sin fotos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Sin fotos activas',()=>pm.expect(pm.response.json().cantidadFotos).to.equal(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vencido: eliminar álbum previo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vencido: álbum eliminado no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/albumes/{{albumVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404',()=>pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vencido: listado sin álbum eliminado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}/albumes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('No incluye álbum eliminado',()=>pm.expect(pm.response.json().map(a=>a.idAlbum)).not.to.include(pm.variables.get('albumVencidoId')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

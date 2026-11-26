@@ -30,12 +30,14 @@ public class AlbumService {
     private final AlbumMascotaRepository albumMascotaRepository;
     private final FotoRepository fotoRepository;
     private final AccesoMascotaService accesoMascotaService;
+    private final PremiumService premiumService;
     private final EntityManager entityManager;
 
     @Auditable(entidad = "album", accion = TipoAccionAuditoria.CREATE)
     @Transactional
     public AlbumResponseDTO crear(AlbumRequestDTO request, UUID creadoPorId) {
         Mascota mascota = accesoMascotaService.verificarAcceso(request.mascotaId(), creadoPorId);
+        premiumService.exigirPremium(mascota.getPropietario().getIdUsuario());
 
         Usuario usuarioRef = entityManager.getReference(Usuario.class, creadoPorId);
 
@@ -96,7 +98,8 @@ public class AlbumService {
     @Transactional
     public AlbumResponseDTO editar(UUID id, AlbumRequestDTO request, UUID usuarioAutenticadoId) {
         Album album = buscarAlbumActivo(id);
-        validarAccesoAlbum(album, usuarioAutenticadoId);
+        UUID propietarioId = validarAccesoAlbum(album, usuarioAutenticadoId);
+        premiumService.exigirPremium(propietarioId);
 
         album.setNombre(request.nombre());
         album.setDescripcion(request.descripcion());
@@ -134,11 +137,11 @@ public class AlbumService {
     }
 
 
-    private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId) {
-        validarAccesoAlbum(album, usuarioAutenticadoId, true);
+    private UUID validarAccesoAlbum(Album album, UUID usuarioAutenticadoId) {
+        return validarAccesoAlbum(album, usuarioAutenticadoId, true);
     }
 
-    private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId, boolean escritura) {
+    private UUID validarAccesoAlbum(Album album, UUID usuarioAutenticadoId, boolean escritura) {
         List<AlbumMascota> relaciones = albumMascotaRepository.findAllByAlbumIdActivos(album.getIdAlbum());
         if (relaciones.isEmpty()) {
             throw new RecursoNoEncontradoException("Album no encontrado con ID: " + album.getIdAlbum());
@@ -148,6 +151,8 @@ public class AlbumService {
             if (escritura) accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId);
             else accesoMascotaService.verificarLectura(rel.getMascota(), usuarioAutenticadoId);
         });
+        // El propietario puede eliminar aunque su cobertura haya vencido.
+        return relaciones.getFirst().getMascota().getPropietario().getIdUsuario();
     }
 
 

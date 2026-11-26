@@ -31,13 +31,15 @@ public class FotoService {
     private final AlbumRepository albumRepository;
     private final AlbumMascotaRepository albumMascotaRepository;
     private final AccesoMascotaService accesoMascotaService;
+    private final PremiumService premiumService;
     private final EntityManager entityManager;
 
     @Auditable(entidad = "foto", accion = TipoAccionAuditoria.CREATE)
     @Transactional
     public FotoResponseDTO crear(UUID albumId, FotoRequestDTO request, UUID subidaPorId) {
         Album album = buscarAlbumActivo(albumId);
-        validarAccesoAlbum(album, subidaPorId);
+        UUID propietarioId = validarAccesoAlbum(album, subidaPorId);
+        premiumService.exigirPremium(propietarioId);
 
         Usuario usuarioRef = subidaPorId != null ? entityManager.getReference(Usuario.class, subidaPorId) : null;
 
@@ -99,11 +101,11 @@ public class FotoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Foto no encontrada con ID: " + id));
     }
 
-    private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId) {
-        validarAccesoAlbum(album, usuarioAutenticadoId, true);
+    private UUID validarAccesoAlbum(Album album, UUID usuarioAutenticadoId) {
+        return validarAccesoAlbum(album, usuarioAutenticadoId, true);
     }
 
-    private void validarAccesoAlbum(Album album, UUID usuarioAutenticadoId, boolean escritura) {
+    private UUID validarAccesoAlbum(Album album, UUID usuarioAutenticadoId, boolean escritura) {
         List<AlbumMascota> relaciones = albumMascotaRepository.findAllByAlbumIdActivos(album.getIdAlbum());
         if (relaciones.isEmpty()) {
             throw new RecursoNoEncontradoException("Album no encontrado con ID: " + album.getIdAlbum());
@@ -113,6 +115,7 @@ public class FotoService {
             if (escritura) accesoMascotaService.verificarAcceso(rel.getMascota(), usuarioAutenticadoId);
             else accesoMascotaService.verificarLectura(rel.getMascota(), usuarioAutenticadoId);
         });
+        return relaciones.getFirst().getMascota().getPropietario().getIdUsuario();
     }
 
 

@@ -56,6 +56,7 @@ class CuidadoPermisosPostgresIT {
     @BeforeEach void preparar() throws Exception {
         when(reloj.instant()).thenReturn(ahora);
         propietario = usuario(); familia = usuario(); cuidador = usuario(); ajeno = usuario();
+        propietario.setEsPremium(true); propietario = usuarios.saveAndFlush(propietario);
         mascota = mascota(propietario); propiaFamilia = mascota(familia); otra = mascota(ajeno);
         acceso(propietario, familia, PerfilCompartido.Familia);
         acceso(propietario, cuidador, PerfilCompartido.Cuidador);

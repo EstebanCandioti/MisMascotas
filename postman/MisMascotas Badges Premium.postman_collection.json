@@ -1,0 +1,1187 @@
+{
+  "info": {
+    "name": "MisMascotas — Badges Premium y cupo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Ejecutar en orden con fixtures exclusivos de QA. Free y Vencido: mascota con una badge previa. Premium: mascota con dos activas, otra con tres y una histórica con cuatro. Invitado Familia activo hacia Free, con Premium propio. La colección crea y elimina lógicamente badges de prueba. La carrera real PostgreSQL está en BadgePremiumPostgresIT; este recorrido es secuencial. Ver docs/badges_premium.md."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "tokenFree",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenVencido",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenPremium",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaFreeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaVencidoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaPremiumId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaOtraId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaHistoricoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeFreeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeVencidoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeHistorico1Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeHistorico2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeTerceraId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeReemplazoId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Invitado — lectura sin gestión",
+      "item": [
+        {
+          "name": "Lista badges de propietario Free",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 1',()=>pm.expect(pm.response.json()).to.have.lengthOf(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta badge por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No crea aunque su cuenta sea Premium",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaFreeId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No elimina badge compartida",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('ACCESO_DENEGADO'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Free — lectura y eliminación voluntaria",
+      "item": [
+        {
+          "name": "Conserva badge previa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 1',()=>pm.expect(pm.response.json()).to.have.lengthOf(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No crea sin Premium",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaFreeId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Elimina voluntariamente badge previa",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminada no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeFreeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404',()=>pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cupo liberado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 0',()=>pm.expect(pm.response.json()).to.have.lengthOf(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liberar cupo no otorga Premium",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenFree}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaFreeId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaFreeId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vencido — lectura y eliminación voluntaria",
+      "item": [
+        {
+          "name": "Conserva badge previa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 1',()=>pm.expect(pm.response.json()).to.have.lengthOf(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No crea sin Premium",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaVencidoId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Elimina voluntariamente badge previa",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminada no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeVencidoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404',()=>pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cupo liberado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 0',()=>pm.expect(pm.response.json()).to.have.lengthOf(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liberar cupo no otorga Premium",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVencido}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaVencidoId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaVencidoId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 403',()=>pm.expect(pm.response.code).to.equal(403));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('PREMIUM_REQUERIDO'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Premium — tercera, cuarta, baja y reemplazo",
+      "item": [
+        {
+          "name": "Dos badges iniciales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 2',()=>pm.expect(pm.response.json()).to.have.lengthOf(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear la tercera",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaPremiumId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));",
+                  "if(pm.response.code===201)pm.collectionVariables.set('badgeTerceraId',pm.response.json().idBadge);",
+                  "pm.test('Contrato badge',()=>pm.expect(pm.response.json()).to.have.all.keys('idBadge','mascotaId','texto','emoji'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar tercera",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeTerceraId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cuarta rechazada por cupo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaPremiumId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 409',()=>pm.expect(pm.response.code).to.equal(409));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('LIMITE_BADGES_ALCANZADO'));",
+                  "pm.test('Error uniforme',()=>pm.expect(pm.response.json()).to.have.all.keys('codigo','mensaje','timestamp'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Conserva exactamente tres",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 3',()=>pm.expect(pm.response.json()).to.have.lengthOf(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar la tercera libera el lugar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeTerceraId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminada no se consulta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeTerceraId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 404',()=>pm.expect(pm.response.code).to.equal(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reutilizar cupo con texto y emoji repetidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaPremiumId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));",
+                  "if(pm.response.code===201)pm.collectionVariables.set('badgeReemplazoId',pm.response.json().idBadge);",
+                  "pm.test('Contrato badge',()=>pm.expect(pm.response.json()).to.have.all.keys('idBadge','mascotaId','texto','emoji'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Otra mascota conserva sus tres propias badges",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaOtraId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 3',()=>pm.expect(pm.response.json()).to.have.lengthOf(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cupo independiente sigue en tres",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 3',()=>pm.expect(pm.response.json()).to.have.lengthOf(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validación de texto conserva 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaPremiumId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaPremiumId}}\",\n  \"texto\": \" \",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 400',()=>pm.expect(pm.response.code).to.equal(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Histórico excedido — conservar y liberar por acción del propietario",
+      "item": [
+        {
+          "name": "Histórico conserva cuatro activas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaHistoricoId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 4',()=>pm.expect(pm.response.json()).to.have.lengthOf(4));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No agrega sobre un histórico excedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaHistoricoId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaHistoricoId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 409',()=>pm.expect(pm.response.code).to.equal(409));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('LIMITE_BADGES_ALCANZADO'));",
+                  "pm.test('Error uniforme',()=>pm.expect(pm.response.json()).to.have.all.keys('codigo','mensaje','timestamp'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Histórica sigue disponible por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeHistorico1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Primer borrado deja tres",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeHistorico1Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Con tres todavía no crea",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaHistoricoId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaHistoricoId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 409',()=>pm.expect(pm.response.code).to.equal(409));",
+                  "pm.test('Código de error',()=>pm.expect(pm.response.json().codigo).to.equal('LIMITE_BADGES_ALCANZADO'));",
+                  "pm.test('Error uniforme',()=>pm.expect(pm.response.json()).to.have.all.keys('codigo','mensaje','timestamp'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Segundo borrado deja dos",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/badges/{{badgeHistorico2Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 204',()=>pm.expect(pm.response.code).to.equal(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Con dos vuelve a crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaHistoricoId}}/badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": \"{{mascotaHistoricoId}}\",\n  \"texto\": \"Sociable\",\n  \"emoji\": \"★\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 201',()=>pm.expect(pm.response.code).to.equal(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Histórico queda con tres activas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenPremium}}"
+              }
+            ],
+            "url": "{{baseUrl}}/mascotas/{{mascotaHistoricoId}}/badges"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado: 200',()=>pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Cantidad activa: 3',()=>pm.expect(pm.response.json()).to.have.lengthOf(3));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

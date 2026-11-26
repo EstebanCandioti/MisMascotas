@@ -48,6 +48,8 @@ No corresponde reemplazar escrituras transaccionales por una consulta HTTP o por
 
 Después de esta centralización se implementa el bloque de restricciones por módulo: álbumes, fotos, foto de perfil y badges. Cada uno tendrá su propia tarea verificable y conservará sus límites. La matriz de operaciones después del vencimiento debe acordarse antes de aplicar esos controles. El límite de invitados se incorpora con cuidado compartido.
 
+Avance posterior: crear/editar álbumes, cargar fotos por URL, asignar/reemplazar foto de perfil y crear badges ya consumen `exigirPremium`, con lectura conservada al vencer el plan. El propietario puede eliminar álbumes/fotos/badges y retirar foto de perfil incluso sin Premium. Badges agrega máximo de tres activas por mascota y bloqueo transaccional contra altas concurrentes. Matrices, contratos y QA: [albumes_premium.md](albumes_premium.md), [fotos_premium.md](fotos_premium.md) y [badges_premium.md](badges_premium.md).
+
 ## Casos mínimos de prueba
 
 - Free sin suscripciones.
