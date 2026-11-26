@@ -119,8 +119,21 @@ def verificar(imagen_db, imagen_backend):
         consulta_catalogo = "SELECT md5(jsonb_agg(to_jsonb(e) ORDER BY id_estado)::text) FROM estados e"
         catalogo_actualizado = sql(consulta_catalogo)
         puerto = ejecutar("docker", "port", backend, "8080/tcp").rsplit(":", 1)[1]
-        premium = verificar_premium(sql, "http://127.0.0.1:" + puerto, secreto_ci, mailpit_url)
+        def reiniciar_backend():
+            ejecutar("docker", "restart", backend)
+            limite_reinicio = time.monotonic() + 60
+            while time.monotonic() < limite_reinicio:
+                prueba = subprocess.run(["docker", "exec", backend, "sh", "-c",
+                    "wget -S --spider http://127.0.0.1:8080/ 2>&1"], capture_output=True)
+                if b"HTTP/1.1 401" in prueba.stdout:
+                    puerto_actual = ejecutar("docker", "port", backend, "8080/tcp").rsplit(":", 1)[1]
+                    return "http://127.0.0.1:" + puerto_actual
+                time.sleep(1)
+            raise RuntimeError("El backend no quedó disponible después del reinicio")
+
+        premium = verificar_premium(sql, "http://127.0.0.1:" + puerto, secreto_ci, mailpit_url, reiniciar_backend)
         cuidado = premium.pop("cuidado_compartido")
+        recordatorios = premium.pop("recordatorios_recurrentes")
 
         # Una actualización/recreación del contenedor debe conservar el volumen y sus cambios.
         id_ = str(uuid.uuid4())
@@ -134,7 +147,8 @@ def verificar(imagen_db, imagen_backend):
         assert sql("SELECT count(*) FROM flyway_schema_history WHERE version='9'") == "1"
         assert sql("SELECT max(version::int) FROM flyway_schema_history WHERE success") == version_final
         print(json.dumps(dict(seed=cantidades, version_base=9, version_final=int(version_final), baseline_sin_reaplicar_sql=True,
-                              backend_http=401, datos_persisten_al_recrear=True, premium=premium, cuidado_compartido=cuidado)))
+                              backend_http=401, datos_persisten_al_recrear=True, premium=premium,
+                              cuidado_compartido=cuidado, recordatorios_recurrentes=recordatorios)))
     finally:
         for nombre in (backend, mailpit, db):
             retirar_contenedor(nombre)

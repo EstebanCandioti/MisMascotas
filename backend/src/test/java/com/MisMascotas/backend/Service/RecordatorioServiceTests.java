@@ -24,10 +24,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.MisMascotas.backend.DTO.RecordatorioResponseDTO;
 import com.MisMascotas.backend.Entity.Estado;
 import com.MisMascotas.backend.Entity.Mascota;
+import com.MisMascotas.backend.Entity.OcurrenciaRecordatorio;
 import com.MisMascotas.backend.Entity.Recordatorio;
 import com.MisMascotas.backend.Entity.Usuario;
 import com.MisMascotas.backend.Exception.ReglaNegocioException;
 import com.MisMascotas.backend.Repository.EstadoRepository;
+import com.MisMascotas.backend.Repository.OcurrenciaRecordatorioRepository;
 import com.MisMascotas.backend.Repository.RecordatorioRepository;
 
 import jakarta.persistence.EntityManager;
@@ -37,6 +39,8 @@ class RecordatorioServiceTests {
 
     @Mock
     private RecordatorioRepository recordatorioRepository;
+    @Mock
+    private OcurrenciaRecordatorioRepository ocurrenciaRecordatorioRepository;
     @Mock
     private EstadoRepository estadoRepository;
     @Mock
@@ -51,6 +55,7 @@ class RecordatorioServiceTests {
     void setUp() {
         recordatorioService = new RecordatorioService(
                 recordatorioRepository,
+                ocurrenciaRecordatorioRepository,
                 estadoRepository,
                 accesoMascotaService,
                 entityManager,
@@ -69,7 +74,7 @@ class RecordatorioServiceTests {
                 .thenReturn(Optional.of(completado));
 
         RecordatorioResponseDTO respuesta = recordatorioService.confirmar(
-                recordatorio.getIdRecordatorio(), usuarioId);
+                recordatorio.getIdRecordatorio(), usuarioId, null);
 
         assertEquals("COMPLETADO", respuesta.estado());
         assertEquals(usuarioId, respuesta.confirmadoPorId());
@@ -89,7 +94,7 @@ class RecordatorioServiceTests {
                 .thenReturn(Optional.of(activo));
 
         RecordatorioResponseDTO respuesta = recordatorioService.desmarcarConfirmacion(
-                recordatorio.getIdRecordatorio(), usuarioId);
+                recordatorio.getIdRecordatorio(), usuarioId, null);
 
         assertEquals("ACTIVO", respuesta.estado());
         assertNull(respuesta.confirmadoPorId());
@@ -103,7 +108,8 @@ class RecordatorioServiceTests {
         Recordatorio recordatorio = prepararRecordatorio("unica", "INACTIVO");
         when(recordatorioRepository.findByIdRecordatorioAndFechaEliminacionIsNull(recordatorio.getIdRecordatorio()))
                 .thenReturn(Optional.of(recordatorio));
-        assertThrows(ReglaNegocioException.class, () -> recordatorioService.confirmar(recordatorio.getIdRecordatorio(), usuarioId));
+        assertThrows(ReglaNegocioException.class,
+                () -> recordatorioService.confirmar(recordatorio.getIdRecordatorio(), usuarioId, null));
         assertEquals("INACTIVO", recordatorio.getEstado().getNombre());
         assertNull(recordatorio.getConfirmadoEn());
         verify(recordatorioRepository, never()).save(recordatorio);
@@ -120,7 +126,7 @@ class RecordatorioServiceTests {
         prepararBusqueda(recordatorio);
 
         RecordatorioResponseDTO respuesta = recordatorioService.desmarcarConfirmacion(
-                recordatorio.getIdRecordatorio(), usuarioId);
+                recordatorio.getIdRecordatorio(), usuarioId, null);
 
         assertEquals("INACTIVO", respuesta.estado());
         assertNull(respuesta.confirmadoPorId());
@@ -132,14 +138,29 @@ class RecordatorioServiceTests {
     void confirmarRecurrenteActivoNoCompletaLaSerie() {
         UUID usuarioId = UUID.randomUUID();
         Recordatorio recordatorio = prepararRecordatorio("recurrente", "ACTIVO");
-        prepararBusqueda(recordatorio);
+        recordatorio.setFechaHoraInicio(ahora.minusSeconds(86400));
+        var ocurrencia = new OcurrenciaRecordatorio();
+        ocurrencia.setIdOcurrencia(UUID.randomUUID());
+        ocurrencia.setRecordatorio(recordatorio);
+        ocurrencia.setFechaProgramada(ahora);
+        when(recordatorioRepository.findByIdRecordatorioAndFechaEliminacionIsNull(recordatorio.getIdRecordatorio()))
+                .thenReturn(Optional.of(recordatorio));
+        when(ocurrenciaRecordatorioRepository.findByIdOcurrenciaAndRecordatorio_IdRecordatorio(
+                ocurrencia.getIdOcurrencia(), recordatorio.getIdRecordatorio())).thenReturn(Optional.of(ocurrencia));
         when(entityManager.getReference(Usuario.class, usuarioId)).thenReturn(crearUsuario(usuarioId));
 
         RecordatorioResponseDTO respuesta = recordatorioService.confirmar(
-                recordatorio.getIdRecordatorio(), usuarioId);
+                recordatorio.getIdRecordatorio(), usuarioId, ocurrencia.getIdOcurrencia());
 
         assertEquals("ACTIVO", respuesta.estado());
+        assertEquals("COMPLETADO", respuesta.situacionTemporal());
+        assertEquals(ocurrencia.getIdOcurrencia(), respuesta.idOcurrencia());
+        assertEquals(ahora, respuesta.fechaProgramada());
         assertEquals(usuarioId, respuesta.confirmadoPorId());
+        assertNull(recordatorio.getConfirmadoPor());
+        assertNull(recordatorio.getConfirmadoEn());
+        verify(ocurrenciaRecordatorioRepository).saveAndFlush(ocurrencia);
+        verify(recordatorioRepository, never()).save(recordatorio);
         verify(estadoRepository, never()).findByEntidadAndNombre("RECORDATORIO", "COMPLETADO");
     }
 
@@ -166,7 +187,8 @@ class RecordatorioServiceTests {
         var autor = crearUsuario(UUID.randomUUID());
         r.setConfirmadoPor(autor); r.setConfirmadoEn(ahora.minusSeconds(60));
         when(recordatorioRepository.findByIdRecordatorioAndFechaEliminacionIsNull(r.getIdRecordatorio())).thenReturn(Optional.of(r));
-        assertThrows(ReglaNegocioException.class, () -> recordatorioService.confirmar(r.getIdRecordatorio(), UUID.randomUUID()));
+        assertThrows(ReglaNegocioException.class,
+                () -> recordatorioService.confirmar(r.getIdRecordatorio(), UUID.randomUUID(), null));
         assertEquals(autor, r.getConfirmadoPor());
         assertEquals(ahora.minusSeconds(60), r.getConfirmadoEn());
         verify(recordatorioRepository, never()).save(r);

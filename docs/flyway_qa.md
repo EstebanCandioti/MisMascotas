@@ -152,9 +152,10 @@ B9 representa el resultado de V1–V9:
 | V9 | Retiro de `pago.estado`, conservando `estado_id`. |
 | V10 | Base de cuidado compartido: RECHAZADA, emails normalizados, plazos obligatorios, índices y acceso activo único por par de cuentas. |
 | V11 | Vínculo único de una invitación aceptada con su acceso concreto; repetir una aceptación no reactiva accesos revocados. |
+| V12 | Persistencia de ocurrencias, progreso por serie e índice de tandas. Conserva programaciones y confirmaciones previas. |
 
 Las bases nuevas ya nacen sin las columnas textuales de estado. Para un cambio
-posterior se agrega V12, luego V13, etc. No hay que modificar
+posterior se agrega V13, luego V14, etc. No hay que modificar
 B9 ni volver a cargar el seed. B9 permanece como punto de partida estable de la imagen.
 
 Las migraciones publicadas son inmutables. Flyway valida los checksums de las
@@ -191,9 +192,9 @@ Cambiar de versión mayor de PostgreSQL es otra operación; Flyway no la resuelv
 - `docker/qa-db/Dockerfile`: imagen PostgreSQL con la base actual.
 - `DB/qa/restablecer-seed.sql`: seed ficticio actualizado; ejecución protegida para QA.
 - `ci/verificar_imagen_qa.py`: verifica seed, arranque, baseline V9 y persistencia en recursos temporales.
-- `backend/src/test/java/com/MisMascotas/backend/Configuracion/MigracionesPostgresIT.java`: migraciones desde bases vacías, V1 y V9, conservación y rechazo de datos incompatibles, e instalación de una V12 simulada exclusiva de pruebas.
+- `backend/src/test/java/com/MisMascotas/backend/Configuracion/MigracionesPostgresIT.java`: migraciones desde bases vacías, V1 y V9, conservación y rechazo de datos incompatibles, e instalación de una versión futura simulada exclusiva de pruebas.
 
-El archivo de prueba `db/futuro/V12__prueba_actualizacion_qa.sql` no se incluye en
+El archivo de prueba `db/futuro/V999999__prueba_actualizacion_qa.sql` no se incluye en
 el JAR ni se ejecuta en QA real.
 
 ### Actualización V10 de cuidado compartido

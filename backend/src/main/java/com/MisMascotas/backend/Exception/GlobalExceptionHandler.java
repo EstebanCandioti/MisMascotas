@@ -109,6 +109,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        if (contieneErrorEnCampo(ex, "intervaloValor")) {
+            return buildResponse(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION",
+                    "intervaloValor: debe ser un entero válido");
+        }
+
+        for (String campo : java.util.List.of("fechaHoraInicio", "fechaFin")) {
+            if (contieneErrorEnCampo(ex, campo)) {
+                return buildResponse(HttpStatus.BAD_REQUEST, "ERROR_VALIDACION",
+                        campo + ": debe ser un instante ISO 8601 válido");
+            }
+        }
+
         if (contieneErrorEnCampo(ex, "fecha")) {
             return buildResponse(
                     HttpStatus.BAD_REQUEST,

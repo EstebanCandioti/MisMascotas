@@ -1,0 +1,2817 @@
+{
+  "info": {
+    "name": "MisMascotas — Recordatorios recurrentes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "La carpeta 02 requiere el backend actualizado con REC-08 y Flyway V12. Seleccioná MisMascotas Local, completá email y password en ese entorno y enviá 00-01. Pegá el código de Mailpit en rec04Codigo del entorno y enviá 00-02. La verificación llena accessToken automáticamente. Comprobá la sesión con 00-03 y completá rec04MascotaId en Variables de la colección con el UUID de una mascota QA propia. Corré solo la carpeta 01 o 02 con Runner, una iteración y el mismo entorno. La 01 cubre altas y validaciones de REC-01 a REC-04. La 02 cubre consulta, confirmación, edición, pausa, reactivación y borrado. Los 400 y 404 esperados se cuentan como casos exitosos. La renovación del job y las fechas futuras se verifican con Docker y PostgreSQL. La carpeta opcional 03 comprueba permisos Familia y Cuidador usando un invitado con vínculo aceptado. Completar rec09TokenInvitado o accessTokenInvitado del entorno."
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{rec04TokenEnUso}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const token = [pm.environment.get(\"accessToken\"), pm.collectionVariables.get(\"rec04Token\"), pm.variables.get(\"rec04Token\"), pm.variables.get(\"accessToken\")]",
+          "  .filter(valor => typeof valor === \"string\")",
+          "  .map(valor => valor.trim().replace(/^Bearer\\s+/i, \"\"))",
+          "  .find(Boolean);",
+          "pm.variables.set(\"rec04TokenEnUso\", token || \"\");"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "URL del backend QA actualizado."
+    },
+    {
+      "key": "rec04MascotaId",
+      "value": "",
+      "type": "string",
+      "description": "UUID de una mascota propia dedicada a QA."
+    },
+    {
+      "key": "rec04Token",
+      "value": "",
+      "type": "string",
+      "description": "Token vigente para usar la colección sin un entorno que tenga accessToken."
+    },
+    {
+      "key": "rec04Email",
+      "value": "",
+      "type": "string",
+      "description": "Email de una cuenta QA existente."
+    },
+    {
+      "key": "rec04Password",
+      "value": "",
+      "type": "string",
+      "description": "Contraseña local de esa cuenta."
+    },
+    {
+      "key": "rec04Codigo",
+      "value": "",
+      "type": "string",
+      "description": "Último código recibido."
+    },
+    {
+      "key": "rec04PreAuth",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Token temporal previo al código."
+    },
+    {
+      "key": "rec04Prefijo",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Identifica las altas de esta corrida."
+    },
+    {
+      "key": "rec04SerieSinFinId",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Se usa en la consulta por ID."
+    },
+    {
+      "key": "rec08Prefijo",
+      "value": "",
+      "type": "string",
+      "description": "Identifica las dos series de esta corrida."
+    },
+    {
+      "key": "rec08SerieId",
+      "value": "",
+      "type": "string",
+      "description": "UUID de la serie que se edita, pausa y elimina."
+    },
+    {
+      "key": "rec08OcurrenciaId",
+      "value": "",
+      "type": "string",
+      "description": "UUID válido de la ocurrencia de hoy."
+    },
+    {
+      "key": "rec08OcurrenciaAnterior",
+      "value": "",
+      "type": "string",
+      "description": "UUID pendiente que se retira al pausar por primera vez."
+    },
+    {
+      "key": "rec08Autor",
+      "value": "",
+      "type": "string",
+      "description": "Usuario que confirma antes de editar."
+    },
+    {
+      "key": "rec08ConfirmadaEn",
+      "value": "",
+      "type": "string",
+      "description": "Instante en que se confirma antes de editar."
+    },
+    {
+      "key": "rec08VencidaId",
+      "value": "",
+      "type": "string",
+      "description": "UUID de la serie finita preparada para el rechazo de reactivación."
+    },
+    {
+      "key": "rec08FechaInicio",
+      "value": "",
+      "type": "string",
+      "description": "Inicio calculado al comienzo de la corrida."
+    },
+    {
+      "key": "rec08FechaHoy",
+      "value": "",
+      "type": "string",
+      "description": "Fecha de la ocurrencia del día argentino."
+    },
+    {
+      "key": "rec08FechaEdicion",
+      "value": "",
+      "type": "string",
+      "description": "Inicio de la programación editada."
+    },
+    {
+      "key": "rec08FechaFin",
+      "value": "",
+      "type": "string",
+      "description": "Fin de la programación editada."
+    },
+    {
+      "key": "rec08FechaAyer",
+      "value": "",
+      "type": "string",
+      "description": "Fin de la serie vencida."
+    },
+    {
+      "key": "rec09TokenInvitado",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rec09SerieId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rec09OcurrenciaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rec09AccesoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rec09PropietarioId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rec09Inicio",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 — Preparar sesión y mascota",
+      "description": "Usá una cuenta QA existente. Podés pegar un accessToken vigente en rec04Token o seleccionar un entorno con accessToken para saltar las dos solicitudes de sesión.",
+      "item": [
+        {
+          "name": "01 — Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Seleccioná MisMascotas Local y cargá email y password en el entorno. Si usás la colección sin entorno, cargá rec04Email y rec04Password en sus Variables. Usá el último código que llegue a Mailpit.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{{rec04CuerpoLogin}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const email = pm.environment.get(\"email\") || pm.variables.get(\"rec04Email\");",
+                  "const password = pm.environment.get(\"password\") || pm.variables.get(\"rec04Password\");",
+                  "if (!email || !password) throw new Error(\"Completá email y password en el entorno o rec04Email y rec04Password en la colección.\");",
+                  "pm.collectionVariables.unset(\"rec04PreAuth\");",
+                  "pm.variables.set(\"rec04CuerpoLogin\", JSON.stringify({ email, password }));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const token = pm.response.json().token;",
+                  "  pm.test(\"Recibe el token de preautenticación\", () => pm.expect(token).to.be.a(\"string\").and.not.empty);",
+                  "  if (token) pm.collectionVariables.set(\"rec04PreAuth\", token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Verificar código",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/verificar-codigo",
+            "description": "Pegá el último código de Mailpit en rec04Codigo del entorno MisMascotas Local. Con HTTP 200 se guarda accessToken automáticamente en ese entorno y se limpia el código. Si usás la colección sin entorno, el código se lee de sus Variables y el token queda en rec04Token.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec04PreAuth}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{{rec04CuerpoCodigo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04PreAuth\")) throw new Error(\"Ejecutá antes 00-01 — Iniciar sesión.\");",
+                  "const codigo = pm.environment.get(\"rec04Codigo\") || pm.collectionVariables.get(\"rec04Codigo\");",
+                  "if (!codigo) throw new Error(\"Completá rec04Codigo con el último código recibido.\");",
+                  "pm.variables.set(\"rec04CuerpoCodigo\", JSON.stringify({ codigo }));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const token = pm.response.json().accessToken;",
+                  "  pm.test(\"Recibe el token de acceso\", () => pm.expect(token).to.be.a(\"string\").and.not.empty);",
+                  "  if (token && pm.environment.has(\"accessToken\")) {",
+                  "    pm.environment.set(\"accessToken\", token);",
+                  "    pm.collectionVariables.set(\"rec04Token\", \"\");",
+                  "  } else if (token) {",
+                  "    pm.collectionVariables.set(\"rec04Token\", token);",
+                  "  }",
+                  "  if (pm.environment.has(\"rec04Codigo\")) pm.environment.set(\"rec04Codigo\", \"\");",
+                  "  pm.collectionVariables.set(\"rec04Codigo\", \"\");",
+                  "  pm.collectionVariables.set(\"rec04PreAuth\", \"\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Listar mis mascotas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/mascotas",
+            "description": "Copiá el idMascota de una mascota QA propia a rec04MascotaId. Podés omitir este paso si ya tenés su UUID.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 — Pruebas REC-01 a REC-04",
+      "item": [
+        {
+          "name": "01 — Alta única",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Sin modalidad, conserva la modalidad unica.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Unico\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "pm.collectionVariables.set(\"rec04Prefijo\", \"REC04 QA \" + new Date().toISOString());",
+                  "pm.collectionVariables.unset(\"rec04SerieSinFinId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  const enviado = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "  pm.test(\"Devuelve el ID y los datos de la programación\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.titulo).to.eql(enviado.titulo);",
+                  "    pm.expect(datos.tipo).to.eql(enviado.tipo);",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(new Date(datos.fechaHoraInicio).toISOString()).to.eql(new Date(enviado.fechaHoraInicio).toISOString());",
+                  "    pm.expect(datos.modalidad).to.eql(enviado.modalidad || \"unica\");",
+                  "    pm.expect(datos.intervaloValor ?? null).to.eql(enviado.intervaloValor ?? null);",
+                  "    pm.expect(datos.intervaloUnidad ?? null).to.eql(enviado.intervaloUnidad ?? null);",
+                  "    pm.expect(datos.diaSemana ?? null).to.eql(null);",
+                  "    const fin = datos.fechaFin ? new Date(datos.fechaFin).toISOString() : null;",
+                  "    pm.expect(fin).to.eql(enviado.fechaFin ? new Date(enviado.fechaFin).toISOString() : null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Alta diaria sin fin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Cada dos días. Las doce ocurrencias se pueden inspeccionar en PostgreSQL.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Sin fin\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-02T02:30:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 2,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaFin\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  const enviado = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "  pm.test(\"Devuelve el ID y los datos de la programación\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.titulo).to.eql(enviado.titulo);",
+                  "    pm.expect(datos.tipo).to.eql(enviado.tipo);",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(new Date(datos.fechaHoraInicio).toISOString()).to.eql(new Date(enviado.fechaHoraInicio).toISOString());",
+                  "    pm.expect(datos.modalidad).to.eql(enviado.modalidad || \"unica\");",
+                  "    pm.expect(datos.intervaloValor ?? null).to.eql(enviado.intervaloValor ?? null);",
+                  "    pm.expect(datos.intervaloUnidad ?? null).to.eql(enviado.intervaloUnidad ?? null);",
+                  "    pm.expect(datos.diaSemana ?? null).to.eql(null);",
+                  "    const fin = datos.fechaFin ? new Date(datos.fechaFin).toISOString() : null;",
+                  "    pm.expect(fin).to.eql(enviado.fechaFin ? new Date(enviado.fechaFin).toISOString() : null);",
+                  "  });",
+                  "  pm.collectionVariables.set(\"rec04SerieSinFinId\", datos.idRecordatorio);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Alta semanal con fin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Cada dos semanas hasta el 29 de enero inclusive.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Semanal\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 2,\n  \"intervaloUnidad\": \"semanas\",\n  \"fechaFin\": \"2030-01-29T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  const enviado = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "  pm.test(\"Devuelve el ID y los datos de la programación\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.titulo).to.eql(enviado.titulo);",
+                  "    pm.expect(datos.tipo).to.eql(enviado.tipo);",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(new Date(datos.fechaHoraInicio).toISOString()).to.eql(new Date(enviado.fechaHoraInicio).toISOString());",
+                  "    pm.expect(datos.modalidad).to.eql(enviado.modalidad || \"unica\");",
+                  "    pm.expect(datos.intervaloValor ?? null).to.eql(enviado.intervaloValor ?? null);",
+                  "    pm.expect(datos.intervaloUnidad ?? null).to.eql(enviado.intervaloUnidad ?? null);",
+                  "    pm.expect(datos.diaSemana ?? null).to.eql(null);",
+                  "    const fin = datos.fechaFin ? new Date(datos.fechaFin).toISOString() : null;",
+                  "    pm.expect(fin).to.eql(enviado.fechaFin ? new Date(enviado.fechaFin).toISOString() : null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Alta mensual con fin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Empieza el 31 de enero. En la base debe quedar en 31/01, 28/02 y 31/03.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Mensual\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-31T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"meses\",\n  \"fechaFin\": \"2030-03-31T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  const enviado = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "  pm.test(\"Devuelve el ID y los datos de la programación\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.titulo).to.eql(enviado.titulo);",
+                  "    pm.expect(datos.tipo).to.eql(enviado.tipo);",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(new Date(datos.fechaHoraInicio).toISOString()).to.eql(new Date(enviado.fechaHoraInicio).toISOString());",
+                  "    pm.expect(datos.modalidad).to.eql(enviado.modalidad || \"unica\");",
+                  "    pm.expect(datos.intervaloValor ?? null).to.eql(enviado.intervaloValor ?? null);",
+                  "    pm.expect(datos.intervaloUnidad ?? null).to.eql(enviado.intervaloUnidad ?? null);",
+                  "    pm.expect(datos.diaSemana ?? null).to.eql(null);",
+                  "    const fin = datos.fechaFin ? new Date(datos.fechaFin).toISOString() : null;",
+                  "    pm.expect(fin).to.eql(enviado.fechaFin ? new Date(enviado.fechaFin).toISOString() : null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Alta por días de semana",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Recibe los días con tilde y desordenados. Devuelve LUNES,MIERCOLES.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Dias de semana\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"dias_semana\",\n  \"diasSemana\": \" miércoles, Lunes \",\n  \"fechaFin\": \"2030-01-09T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  const enviado = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "  pm.test(\"Devuelve el ID y los datos de la programación\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.titulo).to.eql(enviado.titulo);",
+                  "    pm.expect(datos.tipo).to.eql(enviado.tipo);",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(new Date(datos.fechaHoraInicio).toISOString()).to.eql(new Date(enviado.fechaHoraInicio).toISOString());",
+                  "    pm.expect(datos.modalidad).to.eql(enviado.modalidad || \"unica\");",
+                  "    pm.expect(datos.intervaloValor ?? null).to.eql(enviado.intervaloValor ?? null);",
+                  "    pm.expect(datos.intervaloUnidad ?? null).to.eql(enviado.intervaloUnidad ?? null);",
+                  "    pm.expect(datos.diaSemana ?? null).to.eql(\"LUNES,MIERCOLES\");",
+                  "    const fin = datos.fechaFin ? new Date(datos.fechaFin).toISOString() : null;",
+                  "    pm.expect(fin).to.eql(enviado.fechaFin ? new Date(enviado.fechaFin).toISOString() : null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Aceptar 366 ocurrencias",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Serie diaria. El fin inclusivo abarca 366 fechas.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Limite 366\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaFin\": \"2031-01-01T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  const enviado = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "  pm.test(\"Devuelve el ID y los datos de la programación\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.titulo).to.eql(enviado.titulo);",
+                  "    pm.expect(datos.tipo).to.eql(enviado.tipo);",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(new Date(datos.fechaHoraInicio).toISOString()).to.eql(new Date(enviado.fechaHoraInicio).toISOString());",
+                  "    pm.expect(datos.modalidad).to.eql(enviado.modalidad || \"unica\");",
+                  "    pm.expect(datos.intervaloValor ?? null).to.eql(enviado.intervaloValor ?? null);",
+                  "    pm.expect(datos.intervaloUnidad ?? null).to.eql(enviado.intervaloUnidad ?? null);",
+                  "    pm.expect(datos.diaSemana ?? null).to.eql(null);",
+                  "    const fin = datos.fechaFin ? new Date(datos.fechaFin).toISOString() : null;",
+                  "    pm.expect(fin).to.eql(enviado.fechaFin ? new Date(enviado.fechaFin).toISOString() : null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Única con intervalo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en intervaloValor.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 1\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"unica\",\n  \"intervaloValor\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en intervaloValor\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"intervaloValor:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Intervalo cero",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en intervaloValor.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 2\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 0,\n  \"intervaloUnidad\": \"dias\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en intervaloValor\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"intervaloValor:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Intervalo decimal",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en intervaloValor.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 3\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1.5,\n  \"intervaloUnidad\": \"dias\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en intervaloValor\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"intervaloValor:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Intervalo con unidad inválida",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en intervaloUnidad.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 4\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"horas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en intervaloUnidad\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"intervaloUnidad:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Intervalo con días seleccionados",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en diasSemana.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 5\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"diasSemana\": \"LUNES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en diasSemana\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"diasSemana:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Días de semana sin selección",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en diasSemana.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 6\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"dias_semana\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en diasSemana\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"diasSemana:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Días repetidos",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en diasSemana.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 7\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"dias_semana\",\n  \"diasSemana\": \"miércoles, MIERCOLES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en diasSemana\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"diasSemana:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 — Fin anterior al inicio",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en fechaFin.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 8\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaFin\": \"2029-12-31T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en fechaFin\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"fechaFin:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 — Sin fecha elegible antes del fin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en fechaFin.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 9\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"dias_semana\",\n  \"diasSemana\": \" miércoles, Lunes \",\n  \"fechaFin\": \"2030-01-01T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en fechaFin\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"fechaFin:\");",
+                  "    pm.expect(error.mensaje).to.include(\"ninguna ocurrencia\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Rechazar 367 ocurrencias",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Se espera HTTP 400 con ERROR_VALIDACION en fechaFin.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec04Prefijo}} | Rechazado 10\",\n  \"tipo\": \"OTRO\",\n  \"fechaHoraInicio\": \"2030-01-01T21:00:00Z\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaFin\": \"2031-01-02T21:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const error = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION en fechaFin\", () => {",
+                  "    pm.expect(error.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(error.mensaje).to.include(\"fechaFin:\");",
+                  "    pm.expect(error.mensaje).to.include(\"366\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 — Consultar serie sin fin por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/{{rec04SerieSinFinId}}",
+            "description": "Recupera el recordatorio asociado a la serie creada en el caso 02.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");",
+                  "if (!pm.variables.get(\"rec04SerieSinFinId\")) throw new Error(\"Completá rec04SerieSinFinId en Variables o iniciá sesión.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie sin fin conserva su programación\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec04SerieSinFinId\"));",
+                  "    pm.expect(datos.titulo).to.eql(pm.variables.get(\"rec04Prefijo\") + \" | Sin fin\");",
+                  "    pm.expect(datos.modalidad).to.eql(\"recurrente\");",
+                  "    pm.expect(datos.intervaloValor).to.eql(2);",
+                  "    pm.expect(datos.intervaloUnidad).to.eql(\"dias\");",
+                  "    pm.expect(datos.fechaFin ?? null).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18 — Listar altas de esta ejecución",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Comprueba que se listan exactamente las seis altas válidas de esta ejecución. El prefijo distingue cada corrida de los recordatorios previos.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Falta un accessToken. Ejecutá 00-01 y 00-02 con el código de Mailpit, pegá rec04Token en Variables de esta colección o elegí un entorno con accessToken.\");",
+                  "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota tuya.\");",
+                  "if (!pm.variables.get(\"rec04Prefijo\")) throw new Error(\"Ejecutá primero 01 — Alta única, que identifica esta corrida.\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Solo aparecen las seis altas válidas de esta corrida\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    const prefijo = pm.variables.get(\"rec04Prefijo\") + \" | \";",
+                  "    const titulos = datos.filter(dato => dato.titulo.startsWith(prefijo)).map(dato => dato.titulo.slice(prefijo.length));",
+                  "    pm.expect(titulos).to.have.members([\"Unico\",\"Sin fin\",\"Semanal\",\"Mensual\",\"Dias de semana\",\"Limite 366\"]);",
+                  "    pm.expect(titulos).to.have.length(6);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 — Consulta, confirmación y ciclo de series",
+      "description": "Casos HTTP de REC-06 a REC-08 con una mascota QA propia. Ejecutar esta carpeta completa y en orden, en una sola iteración. Prepara dos series y las retira con borrado lógico. Si la ejecución cruza la medianoche argentina, repetirla desde 01.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Abrí 00 para configurar un accessToken vigente.\");",
+              "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota propia.\");"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "01 — Crear serie sin fin iniciada hace dos días",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "La fecha de la prueba se calcula en Buenos Aires al empezar la corrida. Se crea una tanda inicial que contiene hoy.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec08Prefijo}} | Ciclo\",\n  \"tipo\": \"OTRO\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaHoraInicio\": \"{{rec08FechaInicio}}\",\n  \"fechaFin\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "for (const variable of [\"rec08SerieId\", \"rec08OcurrenciaId\", \"rec08OcurrenciaAnterior\", \"rec08Autor\", \"rec08ConfirmadaEn\", \"rec08VencidaId\"]) {",
+                  "  pm.collectionVariables.unset(variable);",
+                  "}",
+                  "const ahora = new Date();",
+                  "// Para fechas actuales, Buenos Aires usa UTC−03. Newman ejecuta este script sin Intl.",
+                  "const fechaArgentina = new Date(ahora.getTime() - 3 * 3600000);",
+                  "const baseUtc = Date.UTC(fechaArgentina.getUTCFullYear(), fechaArgentina.getUTCMonth(), fechaArgentina.getUTCDate());",
+                  "function instante(dias, hora) {",
+                  "  return new Date(baseUtc + (dias * 24 + hora) * 3600000).toISOString().replace(\".000Z\", \"Z\");",
+                  "}",
+                  "pm.collectionVariables.set(\"rec08Prefijo\", \"REC08 QA \" + ahora.toISOString());",
+                  "pm.collectionVariables.set(\"rec08FechaInicio\", instante(-2, 21));",
+                  "pm.collectionVariables.set(\"rec08FechaHoy\", instante(0, 21));",
+                  "pm.collectionVariables.set(\"rec08FechaEdicion\", instante(1, 20));",
+                  "pm.collectionVariables.set(\"rec08FechaFin\", instante(5, 20));",
+                  "pm.collectionVariables.set(\"rec08FechaAyer\", instante(-1, 21));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Crea una serie activa sin fin\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.modalidad).to.eql(\"recurrente\");",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(datos.fechaFin ?? null).to.eql(null);",
+                  "    pm.collectionVariables.set(\"rec08SerieId\", datos.idRecordatorio);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Consultar la ocurrencia de hoy",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "Filtra por el UUID de la serie creada y guarda el UUID de la ocurrencia.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Hoy incluye la serie iniciada antes con una ocurrencia pendiente\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    const filas = datos.filter(dato => dato.idRecordatorio === pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(filas, \"Ocurrencias de hoy de la serie de esta corrida\").to.have.length(1);",
+                  "    const fila = filas[0];",
+                  "    pm.expect(fila.idOcurrencia).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(fila.fechaProgramada).to.eql(pm.variables.get(\"rec08FechaHoy\"));",
+                  "    pm.expect(fila.fechaHoraInicio).to.eql(pm.variables.get(\"rec08FechaInicio\"));",
+                  "    pm.expect(fila.situacionTemporal).to.eql(\"PENDIENTE\");",
+                  "    pm.expect(fila.puedeConfirmar).to.be.true;",
+                  "    pm.collectionVariables.set(\"rec08OcurrenciaId\", fila.idOcurrencia);",
+                  "    pm.collectionVariables.set(\"rec08OcurrenciaAnterior\", fila.idOcurrencia);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Rechazar confirmación sin selector",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/confirmacion",
+            "description": "El UUID de la serie requiere un idOcurrencia en la query.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"ERROR_VALIDACION · idOcurrencia:\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"ERROR_VALIDACION\");",
+                  "    pm.expect(datos.mensaje).to.include(\"idOcurrencia:\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Confirmar solo la ocurrencia de hoy",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/confirmacion?idOcurrencia={{rec08OcurrenciaId}}",
+            "description": "El UUID de hoy se capturó en la solicitud 02.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Confirma solo la ocurrencia y deja activa la serie\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(datos.idOcurrencia).to.eql(pm.variables.get(\"rec08OcurrenciaId\"));",
+                  "    pm.expect(datos.fechaProgramada).to.eql(pm.variables.get(\"rec08FechaHoy\"));",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(datos.situacionTemporal).to.eql(\"COMPLETADO\");",
+                  "    pm.expect(datos.puedeConfirmar).to.be.false;",
+                  "    pm.expect(datos.confirmadoPorId).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.confirmadoEn).to.be.a(\"string\").and.not.empty;",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Rechazar confirmación duplicada",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/confirmacion?idOcurrencia={{rec08OcurrenciaId}}",
+            "description": "La misma ocurrencia ya fue confirmada.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"ERROR_NEGOCIO · ya esta confirmado\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"ERROR_NEGOCIO\");",
+                  "    pm.expect(datos.mensaje).to.include(\"ya esta confirmado\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Desmarcar la confirmación",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/confirmacion?idOcurrencia={{rec08OcurrenciaId}}",
+            "description": "La ocurrencia vuelve a estar pendiente hoy.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Limpia autor y fecha de confirmación\", () => {",
+                  "    pm.expect(datos.idOcurrencia).to.eql(pm.variables.get(\"rec08OcurrenciaId\"));",
+                  "    pm.expect(datos.situacionTemporal).to.eql(\"PENDIENTE\");",
+                  "    pm.expect(datos.puedeConfirmar).to.be.true;",
+                  "    pm.expect(datos.confirmadoPorId).to.eql(null);",
+                  "    pm.expect(datos.confirmadoEn).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Pausar con la ocurrencia pendiente",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/estado?nuevoEstado=INACTIVO",
+            "description": "Pausa la serie sin fin y retira las fechas pendientes.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie está inactiva\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(datos.estado).to.eql(\"INACTIVO\");",
+                  "    pm.expect(datos.idOcurrencia ?? null).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Consultar hoy mientras está en pausa",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "La serie pausada queda fuera de la vista diaria.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie de prueba queda fuera de la consulta de hoy\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    pm.expect(datos.some(dato => dato.idRecordatorio === pm.variables.get(\"rec08SerieId\"))).to.be.false;",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Reactivar la serie sin fin",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/estado?nuevoEstado=ACTIVO",
+            "description": "Recupera la programación desde hoy. La ocurrencia pendiente retirada se vuelve a crear.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie está activa\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(datos.idOcurrencia ?? null).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Consultar la nueva ocurrencia de hoy",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "Comprueba que la fecha se mantiene y el UUID cambió.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Recrea la ocurrencia pendiente con un UUID nuevo\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    const filas = datos.filter(dato => dato.idRecordatorio === pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(filas, \"Ocurrencias de hoy de la serie de esta corrida\").to.have.length(1);",
+                  "    const fila = filas[0];",
+                  "    pm.expect(fila.idOcurrencia).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(fila.fechaProgramada).to.eql(pm.variables.get(\"rec08FechaHoy\"));",
+                  "    pm.expect(fila.situacionTemporal).to.eql(\"PENDIENTE\");",
+                  "    pm.expect(fila.puedeConfirmar).to.be.true;",
+                  "    pm.expect(fila.idOcurrencia).to.not.eql(pm.variables.get(\"rec08OcurrenciaAnterior\"));",
+                  "    pm.collectionVariables.set(\"rec08OcurrenciaId\", fila.idOcurrencia);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Rechazar el selector de la ocurrencia retirada",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/confirmacion?idOcurrencia={{rec08OcurrenciaAnterior}}",
+            "description": "Un UUID retirado por la pausa no confirma la nueva ocurrencia.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "if (pm.response.code === 404) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"RECURSO_NO_ENCONTRADO · Ocurrencia\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"RECURSO_NO_ENCONTRADO\");",
+                  "    pm.expect(datos.mensaje).to.include(\"Ocurrencia\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Confirmar hoy por la ruta de estado",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/estado?nuevoEstado=COMPLETADO&idOcurrencia={{rec08OcurrenciaId}}",
+            "description": "Guarda la autoría que se comprobará después de editar.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Confirma solo la ocurrencia y deja activa la serie\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(datos.idOcurrencia).to.eql(pm.variables.get(\"rec08OcurrenciaId\"));",
+                  "    pm.expect(datos.fechaProgramada).to.eql(pm.variables.get(\"rec08FechaHoy\"));",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(datos.situacionTemporal).to.eql(\"COMPLETADO\");",
+                  "    pm.expect(datos.puedeConfirmar).to.be.false;",
+                  "    pm.expect(datos.confirmadoPorId).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.confirmadoEn).to.be.a(\"string\").and.not.empty;",
+                  "    pm.collectionVariables.set(\"rec08Autor\", datos.confirmadoPorId);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Leer la confirmación guardada antes de editar",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "Toma como referencia el instante persistido en PostgreSQL, que tiene precisión de microsegundos.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Captura la fecha de confirmación guardada\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    const filas = datos.filter(dato => dato.idRecordatorio === pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(filas, \"Ocurrencias de hoy de la serie de esta corrida\").to.have.length(1);",
+                  "    const fila = filas[0];",
+                  "    pm.expect(fila.idOcurrencia).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(fila.fechaProgramada).to.eql(pm.variables.get(\"rec08FechaHoy\"));",
+                  "    pm.expect(fila.idOcurrencia).to.eql(pm.variables.get(\"rec08OcurrenciaId\"));",
+                  "    pm.expect(fila.situacionTemporal).to.eql(\"COMPLETADO\");",
+                  "    pm.expect(fila.confirmadoPorId).to.eql(pm.variables.get(\"rec08Autor\"));",
+                  "    pm.expect(fila.confirmadoEn).to.be.a(\"string\").and.not.empty;",
+                  "    pm.collectionVariables.set(\"rec08ConfirmadaEn\", fila.confirmadoEn);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 — Editar la programación de las fechas futuras",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}",
+            "description": "Cambia el inicio a mañana, el horario, la frecuencia a cada dos días y agrega una fecha de fin.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec08Prefijo}} | Ciclo editado\",\n  \"tipo\": \"OTRO\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 2,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaHoraInicio\": \"{{rec08FechaEdicion}}\",\n  \"fechaFin\": \"{{rec08FechaFin}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Guarda la nueva programación estableciendo un fin\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(datos.intervaloValor).to.eql(2);",
+                  "    pm.expect(datos.intervaloUnidad).to.eql(\"dias\");",
+                  "    pm.expect(datos.fechaHoraInicio).to.eql(pm.variables.get(\"rec08FechaEdicion\"));",
+                  "    pm.expect(datos.fechaFin).to.eql(pm.variables.get(\"rec08FechaFin\"));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 — Consultar hoy después de editar",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "La edición de las futuras conserva la ocurrencia de hoy y su confirmación.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Mantiene el UUID, horario, autor y hora de confirmación\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    const filas = datos.filter(dato => dato.idRecordatorio === pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(filas, \"Ocurrencias de hoy de la serie de esta corrida\").to.have.length(1);",
+                  "    const fila = filas[0];",
+                  "    pm.expect(fila.idOcurrencia).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(fila.fechaProgramada).to.eql(pm.variables.get(\"rec08FechaHoy\"));",
+                  "    pm.expect(fila.idOcurrencia).to.eql(pm.variables.get(\"rec08OcurrenciaId\"));",
+                  "    pm.expect(fila.fechaHoraInicio).to.eql(pm.variables.get(\"rec08FechaEdicion\"));",
+                  "    pm.expect(fila.situacionTemporal).to.eql(\"COMPLETADO\");",
+                  "    pm.expect(fila.confirmadoPorId).to.eql(pm.variables.get(\"rec08Autor\"));",
+                  "    pm.expect(fila.confirmadoEn).to.eql(pm.variables.get(\"rec08ConfirmadaEn\"));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Pausar la serie con fin",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/estado?nuevoEstado=INACTIVO",
+            "description": "Pausa la nueva programación dejando guardado el historial.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie está inactiva\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(datos.estado).to.eql(\"INACTIVO\");",
+                  "    pm.expect(datos.idOcurrencia ?? null).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 — Reactivar la serie con fin",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}/estado?nuevoEstado=ACTIVO",
+            "description": "La nueva programación tiene fechas elegibles dentro del fin.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie está activa\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(datos.idOcurrencia ?? null).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18 — Comprobar la confirmación después de reactivar",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "La ocurrencia confirmada conserva UUID, autor y hora tras la pausa y la reactivación.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Mantiene el UUID, horario, autor y hora de confirmación\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    const filas = datos.filter(dato => dato.idRecordatorio === pm.variables.get(\"rec08SerieId\"));",
+                  "    pm.expect(filas, \"Ocurrencias de hoy de la serie de esta corrida\").to.have.length(1);",
+                  "    const fila = filas[0];",
+                  "    pm.expect(fila.idOcurrencia).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(fila.fechaProgramada).to.eql(pm.variables.get(\"rec08FechaHoy\"));",
+                  "    pm.expect(fila.idOcurrencia).to.eql(pm.variables.get(\"rec08OcurrenciaId\"));",
+                  "    pm.expect(fila.fechaHoraInicio).to.eql(pm.variables.get(\"rec08FechaEdicion\"));",
+                  "    pm.expect(fila.situacionTemporal).to.eql(\"COMPLETADO\");",
+                  "    pm.expect(fila.confirmadoPorId).to.eql(pm.variables.get(\"rec08Autor\"));",
+                  "    pm.expect(fila.confirmadoEn).to.eql(pm.variables.get(\"rec08ConfirmadaEn\"));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "19 — Eliminar lógicamente la serie de prueba",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}",
+            "description": "Elimina solo la serie creada por esta corrida.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "20 — Comprobar que el detalle devuelve 404",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/{{rec08SerieId}}",
+            "description": "El detalle de la serie eliminada queda fuera de la API.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "if (pm.response.code === 404) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"RECURSO_NO_ENCONTRADO\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"RECURSO_NO_ENCONTRADO\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "21 — Comprobar que hoy excluye la serie eliminada",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "description": "La consulta diaria tampoco muestra la ocurrencia de la serie eliminada.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie de prueba queda fuera de la consulta de hoy\", () => {",
+                  "    pm.expect(datos).to.be.an(\"array\");",
+                  "    pm.expect(datos.some(dato => dato.idRecordatorio === pm.variables.get(\"rec08SerieId\"))).to.be.false;",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "22 — Crear otra serie cuya fecha de fin ya pasó",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "description": "Usa dos fechas anteriores a hoy para preparar el rechazo de reactivación.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{rec08Prefijo}} | Vencida\",\n  \"tipo\": \"OTRO\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaHoraInicio\": \"{{rec08FechaInicio}}\",\n  \"fechaFin\": \"{{rec08FechaAyer}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Crea una serie activa con fin\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.match(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i);",
+                  "    pm.expect(datos.mascotaId).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.expect(datos.modalidad).to.eql(\"recurrente\");",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "    pm.expect(datos.fechaFin).to.eql(pm.variables.get(\"rec08FechaAyer\"));",
+                  "    pm.collectionVariables.set(\"rec08VencidaId\", datos.idRecordatorio);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "23 — Pausar la serie vencida",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08VencidaId}}/estado?nuevoEstado=INACTIVO",
+            "description": "Prepara una serie inactiva sin fechas elegibles a partir de hoy.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie está inactiva\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08VencidaId\"));",
+                  "    pm.expect(datos.estado).to.eql(\"INACTIVO\");",
+                  "    pm.expect(datos.idOcurrencia ?? null).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "24 — Rechazar la reactivación de la serie vencida",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec08VencidaId}}/estado?nuevoEstado=ACTIVO",
+            "description": "La fecha de fin de la otra serie ya pasó.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"ERROR_NEGOCIO · no tiene más ocurrencias\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"ERROR_NEGOCIO\");",
+                  "    pm.expect(datos.mensaje).to.include(\"no tiene más ocurrencias\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "25 — Comprobar que la serie vencida sigue inactiva",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/{{rec08VencidaId}}",
+            "description": "El rechazo conserva el estado y el fin anterior.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"La serie está inactiva\", () => {",
+                  "    pm.expect(datos.idRecordatorio).to.eql(pm.variables.get(\"rec08VencidaId\"));",
+                  "    pm.expect(datos.estado).to.eql(\"INACTIVO\");",
+                  "    pm.expect(datos.idOcurrencia ?? null).to.eql(null);",
+                  "  });",
+                  "  pm.test(\"Conserva la fecha de fin\", () => {",
+                  "    pm.expect(datos.fechaFin).to.eql(pm.variables.get(\"rec08FechaAyer\"));",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "26 — Eliminar la serie vencida de prueba",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{rec08VencidaId}}",
+            "description": "Cierra el segundo caso con borrado lógico.",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 — Permisos Familia y Cuidador",
+      "description": "Opcional. Requiere una cuenta invitada con acceso Familia aceptado del propietario de rec04MascotaId. Usá accessTokenInvitado del entorno o rec09TokenInvitado de esta colección. Cambia el vínculo a Cuidador usando la misma sesión y lo restaura a Familia al terminar. Si interrumpís la corrida después del cambio de perfil, ejecutá 15 para restaurarlo.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.environment.get(\"accessTokenInvitado\") || pm.collectionVariables.get(\"rec09TokenInvitado\");",
+              "if (!token || !pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Se necesitan las sesiones del propietario y del invitado. Cargá accessTokenInvitado o rec09TokenInvitado.\");",
+              "if (!pm.variables.get(\"rec04MascotaId\")) throw new Error(\"Completá rec04MascotaId con una mascota QA propia.\");",
+              "pm.variables.set(\"rec09TokenEnUso\", token.trim().replace(/^Bearer\\s+/i, \"\"));"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "01 — Verificar la mascota propia del propietario",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "for (const clave of [\"rec09SerieId\", \"rec09OcurrenciaId\", \"rec09AccesoId\", \"rec09PropietarioId\"]) pm.collectionVariables.unset(clave);",
+                  "const argentina = new Date(Date.now() - 3 * 3600000);",
+                  "const inicio = Date.UTC(argentina.getUTCFullYear(), argentina.getUTCMonth(), argentina.getUTCDate() - 1, 21);",
+                  "pm.collectionVariables.set(\"rec09Inicio\", new Date(inicio).toISOString().replace(\".000Z\", \"Z\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Verificar la mascota propia del propietario\", () => {",
+                  "    pm.expect(datos.idMascota).to.eql(pm.variables.get(\"rec04MascotaId\"));",
+                  "    pm.collectionVariables.set(\"rec09PropietarioId\", datos.propietarioId);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Comprobar el vínculo Familia del invitado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/cuidado-compartido/me",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Comprobar el vínculo Familia del invitado\", () => {",
+                  "    const acceso = datos.cuidadosRecibidos.find(a => a.propietarioId === pm.variables.get(\"rec09PropietarioId\"));",
+                  "    pm.expect(acceso, \"El invitado debe tener un acceso Familia aceptado de ese propietario\").to.be.an(\"object\");",
+                  "    pm.expect(acceso.perfil).to.eql(\"Familia\");",
+                  "    pm.collectionVariables.set(\"rec09AccesoId\", acceso.idAcceso);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Crear la serie como propietario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "HTTP esperado 201. Ejecutar la carpeta completa en orden.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"REC09 QA permisos compartidos\",\n  \"tipo\": \"OTRO\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaHoraInicio\": \"{{rec09Inicio}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Crear la serie como propietario\", () => {",
+                  "    pm.expect(datos.modalidad).to.eql(\"recurrente\");",
+                  "    pm.collectionVariables.set(\"rec09SerieId\", datos.idRecordatorio);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Consultar hoy como Familia",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Consultar hoy como Familia\", () => {",
+                  "    const filas = datos.filter(r => r.idRecordatorio === pm.variables.get(\"rec09SerieId\"));",
+                  "    pm.expect(filas).to.have.length(1);",
+                  "    pm.expect(filas[0].puedeConfirmar).to.be.true;",
+                  "    pm.collectionVariables.set(\"rec09OcurrenciaId\", filas[0].idOcurrencia);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Confirmar como Familia",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}/confirmacion?idOcurrencia={{rec09OcurrenciaId}}",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Confirmar como Familia\", () => {",
+                  "    pm.expect(datos.situacionTemporal).to.eql(\"COMPLETADO\");",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Desmarcar como Familia",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}/confirmacion?idOcurrencia={{rec09OcurrenciaId}}",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Desmarcar como Familia\", () => {",
+                  "    pm.expect(datos.confirmadoEn).to.eql(null);",
+                  "    pm.expect(datos.puedeConfirmar).to.be.true;",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Editar como Familia",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"REC09 QA permisos compartidos\",\n  \"tipo\": \"OTRO\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaHoraInicio\": \"{{rec09Inicio}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Editar como Familia\", () => {",
+                  "    pm.expect(datos.titulo).to.eql(\"REC09 QA permisos compartidos\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Cambiar el vínculo a Cuidador",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/cuidado-compartido/accesos/{{rec09AccesoId}}/perfil",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perfil\": \"Cuidador\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Cambiar el vínculo a Cuidador\", () => {",
+                  "    pm.expect(datos.perfil).to.eql(\"Cuidador\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Consultar con la misma sesión de invitado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recordatorios/hoy",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Consultar con la misma sesión de invitado\", () => {",
+                  "    pm.expect(datos.some(r => r.idOcurrencia === pm.variables.get(\"rec09OcurrenciaId\"))).to.be.true;",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Confirmar como Cuidador",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}/confirmacion?idOcurrencia={{rec09OcurrenciaId}}",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Confirmar como Cuidador\", () => {",
+                  "    pm.expect(datos.situacionTemporal).to.eql(\"COMPLETADO\");",
+                  "    pm.expect(datos.estado).to.eql(\"ACTIVO\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Rechazar desmarcado del Cuidador",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}/confirmacion?idOcurrencia={{rec09OcurrenciaId}}",
+            "header": [],
+            "description": "HTTP esperado 403. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code === 403) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Rechazar desmarcado del Cuidador\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"ACCESO_DENEGADO\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Rechazar edición del Cuidador",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "HTTP esperado 403. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"REC09 QA permisos compartidos\",\n  \"tipo\": \"OTRO\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaHoraInicio\": \"{{rec09Inicio}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code === 403) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Rechazar edición del Cuidador\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"ACCESO_DENEGADO\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Rechazar pausa del Cuidador",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}/estado?nuevoEstado=INACTIVO",
+            "header": [],
+            "description": "HTTP esperado 403. Ejecutar la carpeta completa en orden.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rec09TokenEnUso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code === 403) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Rechazar pausa del Cuidador\", () => {",
+                  "    pm.expect(datos.codigo).to.eql(\"ACCESO_DENEGADO\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 — Desmarcar como propietario",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}/confirmacion?idOcurrencia={{rec09OcurrenciaId}}",
+            "header": [],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Desmarcar como propietario\", () => {",
+                  "    pm.expect(datos.confirmadoEn).to.eql(null);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 — Restaurar el vínculo Familia",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/cuidado-compartido/accesos/{{rec09AccesoId}}/perfil",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "HTTP esperado 200. Ejecutar la carpeta completa en orden.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perfil\": \"Familia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {",
+                  "  const datos = pm.response.json();",
+                  "  pm.test(\"Restaurar el vínculo Familia\", () => {",
+                  "    pm.expect(datos.perfil).to.eql(\"Familia\");",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Eliminar la serie de prueba",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{rec09SerieId}}",
+            "header": [],
+            "description": "HTTP esperado 204. Ejecutar la carpeta completa en orden."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

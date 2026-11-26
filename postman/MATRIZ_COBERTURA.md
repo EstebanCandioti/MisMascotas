@@ -1,5 +1,21 @@
 # Matriz de cobertura controller ↔ Postman
 
+## Recordatorios recurrentes al cierre de REC-09
+
+La colección `MisMascotas Recordatorios Recurrentes REC-01 a REC-04.postman_collection.json` incorpora tres carpetas de pruebas. Se conserva el nombre del archivo para mantener los enlaces existentes.
+
+| Carpeta | Solicitudes | Aserciones | Cobertura |
+|---|---:|---:|---|
+| 01 — Pruebas REC-01 a REC-04 | 18 | 36 | Alta única, finita e indefinida, modalidad y límites |
+| 02 — Consulta, confirmación y ciclo de series | 26 | 51 | Hoy, confirmación, edición, pausa, reactivación y borrado |
+| 03 — Permisos Familia y Cuidador | 16 | 31 | Misma sesión de invitado, gestión Familia y rechazos Cuidador |
+
+Las tres carpetas pasaron con Newman contra el backend REC-08 empaquetado en Docker. Las sesiones se prepararon con login y códigos de Mailpit. Las fechas futuras y el historial se verifican en PostgreSQL. El job se comprueba mediante reinicios reales en `ci/verificar_imagen_qa.py`.
+
+El [contrato actual](../docs/recordatorios_api.md) incluye `GET /recordatorios/hoy` y el selector `idOcurrencia`. El relevamiento siguiente corresponde al estado anterior a este módulo.
+
+## Relevamiento de octubre de 2026
+
 Colección verificada: `MisMascotas Auth Mascotas Auditoria.postman_collection.json`
 Contrato relevado desde la rama `backend` el 11 de octubre de 2026.
 

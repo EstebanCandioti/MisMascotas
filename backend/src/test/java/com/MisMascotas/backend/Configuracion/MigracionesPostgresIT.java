@@ -54,14 +54,14 @@ class MigracionesPostgresIT {
     @Test
     void baseVaciaSeInicializaYReiniciarNoDuplicaCatalogoNiBorraDatos() throws Exception {
         migrar(false);
-        assertThat(versionesExitosas()).isEqualTo(3);
+        assertThat(versionesExitosas()).isEqualTo(4);
         assertThat(sql.queryForObject("SELECT script FROM flyway_schema_history WHERE version='9'", String.class))
                 .isEqualTo("B9__esquema_actual.sql");
         assertThat(sql.queryForObject("SELECT count(*) FROM estados", Integer.class)).isEqualTo(16);
         UUID usuario = usuario();
         String huella = huella();
         migrar(false);
-        assertThat(versionesExitosas()).isEqualTo(3);
+        assertThat(versionesExitosas()).isEqualTo(4);
         assertThat(sql.queryForObject("SELECT count(*) FROM estados", Integer.class)).isEqualTo(16);
         assertThat(sql.queryForObject("SELECT nombre FROM usuario WHERE id_usuario = ?", String.class, usuario))
                 .isEqualTo("Usuario conservado");
@@ -195,7 +195,7 @@ class MigracionesPostgresIT {
         Flyway futuro = Flyway.configure().dataSource(fuente(url)).defaultSchema("public")
                 .cleanDisabled(true).locations("classpath:db/migration", "classpath:db/futuro").load();
         new MigracionesQaConfig().migracionVerificada(true).migrate(futuro);
-        assertThat(sql.queryForObject("SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(12);
+        assertThat(sql.queryForObject("SELECT max(version::int) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(999999);
         assertThat(sql.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='usuario' AND column_name='detalle_qa_prueba'", Integer.class)).isEqualTo(1);
         assertThat(sql.queryForObject("SELECT nombre FROM usuario WHERE id_usuario=?", String.class, id)).isEqualTo("Usuario conservado");
     }
@@ -263,6 +263,66 @@ class MigracionesPostgresIT {
     }
 
     @Test
+    void v12ConservaConfirmacionesYProtegeLaIdentidadDeCadaOcurrencia() throws Exception {
+        sql.execute(recurso("db/migration/B9__esquema_actual.sql"));
+        sql.execute("SET mismascotas.entorno = 'qa-web';\n"
+                + Files.readString(Path.of("../DB/qa/restablecer-seed.sql")).replaceAll("(?m)^\\\\.*$", ""));
+        Flyway hastaV11 = Flyway.configure().dataSource(fuente(url)).defaultSchema("public")
+                .locations("classpath:db/migration").target("11").load();
+        new MigracionesQaConfig().migracionVerificada(true).migrate(hastaV11);
+        var antes = sql.queryForObject("""
+                SELECT jsonb_agg(to_jsonb(r) ORDER BY id_recordatorio)::text FROM recordatorio r
+                """, String.class);
+
+        migrar(false);
+        assertThat(sql.queryForObject("""
+                SELECT jsonb_agg(to_jsonb(r) - 'ultima_fecha_generada' ORDER BY id_recordatorio)::text
+                FROM recordatorio r
+                """, String.class)).isEqualTo(antes);
+        assertThat(sql.queryForObject("SELECT count(*) FROM ocurrencia_recordatorio", Integer.class)).isZero();
+        assertThat(sql.queryForObject("SELECT count(*) FROM recordatorio WHERE ultima_fecha_generada IS NOT NULL", Integer.class)).isZero();
+
+        var serie = sql.queryForObject("""
+                SELECT id_recordatorio FROM recordatorio
+                WHERE modalidad='recurrente' AND fecha_fin IS NULL ORDER BY id_recordatorio LIMIT 1
+                """, UUID.class);
+        String alta = """
+                INSERT INTO ocurrencia_recordatorio (id_ocurrencia, recordatorio_id, fecha_programada)
+                VALUES (?, ?, '2030-05-02T15:00:00Z')
+                """;
+        sql.update(alta, UUID.randomUUID(), serie);
+        assertThatThrownBy(() -> sql.update(alta, UUID.randomUUID(), serie))
+                .isInstanceOf(org.springframework.dao.DuplicateKeyException.class);
+        assertThatThrownBy(() -> sql.update("UPDATE ocurrencia_recordatorio SET confirmado_en=now() WHERE recordatorio_id=?", serie))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_ocurrencia_confirmacion_completa");
+
+        // Con suficientes registros ajenos a las tandas, se justifica usar el índice parcial.
+        sql.update("""
+                INSERT INTO recordatorio (id_recordatorio, mascota_id, creado_por_id, titulo, tipo,
+                    fecha_hora_inicio, modalidad, estado_id)
+                SELECT gen_random_uuid(), r.mascota_id, r.creado_por_id, 'Control individual', r.tipo,
+                    r.fecha_hora_inicio, 'unica', r.estado_id
+                FROM recordatorio r CROSS JOIN generate_series(1, 5000) WHERE r.id_recordatorio=?
+                """, serie);
+        sql.update("UPDATE recordatorio SET ultima_fecha_generada=DATE '2030-05-02' WHERE id_recordatorio=?", serie);
+        sql.execute("ANALYZE public.recordatorio");
+        var plan = sql.queryForList("""
+                EXPLAIN SELECT id_recordatorio FROM recordatorio
+                WHERE fecha_fin IS NULL AND fecha_eliminacion IS NULL
+                  AND modalidad IN ('recurrente','dias_semana')
+                  AND ultima_fecha_generada IS NOT NULL AND ultima_fecha_generada <= DATE '2030-05-02'
+                ORDER BY ultima_fecha_generada, id_recordatorio LIMIT 20
+                """, String.class);
+        assertThat(plan).anyMatch(linea -> linea.contains("ix_recordatorio_tanda_pendiente"));
+
+        String seed = Files.readString(Path.of("../DB/qa/restablecer-seed.sql")).replaceAll("(?m)^\\\\.*$", "");
+        sql.execute("SET mismascotas.entorno = 'qa-web';\n" + seed);
+        assertThat(sql.queryForObject("SELECT count(*) FROM ocurrencia_recordatorio", Integer.class)).isZero();
+        assertThat(sql.queryForObject("SELECT count(*) FROM recordatorio", Integer.class)).isEqualTo(15);
+    }
+
+    @Test
     void seedQaAdmiteV10SinRetirarElNuevoEstado() throws Exception {
         migrar(false);
         String seed = Files.readString(Path.of("../DB/qa/restablecer-seed.sql")).replaceAll("(?m)^\\\\.*$", "");
@@ -308,7 +368,8 @@ class MigracionesPostgresIT {
         Map<String, String> datos = new LinkedHashMap<>();
         for (var tabla : Map.of("usuario", "id_usuario", "mascota", "id_mascota",
                 "evento_clinico", "id_evento", "recordatorio", "id_recordatorio").entrySet()) {
-            datos.put(tabla.getKey(), sql.queryForObject("SELECT jsonb_agg(to_jsonb(t) ORDER BY "
+            String fila = tabla.getKey().equals("recordatorio") ? "to_jsonb(t) - 'ultima_fecha_generada'" : "to_jsonb(t)";
+            datos.put(tabla.getKey(), sql.queryForObject("SELECT jsonb_agg(" + fila + " ORDER BY "
                     + tabla.getValue() + ")::text FROM " + tabla.getKey() + " t", String.class));
         }
         return datos;

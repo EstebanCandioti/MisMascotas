@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
 import java.util.UUID;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 public record RecordatorioRequestDTO(
     UUID mascotaId,
@@ -24,6 +25,7 @@ public record RecordatorioRequestDTO(
 
     String modalidad,
 
+    @JsonDeserialize(using = IntervaloEnteroDeserializer.class)
     Integer intervaloValor,
 
     String intervaloUnidad,

@@ -96,7 +96,7 @@ jobs:
           cache-from: type=gha,scope=db-qa
           cache-to: type=gha,mode=max,scope=db-qa
 
-      - name: Verificar el seed, el arranque y la persistencia de QA
+      - name: Verificar seed, recurrencias, permisos y persistencia de QA
         run: python3 ci/verificar_imagen_qa.py mismascotas-db-qa:verificacion mismascotas-backend:verificacion
 
       - name: Conservar resultados de pruebas

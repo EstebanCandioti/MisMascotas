@@ -1,0 +1,17 @@
+#!/bin/sh
+# El commit queda creado aunque falle la actualización de QA.
+raiz=$(git rev-parse --show-toplevel) || exit 0
+interprete=$(git config --get qalocal.powershell)
+if [ -z "$interprete" ]; then
+    interprete=pwsh
+fi
+if ! command -v "$interprete" >/dev/null 2>&1; then
+    echo "QA local: falta pwsh (PowerShell 7). El commit quedó creado." >&2
+    exit 0
+fi
+"$interprete" -NoProfile -File "$raiz/scripts/Actualizar-QALocal.ps1" -DesdeHook
+resultado=$?
+if [ "$resultado" -ne 0 ]; then
+    echo "QA local pendiente. Revisá el error y reintentá con scripts/Actualizar-QALocal.ps1." >&2
+fi
+exit 0

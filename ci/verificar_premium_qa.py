@@ -9,9 +9,10 @@ import urllib.parse
 import urllib.request
 import uuid
 from verificar_cuidado_qa import verificar_cuidado
+from verificar_recordatorios_qa import verificar_recordatorios
 
 
-def verificar_premium(sql, base_url, secreto_ci, mailpit_url):
+def verificar_premium(sql, base_url, secreto_ci, mailpit_url, reiniciar_backend):
     if urllib.parse.urlparse(base_url).hostname != "127.0.0.1":
         raise ValueError("La verificación Premium solo admite el backend Docker local de CI")
     cuentas = []
@@ -35,7 +36,8 @@ def verificar_premium(sql, base_url, secreto_ci, mailpit_url):
         except urllib.error.HTTPError as error:
             respuesta = error
         with respuesta:
-            return respuesta.code, json.load(respuesta)
+            cuerpo_respuesta = respuesta.read()
+            return respuesta.code, json.loads(cuerpo_respuesta) if cuerpo_respuesta else None
 
     # Indicador guardado, tipo de evidencia, plan, beneficio esperado, cobertura esperada.
     casos = [
@@ -105,8 +107,14 @@ def verificar_premium(sql, base_url, secreto_ci, mailpit_url):
         codigo, aislada = http("/suscripciones/me?usuarioId=" + cuentas[1], token(cuentas[0], cuentas[0] + "@example.test"))
         assert codigo == 200 and not aislada["esPremium"] and aislada["suscripcion"] is None
         cuidado = verificar_cuidado(sql, http, token, cuentas, mailpit_url)
+        def reiniciar():
+            nonlocal base_url
+            base_url = reiniciar_backend()
+
+        recordatorios = verificar_recordatorios(sql, http, token, cuentas, reiniciar)
         return {"casos": len(casos), "perfil_suscripcion_y_cupo_coherentes": True,
-                "aislamiento_entre_cuentas": True, "sin_cobros_reales": True, "cuidado_compartido": cuidado}
+                "aislamiento_entre_cuentas": True, "sin_cobros_reales": True,
+                "cuidado_compartido": cuidado, "recordatorios_recurrentes": recordatorios}
     finally:
         for id_usuario in cuentas:
             sql(f"""DELETE FROM log_auditoria WHERE actor_id='{id_usuario}';

@@ -1,6 +1,7 @@
 package com.MisMascotas.backend.Entity;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -56,11 +57,14 @@ public class Recordatorio {
     @Column(name = "intervalo_unidad", length = 20)
     private String intervaloUnidad;
 
-    @Column(name = "dia_semana", length = 20)
+    @Column(name = "dia_semana", length = 64)
     private String diaSemana;
 
     @Column(name = "fecha_fin")
     private Instant fechaFin;
+
+    @Column(name = "ultima_fecha_generada")
+    private LocalDate ultimaFechaGenerada;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "confirmado_por_id")

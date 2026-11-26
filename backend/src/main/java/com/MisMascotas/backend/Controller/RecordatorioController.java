@@ -71,23 +71,26 @@ public class RecordatorioController {
     @PatchMapping("/recordatorios/{id}/estado")
     public ResponseEntity<RecordatorioResponseDTO> cambiarEstado(@PathVariable UUID id,
                                                                  @RequestParam String nuevoEstado,
+                                                                 @RequestParam(required = false) UUID idOcurrencia,
                                                                  Principal principal) {
         UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
-        return ResponseEntity.ok(recordatorioService.cambiarEstado(id, nuevoEstado, usuarioAutenticadoId));
+        return ResponseEntity.ok(recordatorioService.cambiarEstado(id, nuevoEstado, usuarioAutenticadoId, idOcurrencia));
     }
 
     @PatchMapping("/recordatorios/{id}/confirmacion")
     public ResponseEntity<RecordatorioResponseDTO> confirmar(@PathVariable UUID id,
+                                                             @RequestParam(required = false) UUID idOcurrencia,
                                                              Principal principal) {
         UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
-        return ResponseEntity.ok(recordatorioService.confirmar(id, usuarioAutenticadoId));
+        return ResponseEntity.ok(recordatorioService.confirmar(id, usuarioAutenticadoId, idOcurrencia));
     }
 
     @DeleteMapping("/recordatorios/{id}/confirmacion")
     public ResponseEntity<RecordatorioResponseDTO> desmarcarConfirmacion(@PathVariable UUID id,
+                                                                         @RequestParam(required = false) UUID idOcurrencia,
                                                                          Principal principal) {
         UUID usuarioAutenticadoId = usuarioAutenticadoService.obtenerIdUsuario(principal);
-        return ResponseEntity.ok(recordatorioService.desmarcarConfirmacion(id, usuarioAutenticadoId));
+        return ResponseEntity.ok(recordatorioService.desmarcarConfirmacion(id, usuarioAutenticadoId, idOcurrencia));
     }
 
     @DeleteMapping("/recordatorios/{id}")
