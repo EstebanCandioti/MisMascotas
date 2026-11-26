@@ -15,4 +15,6 @@ public interface BadgeRepository extends JpaRepository<Badge, UUID> {
     List<Badge> findByMascotaIdMascotaAndFechaEliminacionIsNull(UUID mascotaId);
 
     Optional<Badge> findByIdBadgeAndFechaEliminacionIsNull(UUID idBadge);
+
+    long countByMascotaIdMascotaAndFechaEliminacionIsNull(UUID mascotaId);
 }

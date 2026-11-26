@@ -39,7 +39,7 @@ Las mascotas nuevas se incluyen por la relación entre cuentas, sin replicar per
 | Invitar, cancelar invitaciones, cambiar perfiles y revocar | Solo sobre sus vínculos | No | No |
 | Aceptar/rechazar invitación o salir del cuidado | Como destinatario de su vínculo | Como destinatario de su vínculo | Como destinatario de su vínculo |
 
-Todos los perfiles confirman únicamente durante el día correspondiente, sin límite por hora. La consulta admite cualquier fecha. El día se calcula con `Clock` en `America/Argentina/Buenos_Aires`. Las restricciones Premium pendientes de álbumes, fotos, foto de perfil y badges conservan su backlog separado: el acceso compartido no debe conceder escritura de esos recursos a invitados.
+Todos los perfiles confirman únicamente durante el día correspondiente, sin límite por hora. La consulta admite cualquier fecha. El día se calcula con `Clock` en `America/Argentina/Buenos_Aires`. Las restricciones Premium de álbumes, fotos, foto de perfil y badges están implementadas y documentadas en sus contratos por módulo. El propietario puede eliminar su contenido incluso sin Premium; el acceso compartido sigue sin conceder escritura de esos recursos a invitados.
 
 ## Arquitectura y límites de cada entrega
 

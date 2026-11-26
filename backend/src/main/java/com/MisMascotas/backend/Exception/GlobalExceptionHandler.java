@@ -64,6 +64,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, "LIMITE_MASCOTAS_ALCANZADO", ex.getMessage());
     }
 
+    @ExceptionHandler(LimiteBadgesAlcanzadoException.class)
+    public ResponseEntity<ErrorResponse> handleLimiteBadgesAlcanzadoException(LimiteBadgesAlcanzadoException ex) {
+        return buildResponse(HttpStatus.CONFLICT, "LIMITE_BADGES_ALCANZADO", ex.getMessage());
+    }
+
     @ExceptionHandler(EstadoNoConfiguradoException.class)
     public ResponseEntity<ErrorResponse> handleEstadoNoConfiguradoException(EstadoNoConfiguradoException ex) {
         logger.error("Error de configuracion de estados", ex);

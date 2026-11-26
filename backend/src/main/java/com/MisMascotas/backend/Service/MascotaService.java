@@ -2,6 +2,7 @@ package com.MisMascotas.backend.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class MascotaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + propietarioId));
 
         validarLimiteMascotasPlan(propietarioId);
+        validarCambioFotoPerfil(request, null, propietario.getIdUsuario());
 
         Mascota mascota = new Mascota();
         mascota.setPropietario(propietario);
@@ -89,6 +91,7 @@ public class MascotaService {
     @Transactional
     public MascotaResponseDTO editar(UUID id, MascotaRequestDTO request, UUID usuarioAutenticadoId) {
         Mascota mascota = accesoMascotaService.verificarAcceso(id, usuarioAutenticadoId);
+        validarCambioFotoPerfil(request, mascota.getFotoPerfil(), mascota.getPropietario().getIdUsuario());
         MascotaResponseDTO valorAnterior = mapToResponse(mascota);
         var ultimaMedicionPeso = eventoClinicoRepository
                 .findFirstByMascota_IdMascotaAndTipoAndFechaEliminacionIsNullOrderByFechaDesc(id, "PESO");
@@ -100,7 +103,9 @@ public class MascotaService {
         mascota.setFechaAproximada(request.fechaAproximada());
         mascota.setEdadValor(request.edadValor());
         mascota.setEdadUnidad(request.edadUnidad());
-        mascota.setFotoPerfil(request.fotoPerfil());
+        if (request.fotoPerfilInformada()) {
+            mascota.setFotoPerfil(request.fotoPerfil());
+        }
         mascota.setPesoActual(ultimaMedicionPeso.isPresent()
                 ? ultimaMedicionPeso.get().getValorPeso()
                 : request.pesoActual());
@@ -136,6 +141,14 @@ public class MascotaService {
         if (mascotasActivas >= LIMITE_MASCOTAS_PLAN_GRATUITO) {
             throw new LimiteMascotasAlcanzadoException(
                     "Alcanzaste el limite de 5 mascotas del plan gratuito. Actualiza al plan premium para registrar mas mascotas.");
+        }
+    }
+
+    private void validarCambioFotoPerfil(MascotaRequestDTO request, String almacenada, UUID propietarioId) {
+        // Ausencia conserva; null explícito retira; una URL sin cambios no exige renovar Premium.
+        if (request.fotoPerfilInformada() && request.fotoPerfil() != null
+                && !Objects.equals(request.fotoPerfil(), almacenada)) {
+            premiumService.exigirPremium(propietarioId);
         }
     }
 

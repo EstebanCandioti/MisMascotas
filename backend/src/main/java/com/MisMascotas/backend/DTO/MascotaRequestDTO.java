@@ -2,6 +2,10 @@ package com.MisMascotas.backend.DTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import tools.jackson.databind.JsonNode;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -44,5 +48,42 @@ public record MascotaRequestDTO(
     BigDecimal pesoActual,
 
     @Size(max = 255, message = "No puede superar los 255 caracteres")
-    String notas
-) {}
+    String notas,
+
+    @JsonIgnore
+    boolean fotoPerfilInformada
+) {
+    public MascotaRequestDTO {
+        // Un valor de texto implica presencia, también en llamadas Java internas.
+        if (fotoPerfil != null) fotoPerfilInformada = true;
+    }
+
+    /** Compatibilidad con llamadas Java: el argumento fotoPerfil está informado, incluso si es null. */
+    public MascotaRequestDTO(String nombre, String especie, String raza, LocalDate fechaNacimiento,
+            boolean fechaAproximada, Integer edadValor, String edadUnidad, String fotoPerfil,
+            BigDecimal pesoActual, String notas) {
+        this(nombre, especie, raza, fechaNacimiento, fechaAproximada, edadValor, edadUnidad,
+                fotoPerfil, pesoActual, notas, true);
+    }
+
+    /** Conserva el JSON público; el indicador de presencia es interno y no puede enviarlo el cliente. */
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public static MascotaRequestDTO desdeJson(
+            @JsonProperty("nombre") String nombre,
+            @JsonProperty("especie") String especie,
+            @JsonProperty("raza") String raza,
+            @JsonProperty("fechaNacimiento") LocalDate fechaNacimiento,
+            @JsonProperty("fechaAproximada") boolean fechaAproximada,
+            @JsonProperty("edadValor") Integer edadValor,
+            @JsonProperty("edadUnidad") String edadUnidad,
+            @JsonProperty("fotoPerfil") JsonNode fotoPerfil,
+            @JsonProperty("pesoActual") BigDecimal pesoActual,
+            @JsonProperty("notas") String notas) {
+        if (fotoPerfil != null && !fotoPerfil.isNull() && !fotoPerfil.isTextual()) {
+            throw new IllegalArgumentException("La foto de perfil debe ser una URL de texto o null");
+        }
+        return new MascotaRequestDTO(nombre, especie, raza, fechaNacimiento, fechaAproximada,
+                edadValor, edadUnidad, fotoPerfil == null || fotoPerfil.isNull() ? null : fotoPerfil.asText(),
+                pesoActual, notas, fotoPerfil != null);
+    }
+}

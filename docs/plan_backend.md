@@ -107,7 +107,7 @@ dia_semana en singular vs varios días por recordatorio (requiere migración).
 Expo Go y notificaciones push se excluyen mutuamente: las push necesitan development build, que no se abre escaneando un código QR.
 El 2FA obligatorio complica una demostración donde los evaluadores usen la aplicación por su cuenta: el código llega a una casilla que ellos no controlan.
 Si Docker va antes o después de las pruebas manuales. La recomendación es antes, para probar contra un seed conocido en lugar de contra una base con datos acumulados.
-Restricciones de plan premium en álbumes, fotos y badges: relevadas pero no implementadas, incluido el límite de tres badges por mascota.
+Restricciones de plan Premium en álbumes, fotos, foto de perfil y badges: implementadas. Badges tiene máximo de tres activas por mascota con bloqueo transaccional; lectura y borrado del propietario permanecen al vencer Premium. Contratos y QA en albumes_premium.md, fotos_premium.md y badges_premium.md.
 Endpoints de usuario: edición de perfil y lo que definan los CU de configuración (CU10, CU10a).
 Reenvío del código 2FA (futuro, fuera del alcance actual): hoy no hay endpoint propio y los fronts reenvían volviendo a llamar a login, lo que obliga a retener la contraseña en memoria durante la verificación. La propuesta acordada es autorizar el reenvío con un token de preautenticación y un desafío vigente, sin volver a solicitar la contraseña. El registro debe llevar directamente al desafío 2FA; si un usuario pendiente abandona el proceso, puede retomarlo desde login. Por ahora se mantiene un único desafío 2FA vigente por usuario: un nuevo login o reenvío invalida el código anterior, aunque siguen permitidas múltiples sesiones ya verificadas.
 

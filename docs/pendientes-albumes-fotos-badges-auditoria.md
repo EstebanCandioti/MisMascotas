@@ -10,16 +10,11 @@
 
 La autorización se delega en `AccesoMascotaService`; no se amplía el permiso de escritura por el solo hecho de compartir la lectura.
 
-## Restricciones por plan pendientes
+## Restricciones por plan implementadas
 
-La documentacion funcional indica que estas funciones son exclusivas del plan premium, pero no se implementan en este cierre:
+Implementado (contratos y pruebas en `albumes_premium.md`, `fotos_premium.md` y `badges_premium.md`): crear/editar álbumes, cargar fotos por URL, asignar/reemplazar `fotoPerfil` y crear badges requieren `PremiumService.exigirPremium` del propietario real. Se conserva la lectura propia y compartida al vencer el plan. El propietario puede eliminar álbumes, fotos y badges y retirar `fotoPerfil` sin Premium.
 
-- Crear, editar y eliminar albumes.
-- Cargar y eliminar fotos.
-- Crear y eliminar badges.
-- Limite de tres badges activas por mascota.
-
-Estado actual: no hay validaciones de plan premium ni límite de badges en `AlbumService`, `FotoService` ni `BadgeService`. La visualización está disponible para usuarios autenticados con acceso propio o compartido.
+`BadgeService` aplica un máximo de tres badges activas por mascota bajo bloqueo transaccional y rechaza altas con `409 / LIMITE_BADGES_ALCANZADO`. Los históricos excedidos se conservan; las bajas lógicas liberan cupo. No se agregó edición de badges. La visualización está disponible para usuarios autenticados con acceso propio o compartido.
 
 ## Consulta de auditoria deshabilitada
 
