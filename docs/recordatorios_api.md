@@ -64,6 +64,8 @@ Una serie finita genera todas sus fechas con un máximo de 366. Una serie indefi
 
 ## Campos de respuesta y uso en la web
 
+El [contrato del calendario](calendario_api.md) permite consultar rangos inclusivos de hoy en adelante y el detalle de una aparición. Incluye fechas futuras calculadas sin guardar nuevas ocurrencias.
+
 La respuesta conserva `idRecordatorio`, `mascotaId`, título, tipo, programación, autoría de creación, confirmación y estado. Las filas de ocurrencias agregan `idOcurrencia` y `fechaProgramada`. Los campos de ocurrencia se omiten en las respuestas de la serie y los únicos.
 
 La web debe usar `idOcurrencia` para identificar una fila recurrente y `idRecordatorio` para gestionar la serie. Para mostrar el horario de una fila se usa `fechaProgramada` cuando está presente y `fechaHoraInicio` en los únicos. Las fechas se entregan en ISO 8601 UTC.

@@ -22,7 +22,7 @@ public interface OcurrenciaRecordatorioRepository extends JpaRepository<Ocurrenc
           and e.entidad = 'RECORDATORIO' and e.nombre = 'ACTIVO'
           and o.fechaProgramada >= :desde and o.fechaProgramada < :hasta
         """)
-    List<OcurrenciaRecordatorio> buscarDelDia(@Param("mascotas") List<UUID> mascotas,
+    List<OcurrenciaRecordatorio> buscarEntreFechas(@Param("mascotas") List<UUID> mascotas,
             @Param("desde") Instant desde, @Param("hasta") Instant hasta);
 
     Optional<OcurrenciaRecordatorio> findByIdOcurrenciaAndRecordatorio_IdRecordatorio(

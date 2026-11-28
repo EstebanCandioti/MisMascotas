@@ -408,9 +408,9 @@ public class RecordatorioService {
         var hoy = hoy();
         var desde = hoy.atStartOfDay(ZONA).toInstant();
         var hasta = hoy.plusDays(1).atStartOfDay(ZONA).toInstant();
-        var unicos = recordatorioRepository.buscarUnicosDelDia(ids, desde, hasta).stream()
+        var unicos = recordatorioRepository.buscarUnicosEntreFechas(ids, desde, hasta).stream()
                 .map(recordatorio -> mapToResponse(recordatorio, null, hoy));
-        var ocurrencias = ocurrenciaRecordatorioRepository.buscarDelDia(ids, desde, hasta).stream()
+        var ocurrencias = ocurrenciaRecordatorioRepository.buscarEntreFechas(ids, desde, hasta).stream()
                 .map(ocurrencia -> mapToResponse(ocurrencia.getRecordatorio(), ocurrencia, hoy));
         return Stream.concat(unicos, ocurrencias)
                 .sorted(Comparator.comparing((RecordatorioResponseDTO respuesta) -> respuesta.fechaProgramada() != null
@@ -475,7 +475,7 @@ public class RecordatorioService {
         return mapToResponse(recordatorio, null, hoy());
     }
 
-    private RecordatorioResponseDTO mapToResponse(Recordatorio recordatorio, OcurrenciaRecordatorio ocurrencia,
+    RecordatorioResponseDTO mapToResponse(Recordatorio recordatorio, OcurrenciaRecordatorio ocurrencia,
             LocalDate hoy) {
         String situacion = situacionTemporal(recordatorio, ocurrencia, hoy);
         var confirmadoPor = ocurrencia != null ? ocurrencia.getConfirmadoPor() : recordatorio.getConfirmadoPor();
