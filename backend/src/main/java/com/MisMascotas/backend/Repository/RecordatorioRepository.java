@@ -45,8 +45,21 @@ public interface RecordatorioRepository extends JpaRepository<Recordatorio, UUID
           and r.estado.entidad = 'RECORDATORIO' and r.estado.nombre <> 'INACTIVO'
         order by r.fechaHoraInicio, r.idRecordatorio
         """)
-    List<Recordatorio> buscarUnicosDelDia(@Param("mascotas") List<UUID> mascotas,
+    List<Recordatorio> buscarUnicosEntreFechas(@Param("mascotas") List<UUID> mascotas,
             @Param("desde") Instant desde, @Param("hasta") Instant hasta);
+
+    @Query("""
+        select r from Recordatorio r
+        join fetch r.mascota m join fetch r.estado e
+        where m.idMascota in :mascotas
+          and m.fechaEliminacion is null and r.fechaEliminacion is null
+          and e.entidad = 'RECORDATORIO' and e.nombre = 'ACTIVO'
+          and r.modalidad in ('recurrente', 'dias_semana') and r.fechaFin is null
+          and r.ultimaFechaGenerada is not null and r.ultimaFechaGenerada < :ultimoDia
+          and r.fechaHoraInicio < :fin
+        """)
+    List<Recordatorio> buscarSeriesParaCalendario(@Param("mascotas") List<UUID> mascotas,
+            @Param("fin") Instant fin, @Param("ultimoDia") LocalDate ultimoDia);
 
     List<Recordatorio> findByMascota_IdMascotaAndFechaEliminacionIsNull(UUID mascotaId);
 

@@ -2,7 +2,7 @@
   "info": {
     "name": "MisMascotas — Recordatorios recurrentes",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "La carpeta 02 requiere el backend actualizado con REC-08 y Flyway V12. Seleccioná MisMascotas Local, completá email y password en ese entorno y enviá 00-01. Pegá el código de Mailpit en rec04Codigo del entorno y enviá 00-02. La verificación llena accessToken automáticamente. Comprobá la sesión con 00-03 y completá rec04MascotaId en Variables de la colección con el UUID de una mascota QA propia. Corré solo la carpeta 01 o 02 con Runner, una iteración y el mismo entorno. La 01 cubre altas y validaciones de REC-01 a REC-04. La 02 cubre consulta, confirmación, edición, pausa, reactivación y borrado. Los 400 y 404 esperados se cuentan como casos exitosos. La renovación del job y las fechas futuras se verifican con Docker y PostgreSQL. La carpeta opcional 03 comprueba permisos Familia y Cuidador usando un invitado con vínculo aceptado. Completar rec09TokenInvitado o accessTokenInvitado del entorno."
+    "description": "La carpeta 02 requiere el backend actualizado con REC-08 y Flyway V12. Seleccioná MisMascotas Local, completá email y password en ese entorno y enviá 00-01. Pegá el código de Mailpit en rec04Codigo del entorno y enviá 00-02. La verificación llena accessToken automáticamente. Comprobá la sesión con 00-03 y completá rec04MascotaId en Variables de la colección con el UUID de una mascota QA propia. Corré solo la carpeta 01 o 02 con Runner, una iteración y el mismo entorno. La 01 cubre altas y validaciones de REC-01 a REC-04. La 02 cubre consulta, confirmación, edición, pausa, reactivación y borrado. Los 400 y 404 esperados se cuentan como casos exitosos. La renovación del job y las fechas futuras se verifican con Docker y PostgreSQL. La carpeta opcional 03 comprueba permisos Familia y Cuidador usando un invitado con vínculo aceptado. Completar rec09TokenInvitado o accessTokenInvitado del entorno. La carpeta 04 prueba el calendario MVP: rango inclusivo, detalle guardado y calculado, límites y exclusión al pausar o borrar. Requiere el backend actualizado con calendario."
   },
   "auth": {
     "type": "bearer",
@@ -185,6 +185,90 @@
       "key": "rec09Inicio",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "calSerieId",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calHoyGuardada",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calFuturaCalculada",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calHoy",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calAyer",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calHasta",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calProyectada",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "cal366",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "cal367",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calInicio",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calFechaHoy",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calFechaCalculada",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calTitulo",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Prueba de calendario de esta corrida."
+    },
+    {
+      "key": "calDiaCorrida",
+      "value": "",
+      "type": "string",
+      "description": "Automático. Día de Buenos Aires al iniciar la corrida de calendario. No editar."
     }
   ],
   "item": [
@@ -2806,6 +2890,482 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 — Calendario MVP",
+      "description": "Ejecutar completa con Runner y MisMascotas Local. Requiere accessToken vigente y rec04MascotaId de una mascota propia. Usa fechas de Buenos Aires calculadas al iniciar. Crea una serie y la elimina lógicamente. La comprobación de ausencia de escrituras se completa en PostgreSQL y Docker. Las fechas pertenecen a una sola corrida. Si cambia el día de Buenos Aires, reiniciar desde 01 y ejecutar la carpeta completa; no ajustar calHoy por separado. Las solicitudes 17 y 18 permiten limpiar la serie de una corrida anterior.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (!pm.variables.get(\"rec04TokenEnUso\")) throw new Error(\"Abrí 00 para configurar un accessToken vigente.\");",
+              "if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pm.variables.get(\"rec04MascotaId\") || \"\")) throw new Error(\"Completá rec04MascotaId con el UUID de una mascota propia.\");",
+              "",
+              "const nombre = pm.info.requestName;",
+              "if (![\"01 —\", \"17 —\", \"18 —\"].some(prefijo => nombre.startsWith(prefijo))) {",
+              "  const hoyReal = new Date(Date.now() - 3 * 3600000).toISOString().slice(0, 10);",
+              "  const diaCorrida = pm.collectionVariables.get(\"calDiaCorrida\");",
+              "  let motivo = \"\";",
+              "  if (!diaCorrida || diaCorrida !== hoyReal) {",
+              "    motivo = \"Cambió el día de Buenos Aires o falta iniciar la corrida. Volvé a ejecutar 04 — Calendario MVP desde 01. No ajustes calHoy por separado. Podés usar 17 para eliminar la serie anterior.\";",
+              "  } else {",
+              "    const base = Date.parse(diaCorrida + \"T00:00:00Z\");",
+              "    const esperadas = {};",
+              "    for (const [clave, dias] of Object.entries({calHoy: 0, calAyer: -1, calHasta: 30, calProyectada: 30, cal366: 365, cal367: 366})) {",
+              "      esperadas[clave] = new Date(base + dias * 86400000).toISOString().slice(0,10);",
+              "    }",
+              "    for (const [clave, dias] of Object.entries({calInicio: -2, calFechaHoy: 0, calFechaCalculada: 30})) {",
+              "      esperadas[clave] = new Date(base + dias * 86400000 + 21 * 3600000).toISOString().replace(\".000Z\", \"Z\");",
+              "    }",
+              "    const distintas = Object.keys(esperadas).filter(clave => pm.variables.get(clave) !== esperadas[clave]);",
+              "    if (distintas.length) motivo = \"Hay fechas modificadas o de otra corrida: \" + distintas.join(\", \") + \". Reiniciá la carpeta desde 01 y quitá las variables de entorno que tapen estas variables de colección.\";",
+              "  }",
+              "  if (motivo) {",
+              "    pm.test(\"Fechas de la corrida vigentes\", () => { throw new Error(motivo); });",
+              "    pm.execution.skipRequest();",
+              "  }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "01 — Crear serie diaria para calendario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mascotas/{{rec04MascotaId}}/recordatorios",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"{{calTitulo}}\",\n  \"tipo\": \"OTRO\",\n  \"modalidad\": \"recurrente\",\n  \"intervaloValor\": 1,\n  \"intervaloUnidad\": \"dias\",\n  \"fechaHoraInicio\": \"{{calInicio}}\",\n  \"fechaFin\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "for (const clave of [\"calSerieId\", \"calHoyGuardada\", \"calFuturaCalculada\"]) pm.collectionVariables.unset(clave);",
+                  "const ahora = new Date();",
+                  "const argentina = new Date(ahora.getTime() - 3 * 3600000);",
+                  "const base = Date.UTC(argentina.getUTCFullYear(), argentina.getUTCMonth(), argentina.getUTCDate());",
+                  "pm.collectionVariables.set(\"calDiaCorrida\", new Date(base).toISOString().slice(0, 10));",
+                  "for (const [clave, dias] of Object.entries({calHoy: 0, calAyer: -1, calHasta: 30, calProyectada: 30, cal366: 365, cal367: 366})) {",
+                  "  pm.collectionVariables.set(clave, new Date(base + dias * 86400000).toISOString().slice(0,10));",
+                  "}",
+                  "for (const [clave, dias] of Object.entries({calInicio: -2, calFechaHoy: 0, calFechaCalculada: 30})) {",
+                  "  pm.collectionVariables.set(clave, new Date(base + dias * 86400000 + 21 * 3600000).toISOString().replace(\".000Z\", \"Z\"));",
+                  "}",
+                  "pm.collectionVariables.set(\"calTitulo\", \"Calendario QA \" + ahora.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "  const fila = pm.response.json();",
+                  "  pm.test(\"Guarda el ID de esta corrida\", () => pm.expect(fila.idRecordatorio).to.match(/^[0-9a-f-]{36}$/i));",
+                  "  pm.collectionVariables.set(\"calSerieId\", fila.idRecordatorio);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 — Consultar rango inclusivo con guardadas y calculadas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calHoy}}&hasta={{calHasta}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "  const filas = pm.response.json().filter(f => f.idRecordatorio === pm.variables.get(\"calSerieId\"));",
+                  "  pm.test(\"31 fechas únicas con 10 guardadas y 21 calculadas\", () => {",
+                  "    pm.expect(filas).to.have.lengthOf(31);",
+                  "    pm.expect(new Set(filas.map(f => f.fechaProgramada)).size).to.eql(31);",
+                  "    pm.expect(filas.filter(f => f.esPersistida)).to.have.lengthOf(10);",
+                  "    pm.expect(filas.filter(f => !f.esPersistida)).to.have.lengthOf(21);",
+                  "    const fechas = filas.map(f => f.fechaProgramada);",
+                  "    pm.expect(fechas).to.eql([...fechas].sort());",
+                  "  });",
+                  "  const hoy = filas.find(f => f.fechaProgramada === pm.variables.get(\"calFechaHoy\"));",
+                  "  const futura = filas.find(f => f.fechaProgramada === pm.variables.get(\"calFechaCalculada\"));",
+                  "  pm.test(\"Hoy guardado y extremo futuro calculado\", () => {",
+                  "    pm.expect(hoy, \"Falta la aparición de hoy\").to.be.an(\"object\");",
+                  "    pm.expect(hoy.idOcurrencia).to.be.a(\"string\");",
+                  "    pm.expect(hoy.puedeConfirmar).to.eql(true);",
+                  "    pm.expect(futura, \"Falta el último día inclusivo\").to.be.an(\"object\");",
+                  "    pm.expect(futura.esPersistida).to.eql(false);",
+                  "    pm.expect(futura.idOcurrencia).to.eql(null);",
+                  "    pm.expect(futura.puedeConfirmar).to.eql(false);",
+                  "  });",
+                  "  pm.collectionVariables.set(\"calHoyGuardada\", JSON.stringify(hoy));",
+                  "  pm.collectionVariables.set(\"calFuturaCalculada\", JSON.stringify(futura));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 — Consultar detalle guardado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario/{{calSerieId}}?fechaProgramada={{calFechaHoy}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "if (pm.response.code === 200) pm.test(\"Detalle igual a la fila elegida\", () => {",
+                  "  pm.expect(pm.variables.get(\"calHoyGuardada\"), \"Ejecutá primero la consulta de rango\").to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(pm.response.json()).to.eql(JSON.parse(pm.variables.get(\"calHoyGuardada\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 — Consultar detalle calculado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario/{{calSerieId}}?fechaProgramada={{calFechaCalculada}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "if (pm.response.code === 200) pm.test(\"Detalle igual a la fila elegida\", () => {",
+                  "  pm.expect(pm.variables.get(\"calFuturaCalculada\"), \"Ejecutá primero la consulta de rango\").to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(pm.response.json()).to.eql(JSON.parse(pm.variables.get(\"calFuturaCalculada\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 — Consultar solo hoy",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calHoy}}&hasta={{calHoy}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "if (pm.response.code === 200) pm.test(\"Una aparición de la serie hoy\", () => {",
+                  " const filas = pm.response.json().filter(f => f.idRecordatorio === pm.variables.get(\"calSerieId\"));",
+                  " pm.expect(filas).to.have.lengthOf(1);",
+                  " const guardada = pm.variables.get(\"calHoyGuardada\");",
+                  " pm.expect(guardada, \"Ejecutá primero 02 en esta misma corrida\").to.be.a(\"string\").and.not.empty;",
+                  " const esperada = JSON.parse(guardada);",
+                  " pm.expect(esperada.fechaProgramada, \"La respuesta de 02 pertenece a otro día. Reiniciá la carpeta desde 01\").to.eql(pm.variables.get(\"calFechaHoy\"));",
+                  " pm.expect(filas[0].fechaProgramada, \"La aparición debe corresponder al día consultado\").to.eql(pm.variables.get(\"calFechaHoy\"));",
+                  " pm.expect(Object.keys(filas[0]).sort(), \"Campos de la respuesta\").to.eql(Object.keys(esperada).sort());",
+                  " for (const campo of Object.keys(esperada)) pm.expect(filas[0][campo], \"Difiere el campo \" + campo + \" respecto de 02\").to.eql(esperada[campo]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 — Repetir consulta mantiene los identificadores",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calHoy}}&hasta={{calHasta}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "if (pm.response.code === 200) pm.test(\"Conserva fila guardada y calculada\", () => {",
+                  " const filas = pm.response.json().filter(f => f.idRecordatorio === pm.variables.get(\"calSerieId\"));",
+                  " for (const variable of [\"calHoyGuardada\",\"calFuturaCalculada\"]) {",
+                  "   const anterior = JSON.parse(pm.variables.get(variable));",
+                  "   pm.expect(filas.find(f => f.fechaProgramada === anterior.fechaProgramada)).to.eql(anterior);",
+                  " }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 — Admitir 366 días inclusivos",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calHoy}}&hasta={{cal366}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "if (pm.response.code === 200) pm.test(\"Incluye 366 apariciones de la serie\", () => {",
+                  " pm.expect(pm.response.json().filter(f => f.idRecordatorio === pm.variables.get(\"calSerieId\"))).to.have.lengthOf(366);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 — Rechazar 367 días",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calHoy}}&hasta={{cal367}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) pm.test(\"ERROR_VALIDACION\", () => pm.expect(pm.response.json().codigo).to.eql(\"ERROR_VALIDACION\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 — Rechazar inicio anterior a hoy",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calAyer}}&hasta={{calHoy}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) pm.test(\"ERROR_VALIDACION\", () => pm.expect(pm.response.json().codigo).to.eql(\"ERROR_VALIDACION\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 — Rechazar extremos invertidos",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calHasta}}&hasta={{calHoy}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) pm.test(\"ERROR_VALIDACION\", () => pm.expect(pm.response.json().codigo).to.eql(\"ERROR_VALIDACION\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 — Rechazar fecha inválida",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde=2030-02-30&hasta=2030-03-01"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) pm.test(\"ERROR_VALIDACION\", () => pm.expect(pm.response.json().codigo).to.eql(\"ERROR_VALIDACION\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 — Rechazar fecha de detalle ausente",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario/{{calSerieId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "if (pm.response.code === 400) pm.test(\"ERROR_VALIDACION\", () => pm.expect(pm.response.json().codigo).to.eql(\"ERROR_VALIDACION\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 — Rechazar un horario que no pertenece a la serie",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario/{{calSerieId}}?fechaProgramada={{calHasta}}T20:00:00Z"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 — Pausar la serie",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/recordatorios/{{calSerieId}}/estado?nuevoEstado=INACTIVO"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 — Omitir la serie pausada",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario?desde={{calHoy}}&hasta={{calHasta}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "if (pm.response.code === 200) pm.test(\"Sin apariciones de la serie pausada\", () => {",
+                  " pm.expect(pm.response.json().filter(f => f.idRecordatorio === pm.variables.get(\"calSerieId\"))).to.have.lengthOf(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 — Invalidar detalle de la serie pausada",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario/{{calSerieId}}?fechaProgramada={{calFechaCalculada}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 — Eliminar lógicamente la serie de prueba",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/recordatorios/{{calSerieId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18 — Invalidar detalle tras el borrado",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/calendario/{{calSerieId}}?fechaProgramada={{calFechaCalculada}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
                 ]
               }
             }
